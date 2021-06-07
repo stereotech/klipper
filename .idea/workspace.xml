@@ -2,13 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f2b6adf0-f1a2-4dd5-a54c-77d6dd5494c3" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/scripts/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/install-ubuntu-18.04.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/install-ubuntu-18.04.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/klippy/kinematics/corexy_6axis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klippy/extras/gcode_move.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/extras/gcode_move.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klippy/extras/homing.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/extras/homing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klippy/gcode.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/gcode.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klippy/kinematics/extruder.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/kinematics/extruder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klippy/toolhead.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/toolhead.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
