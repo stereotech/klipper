@@ -6,9 +6,9 @@
 struct coord {
     union {
         struct {
-            double x, y, z;
+            double x, y, z, a, b, c;
         };
-        double axis[3];
+        double axis[6];
     };
 };
 
@@ -28,7 +28,9 @@ struct move *move_alloc(void);
 void trapq_append(struct trapq *tq, double print_time
                   , double accel_t, double cruise_t, double decel_t
                   , double start_pos_x, double start_pos_y, double start_pos_z
+                  , double start_pos_a, double start_pos_b, double start_pos_c
                   , double axes_r_x, double axes_r_y, double axes_r_z
+                  , double axes_r_a, double axes_r_b, double axes_r_c
                   , double start_v, double cruise_v, double accel);
 double move_get_distance(struct move *m, double move_time);
 struct coord move_get_coord(struct move *m, double move_time);

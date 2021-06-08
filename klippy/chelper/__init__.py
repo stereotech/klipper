@@ -68,10 +68,12 @@ defs_itersolve = """
 
 defs_trapq = """
     void trapq_append(struct trapq *tq, double print_time
-        , double accel_t, double cruise_t, double decel_t
-        , double start_pos_x, double start_pos_y, double start_pos_z
-        , double axes_r_x, double axes_r_y, double axes_r_z
-        , double start_v, double cruise_v, double accel);
+                  , double accel_t, double cruise_t, double decel_t
+                  , double start_pos_x, double start_pos_y, double start_pos_z
+                  , double start_pos_a, double start_pos_b, double start_pos_c
+                  , double axes_r_x, double axes_r_y, double axes_r_z
+                  , double axes_r_a, double axes_r_b, double axes_r_c
+                  , double start_v, double cruise_v, double accel);
     struct trapq *trapq_alloc(void);
     void trapq_free(struct trapq *tq);
     void trapq_free_moves(struct trapq *tq, double print_time);
