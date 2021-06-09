@@ -15,7 +15,8 @@ enum
 
 struct stepper_kinematics;
 struct move;
-typedef double (*sk_calc_callback)(struct stepper_kinematics *sk, struct move *m, double move_time);
+typedef double (*sk_calc_callback)(struct stepper_kinematics *sk,
+                                   struct move *m, double move_time);
 typedef void (*sk_post_callback)(struct stepper_kinematics *sk);
 struct stepper_kinematics
 {
@@ -31,13 +32,22 @@ struct stepper_kinematics
     sk_post_callback post_cb;
 };
 
-int32_t itersolve_generate_steps(struct stepper_kinematics *sk, double flush_time);
-double itersolve_check_active(struct stepper_kinematics *sk, double flush_time);
-int32_t itersolve_is_active_axis(struct stepper_kinematics *sk, char axis);
-void itersolve_set_trapq(struct stepper_kinematics *sk, struct trapq *tq);
-void itersolve_set_stepcompress(struct stepper_kinematics *sk, struct stepcompress *sc, double step_dist);
-double itersolve_calc_position_from_coord(struct stepper_kinematics *sk, double x, double y, double z, double a, double b, double c);
-void itersolve_set_position(struct stepper_kinematics *sk, double x, double y, double z, double a, double b, double c);
+int32_t itersolve_generate_steps(struct stepper_kinematics *sk,
+                                 double flush_time);
+double itersolve_check_active(struct stepper_kinematics *sk,
+                              double flush_time);
+int32_t itersolve_is_active_axis(struct stepper_kinematics *sk,
+                                 char axis);
+void itersolve_set_trapq(struct stepper_kinematics *sk,
+                         struct trapq *tq);
+void itersolve_set_stepcompress(struct stepper_kinematics *sk,
+                                struct stepcompress *sc, double step_dist);
+double itersolve_calc_position_from_coord(struct stepper_kinematics *sk,
+                                          double x, double y, double z,
+                                          double a, double b, double c);
+void itersolve_set_position(struct stepper_kinematics *sk,
+                            double x, double y, double z,
+                            double a, double b, double c);
 double itersolve_get_commanded_pos(struct stepper_kinematics *sk);
 
 #endif // itersolve.h

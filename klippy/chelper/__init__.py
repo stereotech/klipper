@@ -7,7 +7,6 @@ import os
 import logging
 import cffi
 
-
 ######################################################################
 # c_helper.so compiling
 ######################################################################
@@ -60,8 +59,10 @@ defs_itersolve = """
     void itersolve_set_trapq(struct stepper_kinematics *sk, struct trapq *tq);
     void itersolve_set_stepcompress(struct stepper_kinematics *sk
         , struct stepcompress *sc, double step_dist);
-    double itersolve_calc_position_from_coord(struct stepper_kinematics *sk, double x, double y, double z, double a, double b, double c);
-    void itersolve_set_position(struct stepper_kinematics *sk, double x, double y, double z, double a, double b, double c);
+    double itersolve_calc_position_from_coord(struct stepper_kinematics *sk, 
+    double x, double y, double z, double a, double b, double c);
+    void itersolve_set_position(struct stepper_kinematics *sk, double x, 
+    double y, double z, double a, double b, double c);
     double itersolve_get_commanded_pos(struct stepper_kinematics *sk);
 """
 
@@ -184,11 +185,13 @@ defs_all = [
     defs_kin_winch, defs_kin_extruder, defs_kin_shaper,
 ]
 
+
 # Update filenames to an absolute path
 
 
 def get_abs_files(srcdir, filelist):
     return [os.path.join(srcdir, fname) for fname in filelist]
+
 
 # Return the list of file modification times
 
@@ -203,6 +206,7 @@ def get_mtimes(filelist):
         out.append(t)
     return out
 
+
 # Check if the code needs to be compiled
 
 
@@ -210,6 +214,7 @@ def check_build_code(sources, target):
     src_times = get_mtimes(sources)
     obj_times = get_mtimes([target])
     return not obj_times or max(src_times) > min(obj_times)
+
 
 # Check if the current gcc version supports a particular command-line option
 
@@ -219,6 +224,7 @@ def check_gcc_option(option):
         GCC_CMD, option)
     res = os.system(cmd)
     return res == 0
+
 
 # Check if the current gcc version supports a particular command-line option
 
@@ -235,11 +241,13 @@ FFI_main = None
 FFI_lib = None
 pyhelper_logging_callback = None
 
+
 # Hepler invoked from C errorf() code to log errors
 
 
 def logging_callback(msg):
     logging.error(FFI_main.string(msg))
+
 
 # Return the Foreign Function Interface api to the caller
 
@@ -251,7 +259,7 @@ def get_ffi():
         srcfiles = get_abs_files(srcdir, SOURCE_FILES)
         ofiles = get_abs_files(srcdir, OTHER_FILES)
         destlib = get_abs_files(srcdir, [DEST_LIB])[0]
-        if check_build_code(srcfiles+ofiles+[__file__], destlib):
+        if check_build_code(srcfiles + ofiles + [__file__], destlib):
             if check_gcc_option(SSE_FLAGS):
                 cmd = "%s %s %s" % (GCC_CMD, SSE_FLAGS, COMPILE_ARGS)
             else:

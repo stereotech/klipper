@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="f2b6adf0-f1a2-4dd5-a54c-77d6dd5494c3" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klippy/chelper/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/chelper/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klippy/chelper/itersolve.c" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/chelper/itersolve.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klippy/chelper/itersolve.h" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/chelper/itersolve.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klippy/extras/force_move.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/extras/force_move.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klippy/extras/homing.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/extras/homing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klippy/extras/manual_stepper.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/extras/manual_stepper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klippy/kinematics/corexy_6axis.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/kinematics/corexy_6axis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klippy/kinematics/extruder.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/kinematics/extruder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klippy/stepper.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/stepper.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/klippy/toolhead.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/toolhead.py" afterDir="false" />
@@ -43,7 +43,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../klipper_python3" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
