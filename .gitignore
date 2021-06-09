@@ -4,5 +4,4 @@ out
 .config
 .config.old
 klippy/.version
-.idea
-.idea/workspace.xml
+.idea/
