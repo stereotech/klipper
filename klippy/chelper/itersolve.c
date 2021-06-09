@@ -271,7 +271,8 @@ itersolve_set_stepcompress(struct stepper_kinematics *sk, struct stepcompress *s
 }
 
 double __visible
-itersolve_calc_position_from_coord(struct stepper_kinematics *sk, double x, double y, double z, double a, double b, double c)
+itersolve_calc_position_from_coord(struct stepper_kinematics *sk, double x, double y, double z,
+                                   double a, double b, double c)
 {
     struct move m;
     memset(&m, 0, sizeof(m));

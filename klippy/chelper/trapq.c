@@ -22,7 +22,12 @@ move_alloc(void)
 
 // Fill and add a move to the trapezoid velocity queue
 void __visible
-trapq_append(struct trapq *tq, double print_time, double accel_t, double cruise_t, double decel_t, double start_pos_x, double start_pos_y, double start_pos_z, double start_pos_a, double start_pos_b, double start_pos_c, double axes_r_x, double axes_r_y, double axes_r_z, double axes_r_a, double axes_r_b, double axes_r_c, double start_v, double cruise_v, double accel)
+trapq_append(struct trapq *tq, double print_time, double accel_t, double cruise_t, double decel_t,
+             double start_pos_x, double start_pos_y, double start_pos_z,
+             double start_pos_a, double start_pos_b, double start_pos_c,
+             double axes_r_x, double axes_r_y, double axes_r_z,
+             double axes_r_a, double axes_r_b, double axes_r_c,
+             double start_v, double cruise_v, double accel)
 {
     struct coord start_pos = {.x = start_pos_x, .y = start_pos_y, .z = start_pos_z, .a = start_pos_a, .b = start_pos_b, .c = start_pos_c};
     struct coord axes_r = {.x = axes_r_x, .y = axes_r_y, .z = axes_r_z, .a = axes_r_a, .b = axes_r_b, .c = axes_r_c};
