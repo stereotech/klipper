@@ -108,7 +108,7 @@ class PrinterExtruder:
         toolhead = self.printer.lookup_object('toolhead')
         toolhead.flush_step_generation()
         epos = self.stepper.get_commanded_position()
-        stepper.set_position([epos, 0., 0.])
+        stepper.set_position([epos, 0., 0., 0., 0., 0.])
         stepper.set_trapq(self.trapq)
 
     def stats(self, eventtime):
