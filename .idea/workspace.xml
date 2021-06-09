@@ -6,9 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f2b6adf0-f1a2-4dd5-a54c-77d6dd5494c3" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klippy/chelper/.vscode/settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/chelper/.vscode/settings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klippy/chelper/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/chelper/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/check_whitespace.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/check_whitespace.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
