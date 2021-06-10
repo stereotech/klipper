@@ -60,7 +60,7 @@ class DeltaKinematics:
         self.need_home = True
         self.limit_xy2 = -1.
         self.home_position = tuple(
-            self._actuator_to_cartesian(self.abs_endstops))
+            self._actuator_to_cartesian(self.abs_endstops) + [0., 0., 0.])
         self.max_z = min([rail.get_homing_info().position_endstop
                           for rail in self.rails])
         self.min_z = config.getfloat(
