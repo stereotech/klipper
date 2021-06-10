@@ -205,15 +205,15 @@ class GCodeMove:
     def cmd_M221(self, gcmd):
         # Set extrude factor override percentage
         new_extrude_factor = gcmd.get_float('S', 100., above=0.) / 100.
-        last_e_pos = self.last_position[3]
-        e_value = (last_e_pos - self.base_position[3]) / self.extrude_factor
-        self.base_position[3] = last_e_pos - e_value * new_extrude_factor
+        last_e_pos = self.last_position[6]
+        e_value = (last_e_pos - self.base_position[6]) / self.extrude_factor
+        self.base_position[6] = last_e_pos - e_value * new_extrude_factor
         self.extrude_factor = new_extrude_factor
     cmd_SET_GCODE_OFFSET_help = "Set a virtual offset to g-code positions"
 
     def cmd_SET_GCODE_OFFSET(self, gcmd):
-        move_delta = [0., 0., 0., 0.]
-        for pos, axis in enumerate('XYZE'):
+        move_delta = [0., 0., 0., 0., 0., 0., 0.]
+        for pos, axis in enumerate('XYZABCE'):
             offset = gcmd.get_float(axis, None)
             if offset is None:
                 offset = gcmd.get_float(axis + '_ADJUST', None)
