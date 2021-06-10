@@ -120,7 +120,9 @@ class PrinterExtruder:
             raise self.printer.command_error(
                 "Extrude below minimum temp\n"
                 "See the 'min_extrude_temp' config option for details")
-        if (not move.axes_d[0] and not move.axes_d[1]) or axis_r < 0.:
+        if (not move.axes_d[0] and not move.axes_d[1] and not move.axes_d[2]
+                and not move.axes_d[3] and not move.axes_d[4]
+                and not move.axes_d[5]) or axis_r < 0.:
             # Extrude only move (or retraction move) - limit accel and velocity
             if abs(move.axes_d[6]) > self.max_e_dist:
                 raise self.printer.command_error(
