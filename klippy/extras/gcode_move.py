@@ -259,12 +259,12 @@ class GCodeMove:
         self.speed_factor = state['speed_factor']
         self.extrude_factor = state['extrude_factor']
         # Restore the relative E position
-        e_diff = self.last_position[3] - state['last_position'][3]
-        self.base_position[3] += e_diff
+        e_diff = self.last_position[6] - state['last_position'][6]
+        self.base_position[6] += e_diff
         # Move the toolhead back if requested
         if gcmd.get_int('MOVE', 0):
             speed = gcmd.get_float('MOVE_SPEED', self.speed, above=0.)
-            self.last_position[:3] = state['last_position'][:3]
+            self.last_position[:6] = state['last_position'][:6]
             self.move_with_transform(self.last_position, speed)
 
     def cmd_GET_POSITION(self, gcmd):
