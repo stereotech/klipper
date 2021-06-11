@@ -3,8 +3,12 @@
 # Copyright (C) 2016-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import math, logging, importlib
-import mcu, chelper, kinematics.extruder
+import math
+import logging
+import importlib
+import mcu
+import chelper
+import kinematics.extruder
 
 
 # Common suffixes: _d is distance (in mm), _v is velocity (in
@@ -28,8 +32,7 @@ class Move:
             # Extrude only move
             self.end_pos = (
                 start_pos[0], start_pos[1], start_pos[2], start_pos[3],
-                start_pos[4], start_pos[5],
-                end_pos[3])
+                start_pos[4], start_pos[5], end_pos[6])
             axes_d[0] = axes_d[1] = axes_d[2] = axes_d[3] = axes_d[4] = axes_d[
                 5] = 0.
             self.move_d = move_d = abs(axes_d[6])
@@ -100,8 +103,7 @@ class Move:
             extruder_v2, self.max_cruise_v2, prev_move.max_cruise_v2,
             prev_move.max_start_v2 + prev_move.delta_v2)
         self.max_smoothed_v2 = min(
-            self.max_start_v2
-            , prev_move.max_smoothed_v2 + prev_move.smooth_delta_v2)
+            self.max_start_v2, prev_move.max_smoothed_v2 + prev_move.smooth_delta_v2)
 
     def set_junction(self, start_v2, cruise_v2, end_v2):
         # Determine accel, cruise, and decel portions of the move distance
@@ -169,21 +171,21 @@ class MoveQueue:
                         flush_count = i
                         update_flush_count = False
                     peak_cruise_v2 = min(move.max_cruise_v2, (
-                            smoothed_v2 + reachable_smoothed_v2) * .5)
+                        smoothed_v2 + reachable_smoothed_v2) * .5)
                     if delayed:
                         # Propagate peak_cruise_v2 to any delayed moves
                         if not update_flush_count and i < flush_count:
                             mc_v2 = peak_cruise_v2
                             for m, ms_v2, me_v2 in reversed(delayed):
                                 mc_v2 = min(mc_v2, ms_v2)
-                                m.set_junction(min(ms_v2, mc_v2), mc_v2
-                                               , min(me_v2, mc_v2))
+                                m.set_junction(min(ms_v2, mc_v2),
+                                               mc_v2, min(me_v2, mc_v2))
                         del delayed[:]
                 if not update_flush_count and i < flush_count:
-                    cruise_v2 = min((start_v2 + reachable_start_v2) * .5
-                                    , move.max_cruise_v2, peak_cruise_v2)
-                    move.set_junction(min(start_v2, cruise_v2), cruise_v2
-                                      , min(next_end_v2, cruise_v2))
+                    cruise_v2 = min((start_v2 + reachable_start_v2)
+                                    * .5, move.max_cruise_v2, peak_cruise_v2)
+                    move.set_junction(min(start_v2, cruise_v2),
+                                      cruise_v2, min(next_end_v2, cruise_v2))
             else:
                 # Delay calculating this move until peak_cruise_v2 is known
                 delayed.append((move, start_v2, next_end_v2))
@@ -306,7 +308,8 @@ class ToolHead:
         kin_flush_delay = self.kin_flush_delay
         lkft = self.last_kin_flush_time
         while 1:
-            self.print_time = min(self.print_time + batch_time, next_print_time)
+            self.print_time = min(
+                self.print_time + batch_time, next_print_time)
             sg_flush_time = max(lkft, self.print_time - kin_flush_delay)
             for sg in self.step_generators:
                 sg(sg_flush_time)
@@ -530,7 +533,8 @@ class ToolHead:
     def stats(self, eventtime):
         for m in self.all_mcus:
             m.check_active(self.print_time, eventtime)
-        buffer_time = self.print_time - self.mcu.estimated_print_time(eventtime)
+        buffer_time = self.print_time - \
+            self.mcu.estimated_print_time(eventtime)
         is_active = buffer_time > -60. or not self.special_queuing_state
         if self.special_queuing_state == "Drip":
             buffer_time = 0.

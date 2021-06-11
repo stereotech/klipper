@@ -223,7 +223,6 @@ class PrinterHoming:
                 axes.append(ax)
         homing_state = Homing(self.printer)
         homing_state.set_axes(axes)
-
         try:
             kin.home(homing_state)
         except self.printer.command_error:
