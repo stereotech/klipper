@@ -94,7 +94,7 @@ class CartKinematics:
                 self._activate_carriage(1)
                 self._home_axis(homing_state, axis, dc2)
                 self._activate_carriage(altc)
-            elif axis < len(self.rails):
+            else:
                 self._home_axis(homing_state, axis, self.rails[axis])
 
     def _motor_off(self, print_time):
