@@ -10,7 +10,7 @@
             "args": [
                 "-d",
                 "dict/",
-                "test/klippy/extruders.test"
+                "test/klippy/manual_stepper.test"
             ]
         },
         {
