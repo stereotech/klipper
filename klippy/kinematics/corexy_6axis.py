@@ -5,6 +5,7 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging, math
 import stepper
+from axis import Axis
 
 
 class CoreXY6AxisKinematics:
@@ -37,7 +38,7 @@ class CoreXY6AxisKinematics:
             'max_z_velocity', max_velocity, above=0., maxval=max_velocity)
         self.max_z_accel = config.getfloat(
             'max_z_accel', max_accel, above=0., maxval=max_accel)
-        self.limits = [(1.0, -1.0)] * 3
+        self.limits = [(1.0, -1.0)] * 6
         ranges = [r.get_range() for r in self.rails]
         self.axes_min = toolhead.Coord(*[r[0] for r in ranges], e=0.)
         self.axes_max = toolhead.Coord(*[r[1] for r in ranges], e=0.)
@@ -47,8 +48,8 @@ class CoreXY6AxisKinematics:
 
     def calc_position(self, stepper_positions):
         pos = [stepper_positions[rail.get_name()] for rail in self.rails]
-        return [0.5 * (pos[0] + pos[1]), 0.5 * (pos[0] - pos[1]), pos[2],
-                pos[3], pos[4], pos[5]]
+        return [0.5 * (pos[Axis.X_AXIS] + pos[Axis.Y_AXIS]), 0.5 * (pos[Axis.X_AXIS] - pos[Axis.Y_AXIS]), pos[Axis.Z_AXIS],
+                pos[Axis.A_AXIS], pos[Axis.B_AXIS], pos[Axis.C_AXIS]]
 
     def set_position(self, newpos, homing_axes):
         for i, rail in enumerate(self.rails):
@@ -78,7 +79,7 @@ class CoreXY6AxisKinematics:
             homing_state.home_rails([rail], forcepos, homepos)
 
     def _motor_off(self, print_time):
-        self.limits = [(1.0, -1.0)] * 3
+        self.limits = [(1.0, -1.0)] * 6
 
     def _check_endstops(self, move):
         end_pos = move.end_pos
