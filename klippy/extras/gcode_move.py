@@ -46,6 +46,11 @@ class GCodeMove:
         self.speed = 25.
         self.speed_factor = 1. / 60.
         self.extrude_factor = 1.
+        # Multiple coordinate systems
+        self.wcs_offsets = []
+        for wcs_index in range(9):
+            self.wcs_offsets.append((0., 0., 0.))
+        self.current_wcs = 0
         # G-Code state
         self.saved_states = {}
         self.move_transform = self.move_with_transform = None
