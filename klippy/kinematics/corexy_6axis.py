@@ -3,7 +3,8 @@
 # Copyright (C) 2017-2021  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import logging, math
+import logging
+import math
 import stepper
 from axis import Axis
 
@@ -68,13 +69,16 @@ class CoreXY6AxisKinematics:
             # Determine movement
             position_min, position_max = rail.get_range()
             hi = rail.get_homing_info()
-            homepos = [None, None, None, None]
-            homepos[axis] = hi.position_endstop
+            homepos = [None, None, None, None, None, None, None]
+            if hi.position_endstop:
+                homepos[axis] = hi.position_endstop
+            else:
+                homepos[axis] = 0.
             forcepos = list(homepos)
             if hi.positive_dir:
-                forcepos[axis] -= 1.5 * (hi.position_endstop - position_min)
+                forcepos[axis] -= 1.5 * (homepos[axis] - position_min)
             else:
-                forcepos[axis] += 1.5 * (position_max - hi.position_endstop)
+                forcepos[axis] += 1.5 * (position_max - homepos[axis])
             # Perform homing
             homing_state.home_rails([rail], forcepos, homepos)
 
@@ -98,14 +102,15 @@ class CoreXY6AxisKinematics:
                 or ypos < limits[1][0] or ypos > limits[1][1]):
             self._check_endstops(move)
         if not move.axes_d[2] and not move.axes_d[3] and not move.axes_d[
-            4] and not move.axes_d[5]:
+                4] and not move.axes_d[5]:
             # Normal XY move - use defaults
             return
-        # Move with ZABC - update velocity and accel for slower ZABC axis
+        # Move with Z - update velocity and accel for slower Z axis
         self._check_endstops(move)
-        z_ratio = move.move_d / abs(move.axes_d[2])
-        move.limit_speed(
-            self.max_z_velocity * z_ratio, self.max_z_accel * z_ratio)
+        if move.axes_d[2]:
+            z_ratio = move.move_d / abs(move.axes_d[2])
+            move.limit_speed(
+                self.max_z_velocity * z_ratio, self.max_z_accel * z_ratio)
 
     def get_status(self, eventtime):
         axes = [a for a, (l, h) in zip("xyzabc", self.limits) if l <= h]

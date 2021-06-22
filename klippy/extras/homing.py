@@ -145,6 +145,11 @@ class Homing:
     def home_rails(self, rails, forcepos, movepos):
         # Notify of upcoming homing operation
         self.printer.send_event("homing:home_rails_begin", self, rails)
+        if not rails[0].can_home:
+            self.printer.send_event("homing:home_rails_end", self, rails)
+            movepos = self._fill_coord(movepos)
+            self.toolhead.set_position(movepos)
+            return
         # Alter kinematics class to think printer is at forcepos
         homing_axes = [axis for axis in range(6) if forcepos[axis] is not None]
         forcepos = self._fill_coord(forcepos)
