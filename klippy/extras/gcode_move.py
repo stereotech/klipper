@@ -49,7 +49,8 @@ class GCodeMove:
         # Multiple coordinate systems
         self.wcs_offsets = []
         for wcs_index in range(6):
-            self.wcs_offsets.append((0., 0., 0.))
+            wcs_conf = config.getsection('wcs_%d' % wcs_index)
+            self.wcs_offsets.append((wcs_conf.getfloat('x', 0.), wcs_conf.getfloat('y', 0.), wcs_conf.getfloat('z', 0.)))
         self.current_wcs = 0
         wcs_handlers = ['G10', 'G54', 'G55', 'G56', 'G57', 'G58', 'G59']
         for cmd in wcs_handlers:
@@ -327,8 +328,8 @@ class GCodeMove:
         self.current_wcs = 5
 
     def cmd_G10(self, gcmd):
-        offset_mode = gcmd.get('L', 2)
-        n = gcmd.get('P', 0)
+        offset_mode = gcmd.get_int('L', 2)
+        n = gcmd.get_int('P', 0)
         offsets = [gcmd.get_float(a, None) for a in 'XYZ']
         if n == 0:
             n = self.current_wcs
@@ -347,6 +348,16 @@ class GCodeMove:
             for i, offset in enumerate(offsets):
                 if offset is not None:
                     self.wcs_offsets[n][i] += offset
+        configfile = self.printer.lookup_object('configfile')
+        configfile.set('wcs_%d' % n, 'x', self.wcs_offsets[n][0])
+        configfile.set('wcs_%d' % n, 'y', self.wcs_offsets[n][1])
+        configfile.set('wcs_%d' % n, 'z', self.wcs_offsets[n][2])
+
+    def get_wcs(self, wcs):
+        if (wcs < 6):
+            return self.wcs_offsets[wcs]
+        else:
+            return self.wcs_offsets[0]
 
     def _mcs_to_wcs(self, pos):
         return [

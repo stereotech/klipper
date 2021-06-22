@@ -10,7 +10,7 @@
             "args": [
                 "-d",
                 "dict/",
-                "test/klippy/manual_stepper.test"
+                "test/klippy/five_axis.test"
             ]
         },
         {
