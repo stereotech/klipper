@@ -48,9 +48,14 @@ class GCodeMove:
         self.extrude_factor = 1.
         # Multiple coordinate systems
         self.wcs_offsets = []
-        for wcs_index in range(9):
+        for wcs_index in range(6):
             self.wcs_offsets.append((0., 0., 0.))
         self.current_wcs = 0
+        wcs_handlers = ['G10', 'G54', 'G55', 'G56', 'G57', 'G58', 'G59']
+        for cmd in wcs_handlers:
+            func = getattr(self, 'cmd_' + cmd)
+            desc = getattr(self, 'cmd_' + cmd + '_help', None)
+            gcode.register_command(cmd, func, False, desc)
         # G-Code state
         self.saved_states = {}
         self.move_transform = self.move_with_transform = None
@@ -139,7 +144,8 @@ class GCodeMove:
                         self.last_position[pos] += v
                     else:
                         # value relative to base coordinate position
-                        self.last_position[pos] = v + self.base_position[pos]
+                        self.last_position[pos] = v + self.base_position[pos] + \
+                            self.wcs_offsets[self.current_wcs][pos]
             if 'E' in params:
                 v = float(params['E']) * self.extrude_factor
                 if not self.absolute_coord or not self.absolute_extrude:
@@ -301,6 +307,57 @@ class GCodeMove:
                           "gcode homing: %s"
                           % (mcu_pos, stepper_pos, kin_pos, toolhead_pos,
                              gcode_pos, base_pos, homing_pos))
+
+    def cmd_G54(self, gcmd):
+        self.current_wcs = 0
+
+    def cmd_G55(self, gcmd):
+        self.current_wcs = 1
+
+    def cmd_G56(self, gcmd):
+        self.current_wcs = 2
+
+    def cmd_G57(self, gcmd):
+        self.current_wcs = 3
+
+    def cmd_G58(self, gcmd):
+        self.current_wcs = 4
+
+    def cmd_G59(self, gcmd):
+        self.current_wcs = 5
+
+    def cmd_G10(self, gcmd):
+        offset_mode = gcmd.get('L', 2)
+        n = gcmd.get('P', 0)
+        offsets = [gcmd.get_float(a, None) for a in 'XYZ']
+        if n == 0:
+            n = self.current_wcs
+        else:
+            n = n - 1
+        if offset_mode == 20:
+            pos = self._mcs_to_wcs(self.last_position)
+            for i, offset in enumerate(offsets):
+                if offset is not None:
+                    self.wcs_offsets[n][i] -= offset - pos[i]
+        elif self.absolute_coord:
+            for i, offset in enumerate(offsets):
+                if offset is not None:
+                    self.wcs_offsets[n][i] = offset
+        else:
+            for i, offset in enumerate(offsets):
+                if offset is not None:
+                    self.wcs_offsets[n][i] += offset
+
+    def _mcs_to_wcs(self, pos):
+        return [
+            pos[0] - self.wcs_offsets[self.current_wcs][0],
+            pos[1] - self.wcs_offsets[self.current_wcs][1],
+            pos[2] - self.wcs_offsets[self.current_wcs][2],
+            pos[3],
+            pos[4],
+            pos[5],
+            pos[6]
+        ]
 
 
 def load_config(config):
