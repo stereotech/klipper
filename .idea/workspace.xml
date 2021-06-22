@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f2b6adf0-f1a2-4dd5-a54c-77d6dd5494c3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/klippy/kinematics/axis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/klippy/extruders.test" beforeDir="false" afterPath="$PROJECT_DIR$/test/klippy/extruders.test" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klippy/extras/gcode_move.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/extras/gcode_move.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klippy/kinematics/corexy_6axis.py" beforeDir="false" afterPath="$PROJECT_DIR$/klippy/kinematics/corexy_6axis.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,7 +29,9 @@
     <option name="selectedIndex" value="1" />
   </component>
   <component name="ProjectId" id="1tQsCXS2R6ObZUXpjmCoLWYlWbT" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
