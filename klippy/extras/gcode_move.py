@@ -50,7 +50,8 @@ class GCodeMove:
         self.wcs_offsets = []
         for wcs_index in range(6):
             wcs_conf = config.getsection('wcs_%d' % wcs_index)
-            self.wcs_offsets.append((wcs_conf.getfloat('x', 0.), wcs_conf.getfloat('y', 0.), wcs_conf.getfloat('z', 0.)))
+            self.wcs_offsets.append([wcs_conf.getfloat(
+                'x', 0.), wcs_conf.getfloat('y', 0.), wcs_conf.getfloat('z', 0.)])
         self.current_wcs = 0
         wcs_handlers = ['G10', 'G54', 'G55', 'G56', 'G57', 'G58', 'G59']
         for cmd in wcs_handlers:
@@ -145,8 +146,9 @@ class GCodeMove:
                         self.last_position[pos] += v
                     else:
                         # value relative to base coordinate position
-                        self.last_position[pos] = v + self.base_position[pos] + \
-                            self.wcs_offsets[self.current_wcs][pos]
+                        self.last_position[pos] = v + self.base_position[pos]
+                        if pos < 3:
+                            self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
             if 'E' in params:
                 v = float(params['E']) * self.extrude_factor
                 if not self.absolute_coord or not self.absolute_extrude:
