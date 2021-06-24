@@ -58,6 +58,12 @@ class GCodeMove:
             func = getattr(self, 'cmd_' + cmd)
             desc = getattr(self, 'cmd_' + cmd + '_help', None)
             gcode.register_command(cmd, func, False, desc)
+        # Homing offsets
+        homing_offset_conf = config.getsection('homing_offsets')
+        for pos, axis in enumerate('xyzabce'):
+            offset = homing_offset_conf.getfloat(axis, 0.)
+            self.base_position[pos] += offset
+            self.homing_position[pos] = offset
         # G-Code state
         self.saved_states = {}
         self.move_transform = self.move_with_transform = None
@@ -238,6 +244,9 @@ class GCodeMove:
             move_delta[pos] = delta
             self.base_position[pos] += delta
             self.homing_position[pos] = offset
+            configfile = self.printer.lookup_object('configfile')
+            configfile.set('homing_offsets', axis.lower(), offset)
+
         # Move the toolhead the given offset if requested
         if gcmd.get_int('MOVE', 0):
             speed = gcmd.get_float('MOVE_SPEED', self.speed, above=0.)
