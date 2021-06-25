@@ -4,6 +4,9 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
+import math
+
+DEG_TO_RAD = 0.01745329252
 
 
 class GCodeMove:
@@ -58,6 +61,16 @@ class GCodeMove:
             func = getattr(self, 'cmd_' + cmd)
             desc = getattr(self, 'cmd_' + cmd + '_help', None)
             gcode.register_command(cmd, func, False, desc)
+        # Workpiece compensation
+        workpiece_compensation_config = config.getsection(
+            'workpiece_compensation')
+        self.mm_per_arc_segment = workpiece_compensation_config.getfloat(
+            'resolution', 1., above=0.0)
+        self.compensation_enabled = False
+        gcode.register_command('G43', self.cmd_ENABLE_WORKPIECE_COMPENSATION,
+                               desc=self.cmd_ENABLE_WORKPIECE_COMPENSATION_help)
+        gcode.register_command('G40', self.cmd_DISABLE_WORKPIECE_COMPENSATION,
+                               desc=self.cmd_DISABLE_WORKPIECE_COMPENSATION_help)
         # Homing offsets
         homing_offset_conf = config.getsection('homing_offsets')
         for pos, axis in enumerate('xyzabce'):
@@ -141,38 +154,42 @@ class GCodeMove:
     # G-Code movement commands
 
     def cmd_G1(self, gcmd):
-        # Move
-        params = gcmd.get_command_parameters()
-        try:
-            for pos, axis in enumerate('XYZABC'):
-                if axis in params:
-                    v = float(params[axis])
-                    if not self.absolute_coord:
+        if self.compensation_enabled:
+            self.process_move_with_compensation(gcmd)
+        else:
+            # Move
+            params = gcmd.get_command_parameters()
+            try:
+                for pos, axis in enumerate('XYZABC'):
+                    if axis in params:
+                        v = float(params[axis])
+                        if not self.absolute_coord:
+                            # value relative to position of last move
+                            self.last_position[pos] += v
+                        else:
+                            # value relative to base coordinate position
+                            self.last_position[pos] = v + \
+                                self.base_position[pos]
+                            if pos < 3:
+                                self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
+                if 'E' in params:
+                    v = float(params['E']) * self.extrude_factor
+                    if not self.absolute_coord or not self.absolute_extrude:
                         # value relative to position of last move
-                        self.last_position[pos] += v
+                        self.last_position[6] += v
                     else:
                         # value relative to base coordinate position
-                        self.last_position[pos] = v + self.base_position[pos]
-                        if pos < 3:
-                            self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
-            if 'E' in params:
-                v = float(params['E']) * self.extrude_factor
-                if not self.absolute_coord or not self.absolute_extrude:
-                    # value relative to position of last move
-                    self.last_position[6] += v
-                else:
-                    # value relative to base coordinate position
-                    self.last_position[6] = v + self.base_position[6]
-            if 'F' in params:
-                gcode_speed = float(params['F'])
-                if gcode_speed <= 0.:
-                    raise gcmd.error("Invalid speed in '%s'"
-                                     % (gcmd.get_commandline(),))
-                self.speed = gcode_speed * self.speed_factor
-        except ValueError as e:
-            raise gcmd.error("Unable to parse move '%s'"
-                             % (gcmd.get_commandline(),))
-        self.move_with_transform(self.last_position, self.speed)
+                        self.last_position[6] = v + self.base_position[6]
+                if 'F' in params:
+                    gcode_speed = float(params['F'])
+                    if gcode_speed <= 0.:
+                        raise gcmd.error("Invalid speed in '%s'"
+                                         % (gcmd.get_commandline(),))
+                    self.speed = gcode_speed * self.speed_factor
+            except ValueError as e:
+                raise gcmd.error("Unable to parse move '%s'"
+                                 % (gcmd.get_commandline(),))
+            self.move_with_transform(self.last_position, self.speed)
     # G-Code coordinate manipulation
 
     def cmd_G20(self, gcmd):
@@ -380,6 +397,144 @@ class GCodeMove:
             pos[5],
             pos[6]
         ]
+
+    def cmd_ENABLE_WORKPIECE_COMPENSATION(self, gcmd):
+        self.compensation_enabled = True
+    cmd_ENABLE_WORKPIECE_COMPENSATION_help = "Enable workpiece compensation"
+
+    def cmd_DISABLE_WORKPIECE_COMPENSATION(self, gcmd):
+        self.compensation_enabled = False
+    cmd_DISABLE_WORKPIECE_COMPENSATION_help = "Disable workpiece compensation"
+
+    def _plan_arc(self, current_pos, target_pos, offset):
+        # Radius vector from center to current location
+        linear_x = target_pos[0] - current_pos[0]
+        linear_a = target_pos[3] - current_pos[3]
+        linear_b = target_pos[4] - current_pos[4]
+        linear_c = target_pos[5] - current_pos[5]
+
+        r_Y = -offset[1]
+        r_Z = -offset[2]
+
+        # Determine angular travel
+        center_Y = current_pos[1] - r_Y
+        center_Z = current_pos[2] - r_Z
+
+        angular_travel = DEG_TO_RAD * (target_pos[3] - current_pos[3])
+        angular_target = DEG_TO_RAD * target_pos[3]
+        linear_dy = target_pos[1] - current_pos[1]
+        linear_dz = target_pos[2] - current_pos[2]
+        cos_a_target = math.cos(angular_target)
+        sin_a_target = math.sin(angular_target)
+        linear_y = linear_dy * cos_a_target - linear_dz * sin_a_target
+        linear_z = linear_dy * sin_a_target + linear_dz * cos_a_target
+
+        cos_a_travel = math.cos(angular_travel)
+        sin_a_travel = math.sin(angular_travel)
+        rt_Y = r_Y * cos_a_travel - r_Z * sin_a_travel
+        rt_Z = r_Y * sin_a_travel + r_Z * cos_a_travel
+
+        compensated_target = list(target_pos)
+        compensated_target[1] = center_Y + rt_Y + linear_y
+        compensated_target[2] = center_Z + rt_Z + linear_z
+
+        radius = math.hypot(r_Y, r_Z)
+        ellipse_length = math.sqrt(
+            (radius + linear_y) ** 2 + (radius + linear_z) ** 2)
+        mm_of_travel = math.hypot(
+            angular_travel * ellipse_length, math.fabs(linear_x))
+        segments = max(1., math.floor(mm_of_travel / self.mm_per_arc_segment))
+        theta_per_segment = angular_travel / segments
+        linear_per_segment = [linear_x / segments,
+                              linear_y / segments,
+                              linear_z / segments,
+                              linear_a / segments,
+                              linear_b / segments,
+                              linear_c / segments]
+        coords = []
+        for i in range(1, int(segments)):
+            dist = [0., 0., 0., 0., 0., 0.]
+            for axis, linear in enumerate(linear_per_segment):
+                dist[axis] = i * linear
+            cos_Ti = math.cos(i * theta_per_segment)
+            sin_Ti = math.sin(i * theta_per_segment)
+            r_Y = -offset[1] * cos_Ti + offset[2] * sin_Ti
+            r_Z = -offset[1] * sin_Ti - offset[2] * cos_Ti
+            c = [current_pos[0] + dist[0],
+                 center_Y + r_Y + dist[1],
+                 center_Z + r_Z + dist[2],
+                 current_pos[3] + dist[3],
+                 current_pos[4] + dist[4],
+                 current_pos[5] + dist[5]]
+            coords.append(c)
+
+        coords.append(compensated_target)
+        return coords
+
+    def _calc_compensation(self, pos):
+        angular_pos = DEG_TO_RAD * \
+            (self.last_position[3] - self.base_position[3])
+        cos_a = math.cos(angular_pos)
+        sin_a = math.sin(angular_pos)
+
+        wcs_1 = self.get_wcs(1)
+        wcs_2 = self.get_wcs(2)
+
+        offset = [0., 0., 0.]
+        offset_y = wcs_1[1] - self.last_position[1]
+        offset_z = wcs_2[2] - self.last_position[2]
+        offset[1] = offset_y * cos_a - offset_z * sin_a
+        offset[2] = offset_y * sin_a + offset_z * cos_a
+
+        coords = self._plan_arc(self.last_position, pos, offset)
+        e_per_move = e_base = 0.
+        if self.absolute_extrude:
+            e_base = self.last_position[6]
+        e_per_move = (pos[6] - e_base) / len(coords)
+
+        for coord in coords:
+            if e_per_move:
+                coord.append(e_base + e_per_move)
+                if self.absolute_extrude:
+                    e_base += e_per_move
+        return coords
+
+    def process_move_with_compensation(self, gcmd):
+        params = gcmd.get_command_parameters()
+        try:
+            new_position = list(self.last_position)
+            for pos, axis in enumerate('XYZABC'):
+                if axis in params:
+                    v = float(params[axis])
+                    if not self.absolute_coord:
+                        # value relative to position of last move
+                        new_position[pos] += v
+                    else:
+                        # value relative to base coordinate position
+                        new_position[pos] = v + self.base_position[pos]
+                        if pos < 3:
+                            new_position[pos] += self.wcs_offsets[self.current_wcs][pos]
+            if 'E' in params:
+                v = float(params['E']) * self.extrude_factor
+                if not self.absolute_coord or not self.absolute_extrude:
+                    # value relative to position of last move
+                    new_position[6] += v
+                else:
+                    # value relative to base coordinate position
+                    new_position[6] = v + self.base_position[6]
+            if 'F' in params:
+                gcode_speed = float(params['F'])
+                if gcode_speed <= 0.:
+                    raise gcmd.error("Invalid speed in '%s'"
+                                     % (gcmd.get_commandline(),))
+                self.speed = gcode_speed * self.speed_factor
+        except ValueError as e:
+            raise gcmd.error("Unable to parse move '%s'"
+                             % (gcmd.get_commandline(),))
+        positions = self._calc_compensation(new_position)
+        for position in positions:
+            self.move_with_transform(position, self.speed)
+        self.last_position = new_position
 
 
 def load_config(config):
