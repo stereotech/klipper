@@ -497,6 +497,8 @@ class GCodeMove:
                 coord.append(e_base + e_per_move)
                 if self.absolute_extrude:
                     e_base += e_per_move
+            else:
+                coord.append(0.0)
         return coords
 
     def process_move_with_compensation(self, gcmd):
