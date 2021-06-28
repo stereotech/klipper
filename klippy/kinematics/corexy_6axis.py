@@ -49,7 +49,8 @@ class CoreXY6AxisKinematics:
 
     def calc_position(self, stepper_positions):
         pos = [stepper_positions[rail.get_name()] for rail in self.rails]
-        return [0.5 * (pos[Axis.X_AXIS] + pos[Axis.Y_AXIS]), 0.5 * (pos[Axis.X_AXIS] - pos[Axis.Y_AXIS]), pos[Axis.Z_AXIS],
+        return [0.5 * (pos[Axis.X_AXIS] + pos[Axis.Y_AXIS]), 0.5 *
+                (pos[Axis.X_AXIS] - pos[Axis.Y_AXIS]), pos[Axis.Z_AXIS],
                 pos[Axis.A_AXIS], pos[Axis.B_AXIS], pos[Axis.C_AXIS]]
 
     def set_position(self, newpos, homing_axes):
