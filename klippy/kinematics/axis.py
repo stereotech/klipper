@@ -3,9 +3,8 @@ class Axis:
     Y_AXIS = 1
     Z_AXIS = 2
     A_AXIS = 3
-    B_AXIS = 4
-    C_AXIS = 5
-    E_AXIS = 6
+    C_AXIS = 4
+    E_AXIS = 5
 
     def __init__(self):
         pass

@@ -60,9 +60,9 @@ defs_itersolve = """
     void itersolve_set_stepcompress(struct stepper_kinematics *sk
         , struct stepcompress *sc, double step_dist);
     double itersolve_calc_position_from_coord(struct stepper_kinematics *sk,
-    double x, double y, double z, double a, double b, double c);
+    double x, double y, double z, double a, double c);
     void itersolve_set_position(struct stepper_kinematics *sk, double x,
-    double y, double z, double a, double b, double c);
+    double y, double z, double a, double c);
     double itersolve_get_commanded_pos(struct stepper_kinematics *sk);
 """
 
@@ -70,9 +70,9 @@ defs_trapq = """
     void trapq_append(struct trapq *tq, double print_time
                   , double accel_t, double cruise_t, double decel_t
                   , double start_pos_x, double start_pos_y, double start_pos_z
-                  , double start_pos_a, double start_pos_b, double start_pos_c
+                  , double start_pos_a, double start_pos_c
                   , double axes_r_x, double axes_r_y, double axes_r_z
-                  , double axes_r_a, double axes_r_b, double axes_r_c
+                  , double axes_r_a, double axes_r_c
                   , double start_v, double cruise_v, double accel);
     struct trapq *trapq_alloc(void);
     void trapq_free(struct trapq *tq);

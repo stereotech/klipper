@@ -16,7 +16,7 @@ class CoreXY6AxisKinematics:
                       stepper.PrinterRail(config.getsection('stepper_y')),
                       stepper.LookupMultiRail(config.getsection('stepper_z')),
                       stepper.PrinterRail(config.getsection('stepper_a')),
-                      stepper.PrinterRail(config.getsection('stepper_b')),
+                      # stepper.PrinterRail(config.getsection('stepper_b')),
                       stepper.PrinterRail(config.getsection('stepper_c'))]
         self.rails[0].get_endstops()[0][0].add_stepper(
             self.rails[1].get_steppers()[0])
@@ -26,8 +26,8 @@ class CoreXY6AxisKinematics:
         self.rails[1].setup_itersolve('corexy_stepper_alloc', '-')
         self.rails[2].setup_itersolve('cartesian_stepper_alloc', 'z')
         self.rails[3].setup_itersolve('cartesian_stepper_alloc', 'a')
-        self.rails[4].setup_itersolve('cartesian_stepper_alloc', 'b')
-        self.rails[5].setup_itersolve('cartesian_stepper_alloc', 'c')
+        #self.rails[4].setup_itersolve('cartesian_stepper_alloc', 'b')
+        self.rails[4].setup_itersolve('cartesian_stepper_alloc', 'c')
         for s in self.get_steppers():
             s.set_trapq(toolhead.get_trapq())
             toolhead.register_step_generator(s.generate_steps)
@@ -39,7 +39,7 @@ class CoreXY6AxisKinematics:
             'max_z_velocity', max_velocity, above=0., maxval=max_velocity)
         self.max_z_accel = config.getfloat(
             'max_z_accel', max_accel, above=0., maxval=max_accel)
-        self.limits = [(1.0, -1.0)] * 6
+        self.limits = [(1.0, -1.0)] * 5
         ranges = [r.get_range() for r in self.rails]
         self.axes_min = toolhead.Coord(*[r[0] for r in ranges], e=0.)
         self.axes_max = toolhead.Coord(*[r[1] for r in ranges], e=0.)
@@ -51,7 +51,7 @@ class CoreXY6AxisKinematics:
         pos = [stepper_positions[rail.get_name()] for rail in self.rails]
         return [0.5 * (pos[Axis.X_AXIS] + pos[Axis.Y_AXIS]), 0.5 *
                 (pos[Axis.X_AXIS] - pos[Axis.Y_AXIS]), pos[Axis.Z_AXIS],
-                pos[Axis.A_AXIS], pos[Axis.B_AXIS], pos[Axis.C_AXIS]]
+                pos[Axis.A_AXIS], pos[Axis.C_AXIS]]
 
     def set_position(self, newpos, homing_axes):
         for i, rail in enumerate(self.rails):
@@ -70,7 +70,7 @@ class CoreXY6AxisKinematics:
             # Determine movement
             position_min, position_max = rail.get_range()
             hi = rail.get_homing_info()
-            homepos = [None, None, None, None, None, None, None]
+            homepos = [None, None, None, None, None, None]
             if hi.position_endstop:
                 homepos[axis] = hi.position_endstop
             else:
@@ -88,7 +88,7 @@ class CoreXY6AxisKinematics:
 
     def _check_endstops(self, move):
         end_pos = move.end_pos
-        for i in (0, 1, 2, 3, 4):  # except C axis
+        for i in (0, 1, 2, 3):  # except C axis
             if (move.axes_d[i]
                     and (end_pos[i] < self.limits[i][0]
                          or end_pos[i] > self.limits[i][1])):
@@ -114,7 +114,7 @@ class CoreXY6AxisKinematics:
                 self.max_z_velocity * z_ratio, self.max_z_accel * z_ratio)
 
     def get_status(self, eventtime):
-        axes = [a for a, (l, h) in zip("xyzabc", self.limits) if l <= h]
+        axes = [a for a, (l, h) in zip("xyzac", self.limits) if l <= h]
         return {
             'homed_axes': "".join(axes),
             'axis_minimum': self.axes_min,

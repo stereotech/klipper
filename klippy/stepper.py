@@ -109,14 +109,14 @@ class MCU_stepper:
         ffi_main, ffi_lib = chelper.get_ffi()
         return ffi_lib.itersolve_calc_position_from_coord(
             self._stepper_kinematics, coord[0], coord[1], coord[2], coord[3],
-            coord[4], coord[5])
+            coord[4])
 
     def set_position(self, coord):
         opos = self.get_commanded_position()
         sk = self._stepper_kinematics
         ffi_main, ffi_lib = chelper.get_ffi()
         ffi_lib.itersolve_set_position(sk, coord[0], coord[1], coord[2],
-                                       coord[3], coord[4], coord[5])
+                                       coord[3], coord[4])
         self._mcu_position_offset += opos - self.get_commanded_position()
 
     def get_commanded_position(self):

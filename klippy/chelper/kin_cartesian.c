@@ -36,12 +36,6 @@ cart_stepper_a_calc_position(struct stepper_kinematics *sk, struct move *m, doub
 }
 
 static double
-cart_stepper_b_calc_position(struct stepper_kinematics *sk, struct move *m, double move_time)
-{
-    return move_get_coord(m, move_time).b;
-}
-
-static double
 cart_stepper_c_calc_position(struct stepper_kinematics *sk, struct move *m, double move_time)
 {
     return move_get_coord(m, move_time).c;
@@ -71,11 +65,6 @@ cartesian_stepper_alloc(char axis)
     {
         sk->calc_position_cb = cart_stepper_a_calc_position;
         sk->active_flags = AF_A;
-    }
-    else if (axis == 'b')
-    {
-        sk->calc_position_cb = cart_stepper_b_calc_position;
-        sk->active_flags = AF_B;
     }
     else if (axis == 'c')
     {

@@ -25,17 +25,16 @@ class Move:
         self.timing_callbacks = []
         velocity = min(speed, toolhead.max_velocity)
         self.axes_d = axes_d = [end_pos[i] - start_pos[i] for i in
-                                (0, 1, 2, 3, 4, 5, 6)]
+                                (0, 1, 2, 3, 4, 5)]
         self.is_kinematic_move = True
-        self.move_d = move_d = math.sqrt(sum([d * d for d in axes_d[:6]]))
+        self.move_d = move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
         if move_d < .000000001:
             # Extrude only move
             self.end_pos = (
                 start_pos[0], start_pos[1], start_pos[2], start_pos[3],
-                start_pos[4], start_pos[5], end_pos[6])
-            axes_d[0] = axes_d[1] = axes_d[2] = axes_d[3] = axes_d[4] = axes_d[
-                5] = 0.
-            self.move_d = move_d = abs(axes_d[6])
+                start_pos[4], start_pos[5])
+            axes_d[0] = axes_d[1] = axes_d[2] = axes_d[3] = axes_d[4] = 0.
+            self.move_d = move_d = abs(axes_d[5])
             inv_move_d = 0.
             if move_d:
                 inv_move_d = 1. / move_d
@@ -67,7 +66,7 @@ class Move:
     def move_error(self, msg="Move out of range"):
         ep = self.end_pos
         m = "%s: %.3f %.3f %.3f %.3f %.3f %.3f [%.3f]" % (
-            msg, ep[0], ep[1], ep[2], ep[3], ep[4], ep[5], ep[6])
+            msg, ep[0], ep[1], ep[2], ep[3], ep[4], ep[5])
         return self.toolhead.printer.command_error(m)
 
     def calc_junction(self, prev_move):
@@ -82,8 +81,7 @@ class Move:
                                + axes_r[1] * prev_axes_r[1]
                                + axes_r[2] * prev_axes_r[2]
                                + axes_r[3] * prev_axes_r[3]
-                               + axes_r[4] * prev_axes_r[4]
-                               + axes_r[5] * prev_axes_r[5])
+                               + axes_r[4] * prev_axes_r[4])
         if junction_cos_theta > 0.999999:
             return
         junction_cos_theta = max(junction_cos_theta, -0.999999)
@@ -233,7 +231,7 @@ class ToolHead:
         if self.mcu.is_fileoutput():
             self.can_pause = False
         self.move_queue = MoveQueue(self)
-        self.commanded_pos = [0., 0., 0., 0., 0., 0., 0.]
+        self.commanded_pos = [0., 0., 0., 0., 0., 0.]
         self.printer.register_event_handler("klippy:shutdown",
                                             self._handle_shutdown)
         # Velocity and acceleration control
@@ -350,11 +348,11 @@ class ToolHead:
                     self.trapq, next_move_time,
                     move.accel_t, move.cruise_t, move.decel_t,
                     move.start_pos[0], move.start_pos[1], move.start_pos[2],
-                    move.start_pos[3], move.start_pos[4], move.start_pos[5],
+                    move.start_pos[3], move.start_pos[4],
                     move.axes_r[0], move.axes_r[1], move.axes_r[2],
-                    move.axes_r[3], move.axes_r[4], move.axes_r[5],
+                    move.axes_r[3], move.axes_r[4],
                     move.start_v, move.cruise_v, move.accel)
-            if move.axes_d[3]:
+            if move.axes_d[5]:
                 self.extruder.move(next_move_time, move)
             next_move_time = (next_move_time + move.accel_t
                               + move.cruise_t + move.decel_t)
@@ -452,7 +450,7 @@ class ToolHead:
             return
         if move.is_kinematic_move:
             self.kin.check_move(move)
-        if move.axes_d[6]:
+        if move.axes_d[5]:
             self.extruder.check_move(move)
         self.commanded_pos[:] = move.end_pos
         self.move_queue.add_move(move)
@@ -483,7 +481,7 @@ class ToolHead:
 
     def set_extruder(self, extruder, extrude_pos):
         self.extruder = extruder
-        self.commanded_pos[6] = extrude_pos
+        self.commanded_pos[5] = extrude_pos
 
     def get_extruder(self):
         return self.extruder

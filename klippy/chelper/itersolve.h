@@ -9,8 +9,7 @@ enum
     AF_Y = 1 << 1,
     AF_Z = 1 << 2,
     AF_A = 1 << 3,
-    AF_B = 1 << 4,
-    AF_C = 1 << 5,
+    AF_C = 1 << 4,
 };
 
 struct stepper_kinematics;
@@ -44,10 +43,10 @@ void itersolve_set_stepcompress(struct stepper_kinematics *sk,
                                 struct stepcompress *sc, double step_dist);
 double itersolve_calc_position_from_coord(struct stepper_kinematics *sk,
                                           double x, double y, double z,
-                                          double a, double b, double c);
+                                          double a, double c);
 void itersolve_set_position(struct stepper_kinematics *sk,
                             double x, double y, double z,
-                            double a, double b, double c);
+                            double a, double c);
 double itersolve_get_commanded_pos(struct stepper_kinematics *sk);
 
 #endif // itersolve.h

@@ -2,7 +2,7 @@
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticMode": "openFilesOnly",
     "python.analysis.autoSearchPaths": true,
-    "python.languageServer": "Pylance",
+    "python.languageServer": "Jedi",
     "python.analysis.extraPaths": [
         "C:\\Python27\\Lib\\site-packages"
     ],

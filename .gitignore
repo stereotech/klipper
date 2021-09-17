@@ -8,3 +8,5 @@ klippy/.version
 _test_*
 *.dict
 *.bak
+klippy-env/
+printer.cfg

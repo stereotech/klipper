@@ -43,9 +43,9 @@ class GCodeMove:
         self.Coord = gcode.Coord
         # G-Code coordinate manipulation
         self.absolute_coord = self.absolute_extrude = True
-        self.base_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.last_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.homing_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.base_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.last_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.homing_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.speed = 25.
         self.speed_factor = 1. / 60.
         self.extrude_factor = 1.
@@ -80,7 +80,7 @@ class GCodeMove:
         # G-Code state
         self.saved_states = {}
         self.move_transform = self.move_with_transform = None
-        self.position_with_transform = (lambda: [0., 0., 0., 0., 0., 0., 0.])
+        self.position_with_transform = (lambda: [0., 0., 0., 0., 0., 0.])
 
     def _handle_ready(self):
         self.is_printer_ready = True
@@ -105,7 +105,7 @@ class GCodeMove:
     def _handle_activate_extruder(self):
         self.reset_last_position()
         self.extrude_factor = 1.
-        self.base_position[6] = self.last_position[6]
+        self.base_position[5] = self.last_position[5]
 
     def _handle_home_rails_end(self, homing_state, rails):
         self.reset_last_position()
@@ -126,7 +126,7 @@ class GCodeMove:
 
     def _get_gcode_position(self):
         p = [lp - bp for lp, bp in zip(self.last_position, self.base_position)]
-        p[6] /= self.extrude_factor
+        p[5] /= self.extrude_factor
         return p
 
     def _get_gcode_speed(self):
@@ -160,7 +160,7 @@ class GCodeMove:
             # Move
             params = gcmd.get_command_parameters()
             try:
-                for pos, axis in enumerate('XYZABC'):
+                for pos, axis in enumerate('XYZAC'):
                     if axis in params:
                         v = float(params[axis])
                         if not self.absolute_coord:
@@ -176,10 +176,10 @@ class GCodeMove:
                     v = float(params['E']) * self.extrude_factor
                     if not self.absolute_coord or not self.absolute_extrude:
                         # value relative to position of last move
-                        self.last_position[6] += v
+                        self.last_position[5] += v
                     else:
                         # value relative to base coordinate position
-                        self.last_position[6] = v + self.base_position[6]
+                        self.last_position[5] = v + self.base_position[5]
                 if 'F' in params:
                     gcode_speed = float(params['F'])
                     if gcode_speed <= 0.:
@@ -218,20 +218,20 @@ class GCodeMove:
 
     def cmd_G92(self, gcmd):
         # Set position
-        offsets = [gcmd.get_float(a, None) for a in 'XYZABCE']
+        offsets = [gcmd.get_float(a, None) for a in 'XYZACE']
         for i, offset in enumerate(offsets):
             if offset is not None:
-                if i == 6:
+                if i == 5:
                     offset *= self.extrude_factor
                 self.base_position[i] = self.last_position[i] - offset
-        if offsets == [None, None, None, None, None, None, None]:
+        if offsets == [None, None, None, None, None, None]:
             self.base_position = list(self.last_position)
 
     def cmd_M114(self, gcmd):
         # Get Current Position
         p = self._get_gcode_position()
         gcmd.respond_raw(
-            "X:%.3f Y:%.3f Z:%.3f A:%.3f B:%.3f C:%.3f E:%.3f" % tuple(p))
+            "X:%.3f Y:%.3f Z:%.3f A:%.3f C:%.3f E:%.3f" % tuple(p))
 
     def cmd_M220(self, gcmd):
         # Set speed factor override percentage
@@ -243,14 +243,14 @@ class GCodeMove:
         # Set extrude factor override percentage
         new_extrude_factor = gcmd.get_float('S', 100., above=0.) / 100.
         last_e_pos = self.last_position[6]
-        e_value = (last_e_pos - self.base_position[6]) / self.extrude_factor
-        self.base_position[6] = last_e_pos - e_value * new_extrude_factor
+        e_value = (last_e_pos - self.base_position[5]) / self.extrude_factor
+        self.base_position[5] = last_e_pos - e_value * new_extrude_factor
         self.extrude_factor = new_extrude_factor
     cmd_SET_GCODE_OFFSET_help = "Set a virtual offset to g-code positions"
 
     def cmd_SET_GCODE_OFFSET(self, gcmd):
-        move_delta = [0., 0., 0., 0., 0., 0., 0.]
-        for pos, axis in enumerate('XYZABCE'):
+        move_delta = [0., 0., 0., 0., 0., 0.]
+        for pos, axis in enumerate('XYZACE'):
             offset = gcmd.get_float(axis, None)
             if offset is None:
                 offset = gcmd.get_float(axis + '_ADJUST', None)
@@ -299,12 +299,12 @@ class GCodeMove:
         self.speed_factor = state['speed_factor']
         self.extrude_factor = state['extrude_factor']
         # Restore the relative E position
-        e_diff = self.last_position[6] - state['last_position'][6]
-        self.base_position[6] += e_diff
+        e_diff = self.last_position[5] - state['last_position'][5]
+        self.base_position[5] += e_diff
         # Move the toolhead back if requested
         if gcmd.get_int('MOVE', 0):
             speed = gcmd.get_float('MOVE_SPEED', self.speed, above=0.)
-            self.last_position[:6] = state['last_position'][:6]
+            self.last_position[:5] = state['last_position'][:5]
             self.move_with_transform(self.last_position, speed)
 
     def cmd_GET_POSITION(self, gcmd):
@@ -317,16 +317,16 @@ class GCodeMove:
                             for s in steppers])
         cinfo = [(s.get_name(), s.get_commanded_position()) for s in steppers]
         stepper_pos = " ".join(["%s:%.6f" % (a, v) for a, v in cinfo])
-        kinfo = zip("XYZABC", kin.calc_position(dict(cinfo)))
+        kinfo = zip("XYZAC", kin.calc_position(dict(cinfo)))
         kin_pos = " ".join(["%s:%.6f" % (a, v) for a, v in kinfo])
         toolhead_pos = " ".join(["%s:%.6f" % (a, v) for a, v in zip(
-            "XYZABCE", toolhead.get_position())])
+            "XYZACE", toolhead.get_position())])
         gcode_pos = " ".join(["%s:%.6f" % (a, v)
-                              for a, v in zip("XYZABCE", self.last_position)])
+                              for a, v in zip("XYZACE", self.last_position)])
         base_pos = " ".join(["%s:%.6f" % (a, v)
-                             for a, v in zip("XYZABCE", self.base_position)])
+                             for a, v in zip("XYZACE", self.base_position)])
         homing_pos = " ".join(["%s:%.6f" % (a, v)
-                               for a, v in zip("XYZABC", self.homing_position)])
+                               for a, v in zip("XYZAC", self.homing_position)])
         gcmd.respond_info("mcu: %s\n"
                           "stepper: %s\n"
                           "kinematic: %s\n"
@@ -394,8 +394,7 @@ class GCodeMove:
             pos[2] - self.wcs_offsets[self.current_wcs][2],
             pos[3],
             pos[4],
-            pos[5],
-            pos[6]
+            pos[5]
         ]
 
     def cmd_ENABLE_WORKPIECE_COMPENSATION(self, gcmd):
@@ -410,7 +409,6 @@ class GCodeMove:
         # Radius vector from center to current location
         linear_x = target_pos[0] - current_pos[0]
         linear_a = target_pos[3] - current_pos[3]
-        linear_b = target_pos[4] - current_pos[4]
         linear_c = target_pos[5] - current_pos[5]
 
         r_Y = -offset[1]
@@ -449,11 +447,10 @@ class GCodeMove:
                               linear_y / segments,
                               linear_z / segments,
                               linear_a / segments,
-                              linear_b / segments,
                               linear_c / segments]
         coords = []
         for i in range(1, int(segments)):
-            dist = [0., 0., 0., 0., 0., 0.]
+            dist = [0., 0., 0., 0., 0.]
             for axis, linear in enumerate(linear_per_segment):
                 dist[axis] = i * linear
             cos_Ti = math.cos(i * theta_per_segment)
@@ -464,8 +461,7 @@ class GCodeMove:
                  center_Y + r_Y + dist[1],
                  center_Z + r_Z + dist[2],
                  current_pos[3] + dist[3],
-                 current_pos[4] + dist[4],
-                 current_pos[5] + dist[5]]
+                 current_pos[4] + dist[4]]
             coords.append(c)
 
         coords.append(compensated_target)
@@ -489,8 +485,8 @@ class GCodeMove:
         coords = self._plan_arc(self.last_position, pos, offset)
         e_per_move = e_base = 0.
         if self.absolute_extrude:
-            e_base = self.last_position[6]
-        e_per_move = (pos[6] - e_base) / len(coords)
+            e_base = self.last_position[5]
+        e_per_move = (pos[5] - e_base) / len(coords)
 
         for coord in coords:
             if e_per_move:
@@ -505,7 +501,7 @@ class GCodeMove:
         params = gcmd.get_command_parameters()
         try:
             new_position = list(self.last_position)
-            for pos, axis in enumerate('XYZABC'):
+            for pos, axis in enumerate('XYZAC'):
                 if axis in params:
                     v = float(params[axis])
                     if not self.absolute_coord:
@@ -520,10 +516,10 @@ class GCodeMove:
                 v = float(params['E']) * self.extrude_factor
                 if not self.absolute_coord or not self.absolute_extrude:
                     # value relative to position of last move
-                    new_position[6] += v
+                    new_position[5] += v
                 else:
                     # value relative to base coordinate position
-                    new_position[6] = v + self.base_position[6]
+                    new_position[5] = v + self.base_position[5]
             if 'F' in params:
                 gcode_speed = float(params['F'])
                 if gcode_speed <= 0.:
