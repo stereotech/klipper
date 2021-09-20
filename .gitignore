@@ -9,4 +9,4 @@ _test_*
 *.dict
 *.bak
 klippy-env/
-printer.cfg
+printer*.cfg

@@ -32,7 +32,7 @@ class Move:
             # Extrude only move
             self.end_pos = (
                 start_pos[0], start_pos[1], start_pos[2], start_pos[3],
-                start_pos[4], start_pos[5])
+                start_pos[4], end_pos[5])
             axes_d[0] = axes_d[1] = axes_d[2] = axes_d[3] = axes_d[4] = 0.
             self.move_d = move_d = abs(axes_d[5])
             inv_move_d = 0.
