@@ -37,7 +37,7 @@ RUN echo 'klippy ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/klippy && \
 # This is to allow the install script to run without error
 RUN ln -s /bin/true /bin/systemctl
 USER klippy
-RUN ./klipper/scripts/install-ubuntu-18.04.sh
+RUN /bin/bash ./klipper/scripts/install-ubuntu-18.04.sh
 # Clean up install script workaround
 RUN sudo rm -f /bin/systemctl
 

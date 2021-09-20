@@ -12,13 +12,14 @@ import math
 #
 # note: only IJ version available
 
+
 class ArcSupport:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.mm_per_arc_segment = config.getfloat('resolution', 1., above=0.0)
 
         self.gcode_move = self.printer.load_object(config, 'gcode_move')
-        self.gcode = self.printer.lookup_object('gcode')
+
         self.gcode.register_command("G2", self.cmd_G2)
         self.gcode.register_command("G3", self.cmd_G2)
 
@@ -93,7 +94,7 @@ class ArcSupport:
 
         if (angular_travel == 0.
             and currentPos[X_AXIS] == targetPos[X_AXIS]
-            and currentPos[Y_AXIS] == targetPos[Y_AXIS]):
+                and currentPos[Y_AXIS] == targetPos[Y_AXIS]):
             # Make a circle if the angular rotation is 0 and the
             # target is current position
             angular_travel = 2. * math.pi
@@ -124,6 +125,7 @@ class ArcSupport:
 
         coords.append(targetPos)
         return coords
+
 
 def load_config(config):
     return ArcSupport(config)

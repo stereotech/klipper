@@ -1,0 +1,45 @@
+{
+    "configurations": [
+        {
+            "name": "Python: Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/test_klippy.py",
+            "console": "integratedTerminal",
+            "python": "/home/ste/klippy-env/bin/python",
+            "args": [
+                "-d",
+                "dict/",
+                "test/klippy/five_axis.test"
+            ]
+        },
+        {
+            "name": "Python: Текущий файл",
+            "type": "python",
+            "request": "launch",
+            "program": "./klippy/klippy.py",
+            "args": [
+                "test/klippy/extruders.cfg",
+                "-i",
+                "test/klippy/extruders.gcode",
+                "-o",
+                "test.serial",
+                "-v",
+                "-d",
+                "out/klipper.dict"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Run klipper",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "program": "${workspaceFolder}/klippy/klippy.py",
+            "args": [
+                "${workspaceFolder}/printer.cfg",
+                "-v"
+            ]
+        }
+    ]
+}
