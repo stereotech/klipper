@@ -29,6 +29,17 @@
                 "out/klipper.dict"
             ],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Run klipper",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "program": "${workspaceFolder}/klippy/klippy.py",
+            "args": [
+                "${workspaceFolder}/printer.cfg",
+                "-v"
+            ]
         }
     ]
 }

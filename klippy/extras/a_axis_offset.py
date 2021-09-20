@@ -11,8 +11,8 @@ class AAxisOffsetCalculation:
         self.gcode_move = self.printer.load_object(config, 'gcode_move')
         self.gcode = self.printer.lookup_object('gcode')
         self.point_coords = [
-            [0., 0., 0., 0., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 0., 0.]
+            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.]
         ]
         self.gcode.register_command('CALC_A_AXIS_OFFSET',
                                     self.cmd_CALC_A_AXIS_OFFSET,
@@ -48,7 +48,7 @@ class AAxisOffsetCalculation:
         offset = self._calc_a_axis_offset(
             self.point_coords[0], self.point_coords[1])
         offset_gcmd = self.gcode.create_gcode_command(
-            'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A': offset})
+            'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A_ADJUST': offset})
         self.gcode_move.cmd_SET_GCODE_OFFSET(offset_gcmd)
 
     cmd_CALC_A_AXIS_OFFSET_help = "Calculate A axis offset"

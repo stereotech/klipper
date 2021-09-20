@@ -220,7 +220,7 @@ class PrinterHoming:
         # Move to origin
         axes = []
         kin = self.printer.lookup_object('toolhead').get_kinematics()
-        for pos, axis in enumerate('XYZABC'):
+        for pos, axis in enumerate('XYZAC'):
             if gcmd.get(axis, None) is not None:
                 axes.append(pos)
         if not axes:

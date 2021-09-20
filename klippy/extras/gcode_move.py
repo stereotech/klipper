@@ -56,7 +56,8 @@ class GCodeMove:
             self.wcs_offsets.append([wcs_conf.getfloat(
                 'x', 0.), wcs_conf.getfloat('y', 0.), wcs_conf.getfloat('z', 0.)])
         self.current_wcs = 0
-        wcs_handlers = ['G10', 'G54', 'G55', 'G56', 'G57', 'G58', 'G59']
+        wcs_handlers = ['G10', 'G54', 'G55',
+                        'G56', 'G57', 'G58', 'G59', 'GET_WCS']
         for cmd in wcs_handlers:
             func = getattr(self, 'cmd_' + cmd)
             desc = getattr(self, 'cmd_' + cmd + '_help', None)
@@ -73,7 +74,7 @@ class GCodeMove:
                                desc=self.cmd_DISABLE_WORKPIECE_COMPENSATION_help)
         # Homing offsets
         homing_offset_conf = config.getsection('homing_offsets')
-        for pos, axis in enumerate('xyzabce'):
+        for pos, axis in enumerate('xyzace'):
             offset = homing_offset_conf.getfloat(axis, 0.)
             self.base_position[pos] += offset
             self.homing_position[pos] = offset
@@ -397,6 +398,17 @@ class GCodeMove:
             pos[5]
         ]
 
+    def cmd_GET_WCS(self, gcmd):
+        current_wcs = " ".join(["G5%d" % (4 + self.current_wcs)])
+        wcs_offsets = " "
+        for wcs_n in range(6):
+            wcs_offsets = wcs_offsets + "G5%d " % (4 + wcs_n) + " ".join(
+                ["%s:%d" % (a, v) for a, v in zip("XYZ", self.wcs_offsets[wcs_n])])
+            wcs_offsets += "\n"
+        gcmd.respond_info("current_wcs: %s\n"
+                          "wcs_offsets: \n"
+                          "%s" % (current_wcs, wcs_offsets))
+
     def cmd_ENABLE_WORKPIECE_COMPENSATION(self, gcmd):
         self.compensation_enabled = True
     cmd_ENABLE_WORKPIECE_COMPENSATION_help = "Enable workpiece compensation"
@@ -415,11 +427,11 @@ class GCodeMove:
         r_Z = -offset[2]
 
         # Determine angular travel
-        center_Y = current_pos[1] - r_Y
-        center_Z = current_pos[2] - r_Z
+        center_Y = self.get_wcs(1)[1]  # current_pos[1] - r_Y
+        center_Z = self.get_wcs(2)[2]  # current_pos[2] - r_Z
 
         angular_travel = DEG_TO_RAD * (target_pos[3] - current_pos[3])
-        angular_target = DEG_TO_RAD * target_pos[3]
+        angular_target = DEG_TO_RAD * (target_pos[3] - self.homing_position[3])
         linear_dy = target_pos[1] - current_pos[1]
         linear_dz = target_pos[2] - current_pos[2]
         cos_a_target = math.cos(angular_target)
@@ -433,6 +445,7 @@ class GCodeMove:
         rt_Z = r_Y * sin_a_travel + r_Z * cos_a_travel
 
         compensated_target = list(target_pos)
+        compensated_target.pop()
         compensated_target[1] = center_Y + rt_Y + linear_y
         compensated_target[2] = center_Z + rt_Z + linear_z
 
@@ -472,15 +485,34 @@ class GCodeMove:
             (self.last_position[3] - self.base_position[3])
         cos_a = math.cos(angular_pos)
         sin_a = math.sin(angular_pos)
+        cos_ma = math.cos(-angular_pos)
+        sin_ma = math.sin(-angular_pos)
 
         wcs_1 = self.get_wcs(1)
         wcs_2 = self.get_wcs(2)
 
+        inverted_last_pos = list(self.last_position)
+        inverted_last_pos[1] = self.last_position[1] * \
+            cos_ma - self.last_position[2] * sin_ma + \
+            wcs_1[1] - cos_ma * wcs_1[1] + sin_ma * wcs_2[2]
+        inverted_last_pos[2] = self.last_position[1] * \
+            sin_ma + self.last_position[2] * cos_ma + \
+            wcs_2[2] - sin_ma * wcs_1[1] - cos_ma * wcs_2[2]
+
         offset = [0., 0., 0.]
-        offset_y = wcs_1[1] - self.last_position[1]
-        offset_z = wcs_2[2] - self.last_position[2]
+        offset_y = wcs_1[1] - inverted_last_pos[1]
+        offset_z = wcs_2[2] - inverted_last_pos[2]
         offset[1] = offset_y * cos_a - offset_z * sin_a
         offset[2] = offset_y * sin_a + offset_z * cos_a
+
+
+        inverted_pos = list(pos)
+        inverted_pos[1] = pos[1] * \
+            cos_ma - pos[2] * sin_ma + \
+            wcs_1[1] - cos_ma * wcs_1[1] + sin_ma * wcs_2[2]
+        inverted_pos[2] = pos[1] * \
+            sin_ma + pos[2] * cos_ma + \
+            wcs_2[2] - sin_ma * wcs_1[1] - cos_ma * wcs_2[2]
 
         coords = self._plan_arc(self.last_position, pos, offset)
         e_per_move = e_base = 0.
@@ -532,7 +564,7 @@ class GCodeMove:
         positions = self._calc_compensation(new_position)
         for position in positions:
             self.move_with_transform(position, self.speed)
-        self.last_position = new_position
+        self.last_position = positions[-1]
 
 
 def load_config(config):
