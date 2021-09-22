@@ -2,7 +2,7 @@
 # Test script for continuous integration.
 
 # Stop script early on any error; check variables
-set -eu
+set -eux
 
 # Paths to tools installed by ci-install.sh
 MAIN_DIR=${PWD}
@@ -26,5 +26,5 @@ for TARGET in stereotech_config/mcu/*.config ; do
     make V=1
     size out/*.elf
     cp out/klipper.bin ${DICTDIR}/$(basename ${TARGET} .config).bin
-done
+chmoLSdone
 
