@@ -32,11 +32,12 @@ jobs:
         run: ./scripts/ci-build-stereotech.sh
         
       - name: Create dist
-        run: mkdir dist |
-             cp -r ./klippy ./dist |
-             cp -R ./stereotech_config/. ./dist/config |
-             cp -R ./ci_build/python-env/. ./dist/klippy-env |
-             cp -R ./ci_build/firmware/. ./dist/firmware
+        run: |
+          mkdir dist
+          cp -R ./klippy/. ./dist/klippy
+          cp -R ./stereotech_config/. ./dist/config
+          cp -R ./ci_build/python-env/. ./dist/klippy-env
+          cp -R ./ci_build/firmware/. ./dist/firmware
              
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.4
