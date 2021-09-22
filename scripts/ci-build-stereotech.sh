@@ -1,4 +1,5 @@
 #!/bin/bash
+# Test script for continuous integration.
 
 # Stop script early on any error; check variables
 set -eu
@@ -24,14 +25,6 @@ for TARGET in stereotech_config/mcu/*.config ; do
     make olddefconfig
     make V=1
     size out/*.elf
-    cp out/klipper.bin ${DICTDIR}/${TARGET}.bin
+    cp out/klipper.bin ${DICTDIR}/$(basename ${TARGET} .config).bin
 done
 
-
-######################################################################
-# Verify klippy host software
-######################################################################
-
-start_test klippy "Test invoke klippy"
-$PYTHON scripts/test_klippy.py -d ${DICTDIR} test/klippy/*.test
-finish_test klippy "Test invoke klippy"
