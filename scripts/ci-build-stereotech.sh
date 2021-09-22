@@ -1,5 +1,4 @@
 #!/bin/bash
-# Test script for continuous integration.
 
 # Stop script early on any error; check variables
 set -eu
