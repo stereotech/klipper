@@ -39,7 +39,7 @@ jobs:
         
       - name: Create dist
         run: mkdir dist |
-             cp -R ./klippy/. ./dist/klippy |
+             cp -R ./klippy ./dist |
              cp -R ./stereotech_config/. ./dist/config |
              cp -R ./ci_build/python-env/. ./dist/klippy-env |
              cp -R ./ci_build/firmware/. ./dist/firmware
