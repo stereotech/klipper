@@ -58,7 +58,7 @@ class GCodeMove:
                 'x', 0.), wcs_conf.getfloat('y', 0.), wcs_conf.getfloat('z', 0.)])
         self.current_wcs = 0
         wcs_handlers = ['G10', 'G54', 'G55',
-                        'G56', 'G57', 'G58', 'G59', 'GET_WCS']
+                        'G56', 'G57', 'G58', 'G59', 'GET_WCS', 'SET_WCS']
         for cmd in wcs_handlers:
             func = getattr(self, 'cmd_' + cmd)
             desc = getattr(self, 'cmd_' + cmd + '_help', None)
@@ -148,6 +148,8 @@ class GCodeMove:
             'homing_origin': self.Coord(*self.homing_position),
             'position': self.Coord(*self.last_position),
             'gcode_position': self.Coord(*move_position),
+            'current_wcs': self.current_wcs,
+            'wcs_offsets': self.wcs_offsets,
         }
 
     def reset_last_position(self):
@@ -402,15 +404,23 @@ class GCodeMove:
         ]
 
     def cmd_GET_WCS(self, gcmd):
-        current_wcs = " ".join(["G5%d" % (4 + self.current_wcs)])
+        current_wcs = " ".join(["%d" % (self.current_wcs)])
         wcs_offsets = " "
         for wcs_n in range(6):
-            wcs_offsets = wcs_offsets + "G5%d " % (4 + wcs_n) + " ".join(
+            wcs_offsets = wcs_offsets + "%d " % (wcs_n) + " ".join(
                 ["%s:%d" % (a, v) for a, v in zip("XYZ", self.wcs_offsets[wcs_n])])
             wcs_offsets += "\n"
         gcmd.respond_info("current_wcs: %s\n"
                           "wcs_offsets: \n"
                           "%s" % (current_wcs, wcs_offsets))
+
+    def cmd_SET_WCS(self, gcmd):
+        wcs = gcmd.get_int('WCS', 0)
+        if (wcs < 6):
+            self.current_wcs = wcs
+        else:
+            self.current_wcs = 0
+        gcmd.respond_info("current_wcs: %d" % (self.current_wcs))
 
     def cmd_ENABLE_WORKPIECE_COMPENSATION(self, gcmd):
         self.compensation_enabled = True
