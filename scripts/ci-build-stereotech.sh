@@ -2,7 +2,6 @@
 # Test script for continuous integration.
 # Stop script early on any error; check variables
 set -eux
-
 # Paths to tools installed by ci-install.sh
 MAIN_DIR=${PWD}
 BUILD_DIR=${PWD}/ci_build
