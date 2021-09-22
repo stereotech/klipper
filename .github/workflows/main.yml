@@ -36,9 +36,9 @@ jobs:
         
       - name: Create dist
         run: mkdir dist |
-             cp -r klippy ./dist |
-             cp -r stereotech_config ./dist |
-             cp -r ./ci_build/* ./dist/klippy-env
+             cp -R ./klippy/. ./dist/klippy |
+             cp -R ./stereotech_config/. ./dist/config |
+             cp -R ./ci_build/python-env/. ./dist/klippy-env
              
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.4
