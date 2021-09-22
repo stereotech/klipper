@@ -26,5 +26,4 @@ for TARGET in stereotech_config/mcu/*.config ; do
     make V=1
     size out/*.elf
     cp out/klipper.bin ${DICTDIR}/$(basename ${TARGET} .config).bin
-chmoLSdone
-
+done
