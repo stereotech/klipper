@@ -7,6 +7,7 @@ import math
 import logging
 import collections
 import chelper
+import sys
 
 
 class error(Exception):
@@ -336,8 +337,8 @@ class PrinterRail:
                     "position_endstop in section '%s' must be between"
                     " position_min and position_max" % config.get_name())
         else:
-            self.position_min = float('-inf')
-            self.position_max = float('inf')
+            self.position_min = sys.float_info.min #float('-inf')
+            self.position_max = sys.float_info.max #float('inf')
         # Homing mechanics
         self.homing_speed = config.getfloat('homing_speed', 5.0, above=0.)
         self.second_homing_speed = config.getfloat(

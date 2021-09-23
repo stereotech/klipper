@@ -38,7 +38,9 @@
             "program": "${workspaceFolder}/klippy/klippy.py",
             "args": [
                 "${workspaceFolder}/printer.cfg",
-                "-v"
+                "-v",
+                "-a",
+                "/tmp/klipper_uds"
             ]
         }
     ]
