@@ -246,7 +246,7 @@ class GCodeMove:
     def cmd_M221(self, gcmd):
         # Set extrude factor override percentage
         new_extrude_factor = gcmd.get_float('S', 100., above=0.) / 100.
-        last_e_pos = self.last_position[6]
+        last_e_pos = self.last_position[5]
         e_value = (last_e_pos - self.base_position[5]) / self.extrude_factor
         self.base_position[5] = last_e_pos - e_value * new_extrude_factor
         self.extrude_factor = new_extrude_factor
