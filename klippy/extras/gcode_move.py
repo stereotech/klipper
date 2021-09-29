@@ -286,6 +286,7 @@ class GCodeMove:
             'homing_position': list(self.homing_position),
             'speed': self.speed, 'speed_factor': self.speed_factor,
             'extrude_factor': self.extrude_factor,
+            'current_wcs': self.current_wcs,
         }
     cmd_RESTORE_GCODE_STATE_help = "Restore a previously saved G-Code state"
 
@@ -302,6 +303,7 @@ class GCodeMove:
         self.speed = state['speed']
         self.speed_factor = state['speed_factor']
         self.extrude_factor = state['extrude_factor']
+        self.current_wcs = state['current_wcs']
         # Restore the relative E position
         e_diff = self.last_position[5] - state['last_position'][5]
         self.base_position[5] += e_diff
