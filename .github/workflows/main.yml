@@ -40,9 +40,9 @@ jobs:
           mkdir dist
           cp -R ./klippy/. ./dist/klippy
           cp -R ./stereotech_config/. ./dist/config
-          cp -R ./ci_build/python-env/. ./dist/klippy-env
           cp -R ./ci_build/firmware/. ./dist/firmware
           cp -R ./packages/. ./dist/packages
+          cp ./scripts/klippy-requirements.txt ./dist/requitements.txt
           tar -cvjf klipper.tar.bz2 -C dist .
              
       - name: Upload a Build Artifact
