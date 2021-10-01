@@ -30,7 +30,7 @@ jobs:
         
       - name: Get packages
         run: |
-          pip2 download -r scripts/klippy-requirements.txt -d packages --platform linux_armv7l --no-deps
+          python2 -m pip download -r scripts/klippy-requirements.txt -d packages --platform linux_armv7l --no-deps
         
       - name: Compile MCU firmware
         run: ./scripts/ci-build-stereotech.sh
