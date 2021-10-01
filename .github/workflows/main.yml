@@ -38,12 +38,13 @@ jobs:
           cp -R ./stereotech_config/. ./dist/config
           cp -R ./ci_build/python-env/. ./dist/klippy-env
           cp -R ./ci_build/firmware/. ./dist/firmware
+          tar -cvjf klipper.tar.bz2 -C dist .
              
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.4
         with:
           name: klipper
-          path: dist
+          path: klipper.tar.bz2
           
   deploy:
     if: github.event_name == 'push'
@@ -61,15 +62,11 @@ jobs:
         uses: actions/download-artifact@v2.0.10
         with:
           name: klipper
-          
-      - uses: TheDoctor0/zip-release@0.4.1
-        with:
-          filename: klipper.zip
       
       - name: Upload to AWS
         uses: ItsKarma/aws-cli@v1.70.0
         with:
-          args: s3 cp klipper.zip s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/ --acl public-read
+          args: s3 cp klipper.tar.bz2 s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/ --acl public-read
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
