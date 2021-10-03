@@ -30,7 +30,8 @@ jobs:
         
       - name: Get packages
         run: |
-           pip download -r scripts/klippy-requirements.txt -d packages  --python-version 27 --platform linux_armv7l
+           ./ci_build/python-env/bin/pip freeze > requirements.txt
+           pip download -r requirements.txt -d packages  --python-version 27 --platform linux_armv7l --no-deps
         
       - name: Compile MCU firmware
         run: ./scripts/ci-build-stereotech.sh
@@ -42,7 +43,7 @@ jobs:
           cp -R ./stereotech_config/. ./dist/config
           cp -R ./ci_build/firmware/. ./dist/firmware
           cp -R ./packages/. ./dist/packages
-          cp ./scripts/klippy-requirements.txt ./dist/requirements.txt
+          cp ./requirements.txt ./dist/requirements.txt
           tar -cvjf klipper.tar.bz2 -C dist .
              
       - name: Upload a Build Artifact
