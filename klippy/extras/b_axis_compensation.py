@@ -2,6 +2,8 @@
 
 import math
 
+from klippy.mathutil import matrix3x3_apply, matrix3x3_mul, matrix3x3_transpose
+
 RAD_TO_DEG = 57.295779513
 
 
@@ -50,7 +52,18 @@ class BAxisCompensation:
         self.next_transform.move(corrected_pos, speed)
 
     def calc_tranformed(self, pos):
-        return pos
+        a = pos[3]
+        sin_a = math.sin(a)
+        cos_a = math.cos(a)
+        a_rot_matrix = [1., 0., 0, 0., cos_a, -sin_a, 0., sin_a, cos_a]
+        pos[0] -= self.rot_center_x
+        pos[2] -= self.rot_center_z
+        m = matrix3x3_mul(matrix3x3_mul(
+            a_rot_matrix, self.rot_matrix), matrix3x3_transpose(a_rot_matrix))
+        newpos = matrix3x3_apply(pos, m)
+        newpos[0] += self.rot_center_x
+        newpos[2] += self.rot_center_z
+        return newpos
 
     def calc_untransformed(self, pos):
         return pos
