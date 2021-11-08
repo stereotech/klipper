@@ -3,7 +3,11 @@
 # Copyright (C) 2018-2019  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import math, logging, multiprocessing, traceback
+import math
+import logging
+import multiprocessing
+from os import plock
+import traceback
 import queuelogger
 
 
@@ -49,8 +53,11 @@ def coordinate_descent(adj_params, params, error_func):
 
 # Helper to run the coordinate descent function in a background
 # process so that it does not block the main thread.
+
+
 def background_coordinate_descent(printer, adj_params, params, error_func):
     parent_conn, child_conn = multiprocessing.Pipe()
+
     def wrapper():
         queuelogger.clear_bg_logging()
         try:
@@ -121,17 +128,64 @@ def matrix_cross(m1, m2):
             m1[2] * m2[0] - m1[0] * m2[2],
             m1[0] * m2[1] - m1[1] * m2[0]]
 
+
 def matrix_dot(m1, m2):
     return m1[0] * m2[0] + m1[1] * m2[1] + m1[2] * m2[2]
+
 
 def matrix_magsq(m1):
     return m1[0]**2 + m1[1]**2 + m1[2]**2
 
+
 def matrix_add(m1, m2):
     return [m1[0] + m2[0], m1[1] + m2[1], m1[2] + m2[2]]
+
 
 def matrix_sub(m1, m2):
     return [m1[0] - m2[0], m1[1] - m2[1], m1[2] - m2[2]]
 
+
 def matrix_mul(m1, s):
     return [m1[0]*s, m1[1]*s, m1[2]*s]
+
+######################################################################
+# Matrix helper functions for 3x3 matrices
+######################################################################
+
+
+def matrix3x3_mul(m1, m2):
+    multiplied = [0., 0., 0., 0., 0., 0., 0., 0., 0.]
+
+    for outx in range(3):
+        for outy in range(3):
+            for input in range(3):
+                multiplied[outx*3 + outy] += m1[outx *
+                                                3 + input] * m2[input * 3 + outy]
+
+    return multiplied
+
+
+def matrix3x3_transpose(m):
+    transposed = [0., 0., 0., 0., 0., 0., 0., 0., 0.]
+    transposed[0] = m[0]
+    transposed[1] = m[3]
+    transposed[2] = m[6]
+    transposed[3] = m[1]
+    transposed[4] = m[4]
+    transposed[5] = m[7]
+    transposed[6] = m[2]
+    transposed[7] = m[5]
+    transposed[8] = m[8]
+    return transposed
+
+
+def matrix3x3_sum(m1, m2):
+    return [(m1_i + m2_i) for (m1_i, m2_i) in zip(m1, m2)]
+
+
+def matrix3x3_apply(p, m):
+    output = []
+    for p_i in range(len(p)):
+        output.append(p[0] * m[p_i * 3 + 0] + p[1]
+                      * m[p_i * 3 + 1] + p[2] * m[p_i * 3 + 2])
+    return output
