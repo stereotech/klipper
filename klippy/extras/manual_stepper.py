@@ -71,9 +71,9 @@ class ManualStepper:
         self.trapq_append(self.trapq, self.next_cmd_time,
                           accel_t, cruise_t, accel_t,
                           cp, 0., 0.,
-                          0., 0., 0.,
+                          0., 0.,
                           axis_r, 0., 0.,
-                          0., 0., 0.,
+                          0., 0.,
                           0., cruise_v, accel)
         self.next_cmd_time = self.next_cmd_time + accel_t + cruise_t + accel_t
         self.rail.generate_steps(self.next_cmd_time)
@@ -141,6 +141,7 @@ class ManualStepper:
 
     def get_steppers(self):
         return self.steppers
+
     def calc_position(self, stepper_positions):
         return [stepper_positions[self.rail.get_name()], 0., 0.]
 
