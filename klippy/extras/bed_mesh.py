@@ -201,7 +201,7 @@ class BedMesh:
         else:
             # return current position minus the current z-adjustment
             x, y, z, a, c, e = self.toolhead.get_position()
-            z_adj = self.z_mesh.calc_z(x, y)
+            max_adj = self.z_mesh.calc_z(x, y)
             factor = 1.
             z_adj = max_adj - self.fade_target
             if min(z, (z - max_adj)) >= self.fade_end:
