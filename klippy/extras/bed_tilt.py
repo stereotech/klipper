@@ -27,13 +27,13 @@ class BedTilt:
         self.toolhead = self.printer.lookup_object('toolhead')
 
     def get_position(self):
-        x, y, z, a, b, c, e = self.toolhead.get_position()
-        return [x, y, z - x*self.x_adjust - y*self.y_adjust - self.z_adjust, a, b, c, e]
+        x, y, z, a, c, e = self.toolhead.get_position()
+        return [x, y, z - x*self.x_adjust - y*self.y_adjust - self.z_adjust, a, c, e]
 
     def move(self, newpos, speed):
         x, y, z, a, b, c, e = newpos
         self.toolhead.move([x, y, z + x*self.x_adjust + y*self.y_adjust
-                            + self.z_adjust, a, b, c, e], speed)
+                            + self.z_adjust, a, c, e], speed)
 
     def update_adjust(self, x_adjust, y_adjust, z_adjust):
         self.x_adjust = x_adjust
