@@ -31,16 +31,17 @@ class CartKinematics:
         self.limits = [(1.0, -1.0)] * 3
         ranges = [r.get_range() for r in self.rails]
         self.axes_min = toolhead.Coord(
-            *[r[0] for r in ranges], a=0., b=0., c=0., e=0.)
+            *[r[0] for r in ranges], a=0., c=0., e=0.)
         self.axes_max = toolhead.Coord(
-            *[r[1] for r in ranges], a=0., b=0., c=0., e=0.)
+            *[r[1] for r in ranges], a=0., c=0., e=0.)
         # Check for dual carriage support
         if config.has_section('dual_carriage'):
             dc_config = config.getsection('dual_carriage')
             dc_axis = dc_config.getchoice('axis', {'x': 'x', 'y': 'y'})
             self.dual_carriage_axis = {'x': 0, 'y': 1}[dc_axis]
             dc_rail = stepper.LookupMultiRail(dc_config)
-            dc_rail.setup_itersolve('cartesian_stepper_alloc', dc_axis.encode())
+            dc_rail.setup_itersolve(
+                'cartesian_stepper_alloc', dc_axis.encode())
             for s in dc_rail.get_steppers():
                 toolhead.register_step_generator(s.generate_steps)
             self.dual_carriage_rails = [
