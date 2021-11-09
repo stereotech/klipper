@@ -2,7 +2,7 @@
 
 import math
 
-from klippy.mathutil import matrix3x3_apply, matrix3x3_mul, matrix3x3_transpose
+from mathutil import matrix3x3_apply, matrix3x3_mul, matrix3x3_transpose
 
 RAD_TO_DEG = 57.295779513
 

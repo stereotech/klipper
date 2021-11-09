@@ -6,7 +6,6 @@
 import math
 import logging
 import multiprocessing
-from os import plock
 import traceback
 import queuelogger
 
