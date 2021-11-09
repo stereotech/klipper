@@ -31,7 +31,7 @@ class BedTilt:
         return [x, y, z - x*self.x_adjust - y*self.y_adjust - self.z_adjust, a, c, e]
 
     def move(self, newpos, speed):
-        x, y, z, a, b, c, e = newpos
+        x, y, z, a, c, e = newpos
         self.toolhead.move([x, y, z + x*self.x_adjust + y*self.y_adjust
                             + self.z_adjust, a, c, e], speed)
 
