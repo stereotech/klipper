@@ -133,7 +133,7 @@ class Heater:
             target_temp = self.target_temp
             smoothed_temp = self.smoothed_temp
             last_pwm_value = self.last_pwm_value
-        return {'temperature': smoothed_temp, 'target': target_temp,
+        return {'temperature': round(smoothed_temp, 2), 'target': target_temp,
                 'power': last_pwm_value}
     cmd_SET_HEATER_TEMPERATURE_help = "Sets a heater temperature"
     def cmd_SET_HEATER_TEMPERATURE(self, gcmd):
@@ -180,12 +180,9 @@ class ControlPID:
         self.Ki = config.getfloat('pid_Ki') / PID_PARAM_BASE
         self.Kd = config.getfloat('pid_Kd') / PID_PARAM_BASE
         self.min_deriv_time = heater.get_smooth_time()
-        config.deprecate('pid_integral_max')
-        imax = config.getfloat('pid_integral_max', self.heater_max_power,
-                               minval=0.)
         self.temp_integ_max = 0.
         if self.Ki:
-            self.temp_integ_max = imax / self.Ki
+            self.temp_integ_max = self.heater_max_power / self.Ki
         self.prev_temp = AMBIENT_TEMP
         self.prev_temp_time = 0.
         self.prev_temp_deriv = 0.

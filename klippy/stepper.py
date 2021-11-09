@@ -21,9 +21,10 @@ class error(Exception):
 # Interface to low-level mcu and chelper code
 class MCU_stepper:
     def __init__(self, name, step_pin_params, dir_pin_params, step_dist,
-                 units_in_radians=False):
+                 step_pulse_duration=None, units_in_radians=False):
         self._name = name
         self._step_dist = step_dist
+        self._step_pulse_duration = step_pulse_duration
         self._units_in_radians = units_in_radians
         self._mcu = step_pin_params['chip']
         self._oid = oid = self._mcu.create_oid()
@@ -35,6 +36,7 @@ class MCU_stepper:
                 "Stepper dir pin must be on same mcu as step pin")
         self._dir_pin = dir_pin_params['pin']
         self._invert_dir = dir_pin_params['invert']
+        self._step_both_edge = self._req_step_both_edge = False
         self._mcu_position_offset = 0.
         self._reset_cmd_tag = self._get_position_cmd = None
         self._active_callbacks = []
@@ -63,21 +65,32 @@ class MCU_stepper:
     def units_in_radians(self):
         # Returns true if distances are in radians instead of millimeters
         return self._units_in_radians
-
-    def _dist_to_time(self, dist, start_velocity, accel):
-        # Calculate the time it takes to travel a distance with constant accel
-        time_offset = start_velocity / accel
-        return math.sqrt(2. * dist / accel + time_offset ** 2) - time_offset
-
+    def get_pulse_duration(self):
+        return self._step_pulse_duration, self._step_both_edge
+    def setup_default_pulse_duration(self, pulse_duration, step_both_edge):
+        if self._step_pulse_duration is None:
+            self._step_pulse_duration = pulse_duration
+        self._req_step_both_edge = step_both_edge
     def setup_itersolve(self, alloc_func, *params):
         ffi_main, ffi_lib = chelper.get_ffi()
         sk = ffi_main.gc(getattr(ffi_lib, alloc_func)(*params), ffi_lib.free)
         self.set_stepper_kinematics(sk)
 
     def _build_config(self):
+        if self._step_pulse_duration is None:
+            self._step_pulse_duration = .000002
+        invert_step = self._invert_step
+        sbe = int(self._mcu.get_constants().get('STEPPER_BOTH_EDGE', '0'))
+        if self._req_step_both_edge and sbe:
+            # Enable stepper optimized step on both edges
+            self._step_both_edge = True
+            self._step_pulse_duration = 0.
+            invert_step = -1
+        step_pulse_ticks = self._mcu.seconds_to_clock(self._step_pulse_duration)
         self._mcu.add_config_cmd(
             "config_stepper oid=%d step_pin=%s dir_pin=%s invert_step=%d"
-            % (self._oid, self._step_pin, self._dir_pin, self._invert_step))
+            " step_pulse_ticks=%u" % (self._oid, self._step_pin, self._dir_pin,
+                                      invert_step, step_pulse_ticks))
         self._mcu.add_config_cmd("reset_step_clock oid=%d clock=0"
                                  % (self._oid,), on_restart=True)
         step_cmd_tag = self._mcu.lookup_command_tag(
@@ -90,9 +103,9 @@ class MCU_stepper:
             "stepper_get_position oid=%c",
             "stepper_position oid=%c pos=%i", oid=self._oid)
         max_error = self._mcu.get_max_stepper_error()
+        max_error_ticks = self._mcu.seconds_to_clock(max_error)
         ffi_main, ffi_lib = chelper.get_ffi()
-        ffi_lib.stepcompress_fill(self._stepqueue,
-                                  self._mcu.seconds_to_clock(max_error),
+        ffi_lib.stepcompress_fill(self._stepqueue, max_error_ticks,
                                   self._invert_dir, step_cmd_tag, dir_cmd_tag)
 
     def get_oid(self):
@@ -226,7 +239,8 @@ class MCU_stepper:
 
     def is_active_axis(self, axis):
         ffi_main, ffi_lib = chelper.get_ffi()
-        return ffi_lib.itersolve_is_active_axis(self._stepper_kinematics, axis)
+        a = axis.encode()
+        return ffi_lib.itersolve_is_active_axis(self._stepper_kinematics, a)
 
 
 # Helper code to build a stepper object from a config section
@@ -240,8 +254,10 @@ def PrinterStepper(config, units_in_radians=False):
     dir_pin = config.get('dir_pin')
     dir_pin_params = ppins.lookup_pin(dir_pin, can_invert=True)
     step_dist = parse_step_distance(config, units_in_radians, True)
+    step_pulse_duration = config.getfloat('step_pulse_duration', None,
+                                          minval=0., maxval=.001)
     mcu_stepper = MCU_stepper(name, step_pin_params, dir_pin_params, step_dist,
-                              units_in_radians)
+                              step_pulse_duration, units_in_radians)
     # Register with helper modules
     for mname in ['stepper_enable', 'force_move', 'motion_report']:
         m = printer.load_object(config, mname)
@@ -270,13 +286,6 @@ def parse_step_distance(config, units_in_radians=None, note_valid=False):
         rotation_dist = 2. * math.pi
         config.get('gear_ratio', note_valid=note_valid)
     else:
-        rd = config.get('rotation_distance', None, note_valid=False)
-        config.deprecate('step_distance')
-        sd = config.get('step_distance', None, note_valid=False)
-        if rd is None and sd is not None:
-            # Older config format with step_distance
-            return config.getfloat('step_distance', above=0.,
-                                   note_valid=note_valid)
         rotation_dist = config.getfloat('rotation_distance', above=0.,
                                         note_valid=note_valid)
     # Newer config format with rotation_distance
@@ -391,39 +400,37 @@ class PrinterRail:
     def add_extra_stepper(self, config):
         stepper = PrinterStepper(config, self.stepper_units_in_radians)
         self.steppers.append(stepper)
-        if self.can_home:
-            endstop_pin = config.get('endstop_pin', None)
-            if self.endstops and endstop_pin is None:
-                # No endstop defined - use primary endstop
-                self.endstops[0][0].add_stepper(stepper)
-                return
-            printer = config.get_printer()
-            ppins = printer.lookup_object('pins')
-            pin_params = ppins.parse_pin(endstop_pin, True, True)
-            # Normalize pin name
-            pin_name = "%s:%s" % (pin_params['chip_name'], pin_params['pin'])
-            # Look for already-registered endstop
-            endstop = self.endstop_map.get(pin_name, None)
-            if endstop is None:
-                # New endstop, register it
-                mcu_endstop = ppins.setup_pin('endstop', endstop_pin)
-                self.endstop_map[pin_name] = {'endstop': mcu_endstop,
-                                              'invert': pin_params['invert'],
-                                              'pullup': pin_params['pullup']}
-                name = stepper.get_name(short=True)
-                self.endstops.append((mcu_endstop, name))
-                query_endstops = printer.load_object(config, 'query_endstops')
-                query_endstops.register_endstop(mcu_endstop, name)
-            else:
-                mcu_endstop = endstop['endstop']
-                changed_invert = pin_params['invert'] != endstop['invert']
-                changed_pullup = pin_params['pullup'] != endstop['pullup']
-                if changed_invert or changed_pullup:
-                    raise error("Pinter rail %s shared endstop pin %s "
-                                "must specify the same pullup/invert settings" % (
-                                    self.get_name(), pin_name))
-            mcu_endstop.add_stepper(stepper)
-
+        if self.endstops and config.get('endstop_pin', None) is None:
+            # No endstop defined - use primary endstop
+            self.endstops[0][0].add_stepper(stepper)
+            return
+        endstop_pin = config.get('endstop_pin')
+        printer = config.get_printer()
+        ppins = printer.lookup_object('pins')
+        pin_params = ppins.parse_pin(endstop_pin, True, True)
+        # Normalize pin name
+        pin_name = "%s:%s" % (pin_params['chip_name'], pin_params['pin'])
+        # Look for already-registered endstop
+        endstop = self.endstop_map.get(pin_name, None)
+        if endstop is None:
+            # New endstop, register it
+            mcu_endstop = ppins.setup_pin('endstop', endstop_pin)
+            self.endstop_map[pin_name] = {'endstop': mcu_endstop,
+                                          'invert': pin_params['invert'],
+                                          'pullup': pin_params['pullup']}
+            name = stepper.get_name(short=True)
+            self.endstops.append((mcu_endstop, name))
+            query_endstops = printer.load_object(config, 'query_endstops')
+            query_endstops.register_endstop(mcu_endstop, name)
+        else:
+            mcu_endstop = endstop['endstop']
+            changed_invert = pin_params['invert'] != endstop['invert']
+            changed_pullup = pin_params['pullup'] != endstop['pullup']
+            if changed_invert or changed_pullup:
+                raise error("Pinter rail %s shared endstop pin %s "
+                            "must specify the same pullup/invert settings" % (
+                                self.get_name(), pin_name))
+        mcu_endstop.add_stepper(stepper)
     def setup_itersolve(self, alloc_func, *params):
         for stepper in self.steppers:
             stepper.setup_itersolve(alloc_func, *params)
