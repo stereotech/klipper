@@ -187,4 +187,7 @@ def matrix3x3_apply(p, m):
     for p_i in range(3):
         output.append(p[0] * m[p_i * 3 + 0] + p[1]
                       * m[p_i * 3 + 1] + p[2] * m[p_i * 3 + 2])
+    if len(p) > 3:
+        for coord in range(3, len(p)):
+            output.append(p[coord])
     return output

@@ -52,7 +52,7 @@ class BAxisCompensation:
         self.next_transform.move(corrected_pos, speed)
 
     def calc_tranformed(self, pos):
-        a = pos[3]
+        a = math.radians(pos[3])
         sin_a = math.sin(a)
         cos_a = math.cos(a)
         a_rot_matrix = [1., 0., 0, 0., cos_a, -sin_a, 0., sin_a, cos_a]
@@ -66,7 +66,7 @@ class BAxisCompensation:
         return newpos
 
     def calc_untransformed(self, pos):
-        a = pos[3]
+        a = math.radians(pos[3])
         sin_a = math.sin(a)
         cos_a = math.cos(a)
         a_rot_matrix = [1., 0., 0, 0., cos_a, -sin_a, 0., sin_a, cos_a]
@@ -136,6 +136,11 @@ class BAxisCompensation:
         save = gcmd.get_int('SAVE', 0)
         if save:
             self._save_compensation(b_angle, rot_center_x, rot_center_z)
+        out = "Calculated B axis angle: %.6f radians, %.2f degrees\n" % (
+            b_angle, math.degrees(b_angle))
+        out += "B axis rotation center: X%.3f Y%.3f Z%.3f" % (
+            rot_center_x, 0, rot_center_z)
+        gcmd.respond_info(out)
 
     cmd_CALC_B_AXIS_COMPENSATION_help = "Calculate B axis compensation"
 
