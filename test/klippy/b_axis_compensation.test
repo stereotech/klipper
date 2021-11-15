@@ -1,4 +1,4 @@
 DICTIONARY stm32f446.dict
 CONFIG five_axis.cfg
 
-G28
+G28 C0

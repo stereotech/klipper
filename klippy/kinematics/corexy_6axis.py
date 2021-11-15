@@ -83,7 +83,7 @@ class CoreXY6AxisKinematics:
             homing_state.home_rails([rail], forcepos, homepos)
 
     def _motor_off(self, print_time):
-        self.limits = [(1.0, -1.0)] * 6
+        self.limits = [(1.0, -1.0)] * 5
 
     def _check_endstops(self, move):
         end_pos = move.end_pos
