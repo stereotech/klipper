@@ -8,5 +8,8 @@
     ],
     "python.autoComplete.extraPaths": [
         "C:\\Python27\\Lib\\site-packages"
-    ]
+    ],
+    "files.associations": {
+        "*.tcc": "c"
+    }
 }

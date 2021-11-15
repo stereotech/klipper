@@ -80,8 +80,8 @@ defs_trapq = """
     struct pull_move {
         double print_time, move_t;
         double start_v, accel;
-        double start_x, start_y, start_z;
-        double x_r, y_r, z_r;
+        double start_x, start_y, start_z, start_a, start_c;
+        double x_r, y_r, z_r, a_r, c_r;
     };
 
     void trapq_append(struct trapq *tq, double print_time
