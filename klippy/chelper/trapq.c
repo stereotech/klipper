@@ -269,7 +269,7 @@ trapq_extract_old(struct trapq *tq, struct pull_move *p, int max, double start_t
         p->y_r = m->axes_r.y;
         p->z_r = m->axes_r.z;
         p->a_r = m->axes_r.a;
-
+        p->c_r = m->axes_r.c;
         p++;
         res++;
     }
