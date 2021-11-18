@@ -158,10 +158,14 @@ class GCodeMove:
     # G-Code movement commands
 
     def manual_move(self, coord, speed):
+        new_pos = []
         for i in range(len(coord)):
             if coord[i] is not None:
-                coord[i] += self.base_position[i]
-        self.printer.lookup_object('toolhead').manual_move(coord, speed)
+                new_pos.append(coord[i] + self.base_position[i])
+            else:
+                new_pos.append(coord[i])
+        self.printer.lookup_object(
+            'toolhead').manual_move(tuple(new_pos), speed)
 
     def cmd_G1(self, gcmd):
         if self.compensation_enabled:
