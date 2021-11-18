@@ -39,8 +39,11 @@ class BedScrews:
         self.gcode.register_command("BED_SCREWS_ADJUST",
                                     self.cmd_BED_SCREWS_ADJUST,
                                     desc=self.cmd_BED_SCREWS_ADJUST_help)
+
     def move(self, coord, speed):
-        self.printer.lookup_object('toolhead').manual_move(coord, speed)
+        #self.printer.lookup_object('toolhead').manual_move(coord, speed)
+        self.printer.lookup_object('gcode_move').manual_move(coord, speed)
+
     def move_to_screw(self, state, screw):
         # Move up, over, and then down
         self.move((None, None, self.horizontal_move_z), self.lift_speed)
@@ -60,11 +63,13 @@ class BedScrews:
                                     desc=self.cmd_ADJUSTED_help)
         self.gcode.register_command('ABORT', self.cmd_ABORT,
                                     desc=self.cmd_ABORT_help)
+
     def unregister_commands(self):
         self.gcode.register_command('ACCEPT', None)
         self.gcode.register_command('ADJUSTED', None)
         self.gcode.register_command('ABORT', None)
     cmd_BED_SCREWS_ADJUST_help = "Tool to help adjust bed leveling screws"
+
     def cmd_BED_SCREWS_ADJUST(self, gcmd):
         if self.state is not None:
             raise gcmd.error("Already in bed_screws helper; use ABORT to exit")
@@ -73,6 +78,7 @@ class BedScrews:
         self.move((None, None, self.horizontal_move_z), self.speed)
         self.move_to_screw('adjust', 0)
     cmd_ACCEPT_help = "Accept bed screw position"
+
     def cmd_ACCEPT(self, gcmd):
         self.unregister_commands()
         self.accepted_screws = self.accepted_screws + 1
@@ -96,14 +102,17 @@ class BedScrews:
         self.move((None, None, self.horizontal_move_z), self.lift_speed)
         gcmd.respond_info("Bed screws tool completed successfully")
     cmd_ADJUSTED_help = "Accept bed screw position after notable adjustment"
+
     def cmd_ADJUSTED(self, gcmd):
         self.unregister_commands()
         self.accepted_screws = -1
         self.cmd_ACCEPT(gcmd)
     cmd_ABORT_help = "Abort bed screws tool"
+
     def cmd_ABORT(self, gcmd):
         self.unregister_commands()
         self.state = None
+
 
 def load_config(config):
     return BedScrews(config)

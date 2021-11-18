@@ -157,6 +157,12 @@ class GCodeMove:
             self.last_position = self.position_with_transform()
     # G-Code movement commands
 
+    def manual_move(self, coord, speed):
+        for i in range(len(coord)):
+            if coord[i] is not None:
+                coord[i] += self.base_position[i]
+        self.printer.lookup_object('toolhead').manual_move(coord, speed)
+
     def cmd_G1(self, gcmd):
         if self.compensation_enabled:
             self.process_move_with_compensation(gcmd)
