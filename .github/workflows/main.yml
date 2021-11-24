@@ -36,6 +36,9 @@ jobs:
       - name: Compile MCU firmware
         run: ./scripts/ci-build-stereotech.sh
         
+      - name: Compile C Helper
+        run: ./ci_build/python-env/bin/python ./klippy/chelper/__init__.py
+        
       - name: Create dist
         run: |
           mkdir dist
