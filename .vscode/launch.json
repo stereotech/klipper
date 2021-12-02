@@ -9,7 +9,7 @@
             "args": [
                 "-d",
                 "dict/",
-                "test/klippy/b_axis_compensation.test"
+                "test/klippy/variables.test"
             ]
         },
         {
