@@ -65,7 +65,7 @@ class Move:
 
     def move_error(self, msg="Move out of range"):
         ep = self.end_pos
-        m = "%s: %.3f %.3f %.3f %.3f %.3f %.3f [%.3f]" % (
+        m = "%s: %.3f %.3f %.3f %.3f %.3f [%.3f]" % (
             msg, ep[0], ep[1], ep[2], ep[3], ep[4], ep[5])
         return self.toolhead.printer.command_error(m)
 
