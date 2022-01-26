@@ -385,11 +385,11 @@ class GCodeMove:
             pos = self._mcs_to_wcs(self.last_position)
             for i, offset in enumerate(offsets):
                 if offset is not None:
-                    self.wcs_offsets[n][i] -= offset - pos[i]
+                    self.wcs_offsets[n][i] -= offset - (pos[i] - self.homing_position[i])
         elif self.absolute_coord:
             for i, offset in enumerate(offsets):
                 if offset is not None:
-                    self.wcs_offsets[n][i] = offset
+                    self.wcs_offsets[n][i] = offset - self.homing_position[i]
         else:
             for i, offset in enumerate(offsets):
                 if offset is not None:

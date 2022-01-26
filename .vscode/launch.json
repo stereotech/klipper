@@ -9,7 +9,7 @@
             "args": [
                 "-d",
                 "dict/",
-                "test/klippy/variables.test"
+                "test/klippy/wcs.test"
             ]
         },
         {
@@ -19,7 +19,7 @@
             "stopOnEntry": true,
             "program": "${workspaceFolder}/klippy/klippy.py",
             "args": [
-                "${workspaceFolder}/printer.cfg",
+                "${workspaceFolder}/stereotech_config/HTE530-5-1-22.cfg",
                 "-v",
                 "-a",
                 "/tmp/klipper_uds"
