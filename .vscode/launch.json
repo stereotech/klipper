@@ -9,7 +9,8 @@
             "args": [
                 "-d",
                 "dict/",
-                "test/klippy/variables.test"
+                "test/klippy/xy_nozzle_offset.test",
+                "-v"
             ]
         },
         {
