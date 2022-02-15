@@ -28,15 +28,19 @@ class PrinterProbe:
         self.last_state = False
         self.last_z_result = 0.
         self.gcode_move = self.printer.load_object(config, "gcode_move")
-        # Infer Z position to move to during a probe
-        if config.has_section('stepper_z'):
-            zconfig = config.getsection('stepper_z')
-            self.z_position = zconfig.getfloat('position_min', 0.,
-                                               note_valid=False)
-        else:
-            pconfig = config.getsection('printer')
-            self.z_position = pconfig.getfloat('minimum_z_position', 0.,
-                                               note_valid=False)
+        self.probe_positions = []
+        for axis in 'xyz':
+            # Infer Z position to move to during a probe
+            if config.has_section('stepper_%s' % (axis)):
+                axis_config = config.getsection('stepper_%s' % (axis))
+                self.probe_positions.append([
+                    axis_config.getfloat('position_min', 0.,
+                                               note_valid=False),
+                    axis_config.getfloat('position_max', 500.,
+                                               note_valid=False)])
+
+            else:
+                self.probe_positions.append([0, 1])
         # Multi-sample support (for improved accuracy)
         self.sample_count = config.getint('samples', 1, minval=1)
         self.sample_retract_dist = config.getfloat('sample_retract_dist', 2.,
@@ -112,14 +116,15 @@ class PrinterProbe:
         return self.lift_speed
     def get_offsets(self):
         return self.x_offset, self.y_offset, self.z_offset
-    def _probe(self, speed):
+    def _probe(self, speed, axis='z', positive_direction=0):
         toolhead = self.printer.lookup_object('toolhead')
         curtime = self.printer.get_reactor().monotonic()
-        if 'z' not in toolhead.get_status(curtime)['homed_axes']:
+        if axis not in toolhead.get_status(curtime)['homed_axes']:
             raise self.printer.command_error("Must home before probe")
+        axis_index = 'xyz'.index(axis)
         phoming = self.printer.lookup_object('homing')
         pos = toolhead.get_position()
-        pos[2] = self.z_position
+        pos[axis_index] = self.probe_positions[axis_index][1 if positive_direction else 0]
         try:
             epos = phoming.probing_move(self.mcu_probe, pos, speed)
         except self.printer.command_error as e:
@@ -127,7 +132,7 @@ class PrinterProbe:
             if "Timeout during endstop homing" in reason:
                 reason += HINT_TIMEOUT
             raise self.printer.command_error(reason)
-        self.gcode.respond_info("probe at %.3f,%.3f is z=%.6f"
+        self.gcode.respond_info("probe at x=%.3f y=%.3f z=%.6f"
                                 % (epos[0], epos[1], epos[2]))
         return epos[:3]
     def _move(self, coord, speed):
@@ -201,15 +206,25 @@ class PrinterProbe:
     def cmd_PROBE_ACCURACY(self, gcmd):
         speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
         lift_speed = self.get_lift_speed(gcmd)
+        axis = gcmd.get("AXIS", "Z").lower()
+        if axis not in 'xyz':
+            axis = 'z'
+        axis_index = "xyz".index(axis)
+        positive_direction = gcmd.get_int("POSITIVE_DIR", 0)
         sample_count = gcmd.get_int("SAMPLES", 10, minval=1)
         sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST",
                                              self.sample_retract_dist, above=0.)
+        if positive_direction and axis == 'z':
+            positive_direction = 0
+        if positive_direction:
+            sample_retract_dist = -sample_retract_dist
         toolhead = self.printer.lookup_object('toolhead')
         pos = toolhead.get_position()
-        gcmd.respond_info("PROBE_ACCURACY at X:%.3f Y:%.3f Z:%.3f"
+        gcmd.respond_info("PROBE_ACCURACY for axis %s in %s direction at X:%.3f Y:%.3f Z:%.3f"
                           " (samples=%d retract=%.3f"
                           " speed=%.1f lift_speed=%.1f)\n"
-                          % (pos[0], pos[1], pos[2],
+                          % (axis,'positive' if positive_direction else 'negative',
+                             pos[0], pos[1], pos[2],
                              sample_count, sample_retract_dist,
                              speed, lift_speed))
         # Probe bed sample_count times
@@ -217,22 +232,23 @@ class PrinterProbe:
         positions = []
         while len(positions) < sample_count:
             # Probe position
-            pos = self._probe(speed)
+            pos = self._probe(speed, axis, positive_direction)
             positions.append(pos)
             # Retract
-            liftpos = [None, None, pos[2] + sample_retract_dist]
+            liftpos = [None, None, None]
+            liftpos[axis_index] = pos[axis_index] + sample_retract_dist
             self._move(liftpos, lift_speed)
         self.multi_probe_end()
         # Calculate maximum, minimum and average values
-        max_value = max([p[2] for p in positions])
-        min_value = min([p[2] for p in positions])
+        max_value = max([p[axis_index] for p in positions])
+        min_value = min([p[axis_index] for p in positions])
         range_value = max_value - min_value
-        avg_value = self._calc_mean(positions)[2]
-        median = self._calc_median(positions)[2]
+        avg_value = self._calc_mean(positions)[axis_index]
+        median = self._calc_median(positions)[axis_index]
         # calculate the standard deviation
         deviation_sum = 0
         for i in range(len(positions)):
-            deviation_sum += pow(positions[i][2] - avg_value, 2.)
+            deviation_sum += pow(positions[i][axis_index] - avg_value, 2.)
         sigma = (deviation_sum / len(positions)) ** 0.5
         # Show information
         gcmd.respond_info(
@@ -313,8 +329,9 @@ class ProbeEndstopWrapper:
     def _handle_mcu_identify(self):
         kin = self.printer.lookup_object('toolhead').get_kinematics()
         for stepper in kin.get_steppers():
-            if stepper.is_active_axis('z'):
-                self.add_stepper(stepper)
+            for axis in 'xyz':
+                if stepper.is_active_axis(axis):
+                    self.add_stepper(stepper)
     def raise_probe(self):
         toolhead = self.printer.lookup_object('toolhead')
         start_pos = toolhead.get_position()

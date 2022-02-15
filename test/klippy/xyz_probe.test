@@ -1,0 +1,5 @@
+DICTIONARY stm32f446.dict
+CONFIG xyz_probe.cfg
+
+G28
+PROBE_ACCURACY AXIS=X
