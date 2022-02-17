@@ -26,7 +26,7 @@ class PrinterProbe:
         self.probe_calibrate_z = 0.
         self.multi_probe_pending = False
         self.last_state = False
-        self.last_z_result = 0.
+        self.last_result = [0., 0., 0.]
         self.gcode_move = self.printer.load_object(config, "gcode_move")
         self.probe_positions = []
         for axis in 'xyz':
@@ -141,20 +141,30 @@ class PrinterProbe:
         count = float(len(positions))
         return [sum([pos[i] for pos in positions]) / count
                 for i in range(3)]
-    def _calc_median(self, positions):
-        z_sorted = sorted(positions, key=(lambda p: p[2]))
+    def _calc_median(self, positions, axis=2):
+        axis_sorted = sorted(positions, key=(lambda p: p[axis]))
         middle = len(positions) // 2
         if (len(positions) & 1) == 1:
             # odd number of samples
-            return z_sorted[middle]
+            return axis_sorted[middle]
         # even number of samples
-        return self._calc_mean(z_sorted[middle-1:middle+1])
+        return self._calc_mean(axis_sorted[middle-1:middle+1])
     def run_probe(self, gcmd):
         speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
         lift_speed = self.get_lift_speed(gcmd)
+        axis = gcmd.get("AXIS", "Z").lower()
+        if axis not in 'xyz':
+            axis = 'z'
+        axis_index = "xyz".index(axis)
+        positive_direction = gcmd.get_int("POSITIVE_DIR", 0)
+
         sample_count = gcmd.get_int("SAMPLES", self.sample_count, minval=1)
         sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST",
                                              self.sample_retract_dist, above=0.)
+        if positive_direction and axis == 'z':
+            positive_direction = 0
+        if positive_direction:
+            sample_retract_dist = -sample_retract_dist
         samples_tolerance = gcmd.get_float("SAMPLES_TOLERANCE",
                                            self.samples_tolerance, minval=0.)
         samples_retries = gcmd.get_int("SAMPLES_TOLERANCE_RETRIES",
@@ -163,16 +173,16 @@ class PrinterProbe:
         must_notify_multi_probe = not self.multi_probe_pending
         if must_notify_multi_probe:
             self.multi_probe_begin()
-        probexy = self.printer.lookup_object('toolhead').get_position()[:2]
+        pos = self.printer.lookup_object('toolhead').get_position()
         retries = 0
         positions = []
         while len(positions) < sample_count:
             # Probe position
-            pos = self._probe(speed)
+            pos = self._probe(speed, axis, positive_direction)
             positions.append(pos)
             # Check samples tolerance
-            z_positions = [p[2] for p in positions]
-            if max(z_positions) - min(z_positions) > samples_tolerance:
+            axis_positions = [p[axis_index] for p in positions]
+            if max(axis_positions) - min(axis_positions) > samples_tolerance:
                 if retries >= samples_retries:
                     raise gcmd.error("Probe samples exceed samples_tolerance")
                 gcmd.respond_info("Probe samples exceed tolerance. Retrying...")
@@ -180,18 +190,20 @@ class PrinterProbe:
                 positions = []
             # Retract
             if len(positions) < sample_count:
-                self._move(probexy + [pos[2] + sample_retract_dist], lift_speed)
+                liftpos = [None, None, None]
+                liftpos[axis_index] = pos[axis_index] + sample_retract_dist
+                self._move(liftpos, lift_speed)
         if must_notify_multi_probe:
             self.multi_probe_end()
         # Calculate and return result
         if samples_result == 'median':
-            return self._calc_median(positions)
+            return self._calc_median(positions, axis_index)
         return self._calc_mean(positions)
-    cmd_PROBE_help = "Probe Z-height at current XY position"
+    cmd_PROBE_help = "Probe axis-height at current position"
     def cmd_PROBE(self, gcmd):
         pos = self.run_probe(gcmd)
-        gcmd.respond_info("Result is z=%.6f" % (pos[2],))
-        self.last_z_result = pos[2]
+        gcmd.respond_info("Result is x=%.6f y=%.6f z=%.6f" % (pos[0], pos[1], pos[2]))
+        self.last_result = pos[:3]
     cmd_QUERY_PROBE_help = "Return the status of the z-probe"
     def cmd_QUERY_PROBE(self, gcmd):
         toolhead = self.printer.lookup_object('toolhead')
@@ -201,7 +213,7 @@ class PrinterProbe:
         gcmd.respond_info("probe: %s" % (["open", "TRIGGERED"][not not res],))
     def get_status(self, eventtime):
         return {'last_query': self.last_state,
-                'last_z_result': self.last_z_result}
+                'last_result': self.last_result}
     cmd_PROBE_ACCURACY_help = "Probe Z-height accuracy at current XY position"
     def cmd_PROBE_ACCURACY(self, gcmd):
         speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
@@ -244,7 +256,7 @@ class PrinterProbe:
         min_value = min([p[axis_index] for p in positions])
         range_value = max_value - min_value
         avg_value = self._calc_mean(positions)[axis_index]
-        median = self._calc_median(positions)[axis_index]
+        median = self._calc_median(positions, axis_index)[axis_index]
         # calculate the standard deviation
         deviation_sum = 0
         for i in range(len(positions)):
