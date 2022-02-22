@@ -1,0 +1,5 @@
+DICTIONARY stm32f446.dict
+CONFIG xy_nozzle_offset.cfg
+
+G28
+XY_NOZZLE_OFFSET_PRINT

@@ -294,7 +294,8 @@ class GCodeMove:
             'base_position': list(self.base_position),
             'last_position': list(self.last_position),
             'homing_position': list(self.homing_position),
-            'speed': self.speed, 'speed_factor': self.speed_factor,
+            'speed': self.speed,
+            'speed_factor': self.speed_factor,
             'extrude_factor': self.extrude_factor,
             'current_wcs': self.current_wcs,
         }

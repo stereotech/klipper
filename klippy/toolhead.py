@@ -65,7 +65,7 @@ class Move:
 
     def move_error(self, msg="Move out of range"):
         ep = self.end_pos
-        m = "%s: %.3f %.3f %.3f %.3f %.3f %.3f [%.3f]" % (
+        m = "%s: %.3f %.3f %.3f %.3f %.3f [%.3f]" % (
             msg, ep[0], ep[1], ep[2], ep[3], ep[4], ep[5])
         return self.toolhead.printer.command_error(m)
 
@@ -615,7 +615,6 @@ class ToolHead:
     cmd_SET_VELOCITY_LIMIT_help = "Set printer velocity limits"
 
     def cmd_SET_VELOCITY_LIMIT(self, gcmd):
-        print_time = self.get_last_move_time()
         max_velocity = gcmd.get_float('VELOCITY', None, above=0.)
         max_accel = gcmd.get_float('ACCEL', None, above=0.)
         square_corner_velocity = gcmd.get_float(
