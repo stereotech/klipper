@@ -154,6 +154,9 @@ class HomingMove:
     def check_no_movement(self):
         if self.printer.get_start_args().get('debuginput') is not None:
             return None
+        return self.stepper_positions[0].endstop_name if \
+                all(sp.start_pos == sp.trig_pos for sp in self.stepper_positions) \
+                else None
         for sp in self.stepper_positions:
             if sp.start_pos == sp.trig_pos:
                 return sp.endstop_name
