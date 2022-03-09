@@ -390,7 +390,7 @@ class GCodeMove:
         elif self.absolute_coord:
             for i, offset in enumerate(offsets):
                 if offset is not None:
-                    self.wcs_offsets[n][i] = offset - self.homing_position[i]
+                    self.wcs_offsets[n][i] = offset
         else:
             for i, offset in enumerate(offsets):
                 if offset is not None:
