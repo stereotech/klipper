@@ -101,16 +101,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
-          
-      - name: Delete Artifact
-        # You may pin to the exact commit or the version.
-        # uses: GeekyEggo/delete-artifact@b73cb986740e466292a536d0e32e2666c56fdeb3
-        uses: GeekyEggo/delete-artifact@v1.0.0
-        with:
-          # The name of the artifact to delete; multiple names can be supplied on new lines.
-          name: klipper
-          # Indicates whether the action should fail upon encountering an error.
-          failOnError: false
 
   triggerUpdate:
     if: github.event_name == 'push'
