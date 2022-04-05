@@ -174,9 +174,11 @@ class PrinterExtruder:
         toolhead = self.printer.lookup_object('toolhead')
         max_velocity, max_accel = toolhead.get_max_velocity()
         self.max_e_velocity = config.getfloat(
-            'max_extrude_only_velocity', max_velocity * def_max_extrude_ratio, above=0.)
+            'max_extrude_only_velocity',
+            max_velocity * def_max_extrude_ratio, above=0.)
         self.max_e_accel = config.getfloat(
-            'max_extrude_only_accel', max_accel * def_max_extrude_ratio, above=0.)
+            'max_extrude_only_accel',
+            max_accel * def_max_extrude_ratio, above=0.)
         self.max_e_dist = config.getfloat(
             'max_extrude_only_distance', 50., minval=0.)
         self.instant_corner_v = config.getfloat(
