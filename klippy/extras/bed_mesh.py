@@ -802,8 +802,8 @@ class MoveSplitter:
         self.z_offset = self._calc_z_offset(prev_pos)
         self.traverse_complete = False
         self.distance_checked = 0.
-        axes_d = [self.next_pos[i] - self.prev_pos[i] for i in range(4)]
-        self.total_move_length = math.sqrt(sum([d*d for d in axes_d[:3]]))
+        axes_d = [self.next_pos[i] - self.prev_pos[i] for i in range(6)]
+        self.total_move_length = math.sqrt(sum([d*d for d in axes_d[:5]]))
         self.axis_move = [not isclose(d, 0., abs_tol=1e-10) for d in axes_d]
 
     def _calc_z_offset(self, pos):
@@ -835,7 +835,9 @@ class MoveSplitter:
                         self.z_offset = next_z
                         return self.current_pos[0], self.current_pos[1], \
                             self.current_pos[2] + self.z_offset, \
-                            self.current_pos[3]
+                            self.current_pos[3], \
+                            self.current_pos[4], \
+                            self.current_pos[5]
             # end of move reached
             self.current_pos[:] = self.next_pos
             self.z_offset = self._calc_z_offset(self.current_pos)

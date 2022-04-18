@@ -270,6 +270,7 @@ class PrinterProbe:
     def probe_calibrate_finalize(self, kin_pos):
         if kin_pos is None:
             return
+        nozzle_z_pos = kin_pos[2]
         z_offset = self.probe_calibrate_z - kin_pos[2]
         self.gcode.respond_info(
             "%s: z_offset: %.3f\n"
@@ -280,6 +281,9 @@ class PrinterProbe:
     cmd_PROBE_CALIBRATE_help = "Calibrate the probe's z_offset"
     def cmd_PROBE_CALIBRATE(self, gcmd):
         manual_probe.verify_no_manual_probe(self.printer)
+        # Start manual probe
+        manual_probe.ManualProbeHelper(self.printer, gcmd,
+                                       self.probe_calibrate_finalize)
         # Perform initial probe
         lift_speed = self.get_lift_speed(gcmd)
         curpos = self.run_probe(gcmd)
@@ -291,10 +295,11 @@ class PrinterProbe:
         curpos[0] += self.x_offset
         curpos[1] += self.y_offset
         self._move(curpos, self.speed)
-        # Start manual probe
-        manual_probe.ManualProbeHelper(self.printer, gcmd,
-                                       self.probe_calibrate_finalize)
+
     def cmd_Z_OFFSET_APPLY_PROBE(self,gcmd):
+        if gcmd.get_float("Z", 0.0) > 0.0:
+            self.z_offset = gcmd.get_float("Z", 0.0)
+            self.gcode.respond_info("Z Offset is %.3f" % (self.z_offset))
         offset = self.gcode_move.get_status()['homing_origin'].z
         configfile = self.printer.lookup_object('configfile')
         if offset == 0:
