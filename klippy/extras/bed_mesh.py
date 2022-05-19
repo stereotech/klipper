@@ -1273,6 +1273,29 @@ class ProfileManager:
         self.current_profile = prof_name
         self.bedmesh.set_mesh(z_mesh)
 
+    def add_profile(self, prof_name, gcmd):
+        profile = self.profiles.get(prof_name, None)
+        if profile is None:
+            raise self.gcode.error(
+                    "bed_mesh: Unknown profile [%s]" % prof_name)
+        else:
+            mesh_params = profile['mesh_params']
+            probed_matrix = list(list(line) for line in profile['points'])
+            for y in range(mesh_params['y_count']):
+                for x in range(mesh_params['x_count']):
+                    argument = 'POINT_%d_%d' % (y, x)
+                    point = gcmd.get_float(argument, 0.0)
+                    probed_matrix[y][x] = point
+            profiles = dict(self.profiles)
+            profiles[prof_name] = profile = {}
+            profile['points'] = probed_matrix
+            profile['mesh_params'] = collections.OrderedDict(mesh_params)
+            self.profiles = profiles
+            self.gcode.respond_info(
+            "Bed Mesh state has been added to profile [%s]\n"
+            % (prof_name))
+
+
     def remove_profile(self, prof_name):
         if prof_name in self.profiles:
             configfile = self.printer.lookup_object('configfile')
@@ -1293,7 +1316,8 @@ class ProfileManager:
         options = collections.OrderedDict({
             'LOAD': self.load_profile,
             'SAVE': self.save_profile,
-            'REMOVE': self.remove_profile
+            'REMOVE': self.remove_profile,
+            'ADD': None
         })
         for key in options:
             name = gcmd.get(key, None)
@@ -1302,6 +1326,8 @@ class ProfileManager:
                     gcmd.respond_info(
                         "Profile 'default' is reserved, please choose"
                         " another profile name.")
+                elif key == 'ADD':
+                    self.add_profile(name, gcmd)
                 else:
                     options[key](name)
                 return

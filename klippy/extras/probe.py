@@ -297,8 +297,8 @@ class PrinterProbe:
         self._move(curpos, self.speed)
 
     def cmd_Z_OFFSET_APPLY_PROBE(self,gcmd):
-        if gcmd.get_float("Z", 0.0) > 0.0:
-            self.z_offset = gcmd.get_float("Z", 0.0)
+        if gcmd.get_float('Z', 0.0) > 0.0:
+            self.z_offset = gcmd.get_float('Z', 0.0)
             self.gcode.respond_info("Z Offset is %.3f" % (self.z_offset))
         offset = self.gcode_move.get_status()['homing_origin'].z
         configfile = self.printer.lookup_object('configfile')

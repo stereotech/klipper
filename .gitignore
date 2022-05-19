@@ -11,3 +11,4 @@ _test_*
 klippy-env/
 klippy_env/
 printer*.cfg
+vars.cfg
