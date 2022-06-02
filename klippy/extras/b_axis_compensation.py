@@ -15,8 +15,6 @@ class BAxisCompensation:
         self.printer = config.get_printer()
         self.gcode_move = self.printer.load_object(config, 'gcode_move')
         self.gcode = self.printer.lookup_object('gcode')
-        self.calibration_template_size = config.getfloat(
-            'calibration_template_size', default=50., above=0.)
         self.b_angle = config.getfloat(
             'b_angle', default=0.
         )
@@ -65,12 +63,13 @@ class BAxisCompensation:
 
     def get_position(self):
         if not self.enabled:
-            self.next_transform.get_position()
+            return self.next_transform.get_position()
         return self.calc_untransformed(self.next_transform.get_position())
 
     def move(self, newpos, speed):
         if not self.enabled:
             self.next_transform.move(newpos, speed)
+            return
         corrected_pos = self.calc_tranformed(newpos)
         self.next_transform.move(corrected_pos, speed)
 
@@ -128,14 +127,6 @@ class BAxisCompensation:
     cmd_SAVE_B_AXIS_POINT_help = "Save point for B axis compensation"
 
     def _calc_b_axis_compensation(self, point_0, point_1, point_2, point_3, point_4, point_5):
-        #b_angle = - \
-        #    math.asin((point_1[2] - point_0[2])/self.calibration_template_size)
-        #sin_b = math.sin(b_angle)
-        #cos_b = math.cos(b_angle)
-        #rot_center_x = point_0[0] + \
-        #    self.calibration_template_size * sin_b
-        #rot_center_z = point_0[2] - \
-        #    self.calibration_template_size * cos_b
         b_angle = self._calc_b_axis_angle(point_2, point_3)
         rot_center_x, rot_center_z = self._calc_b_axis_center(point_0, point_1, point_4, point_5)
         return b_angle, rot_center_x, rot_center_z
