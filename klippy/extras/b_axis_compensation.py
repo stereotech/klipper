@@ -32,7 +32,7 @@ class BAxisCompensation:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.]
         ]
-        self.adjust_angle = 10 / RAD_TO_DEG
+        self.adjust_angle = 5 / RAD_TO_DEG
         self.gcode.register_command('CALC_B_AXIS_COMPENSATION',
                                     self.cmd_CALC_B_AXIS_COMPENSATION,
                                     desc=self.cmd_CALC_B_AXIS_COMPENSATION_help)

@@ -9,6 +9,7 @@ class AutoWcs:
         self.point_coords = [
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.]
         ]
         self.gcode = self.printer.lookup_object('gcode')
@@ -39,6 +40,12 @@ class AutoWcs:
         self.center_y = (a * f - c * e) / g
         self.radius =  math.hypot(x0 - self.center_x, y0 - self.center_y)
 
+    def _calc_wcs(self):
+        x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
+        y = self.point_coords[1][1] + 10 + 2.039418
+        z = self.point_coords[0][2]
+        return x, y, z
+
     def cmd_SAVE_WCS_CALC_POINT(self, gcmd):
         point_idx = gcmd.get_int('POINT', 0)
         coords = gcmd.get('COORDS', None)
@@ -59,9 +66,11 @@ class AutoWcs:
 
 
     def cmd_CALC_WCS_PARAMS(self, gcmd):
-        self._calc_circle()
-        out = "Calculated WCS center: X:%.6f, Y:%.6f\n" % (
-            self.center_x, self.center_y)
+        x, y, z = self._calc_wcs()
+        out = "Calculated WCS 1 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
+            x, y, z)
+        out += "Calculated WCS 2 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
+            x, y-z, y)
         out += "WCS radius: %.3f" % (self.radius)
         gcmd.respond_info(out)
 
