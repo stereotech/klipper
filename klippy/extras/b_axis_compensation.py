@@ -32,7 +32,7 @@ class BAxisCompensation:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.]
         ]
-        self.adjust_angle = 5 / RAD_TO_DEG
+        self.adjust_angle = 10 / RAD_TO_DEG
         self.gcode.register_command('CALC_B_AXIS_COMPENSATION',
                                     self.cmd_CALC_B_AXIS_COMPENSATION,
                                     desc=self.cmd_CALC_B_AXIS_COMPENSATION_help)
@@ -132,8 +132,9 @@ class BAxisCompensation:
         return b_angle, rot_center_x, rot_center_z
 
     def _calc_b_axis_center(self, point_0, point_1, point_2, point_3):
+        probe_backlash = (abs(point_2[0] - point_3[0]) - 110) / 2
         rot_center_x = (point_2[0] + point_3[0]) / 2
-        o_cz_1 = (point_0[2] - point_1[2]) / math.tan(self.adjust_angle)
+        o_cz_1 = (point_0[2] - (point_1[2] + probe_backlash * math.sin(self.adjust_angle))) / math.tan(self.adjust_angle)
         o2_o1 = 45 - o_cz_1
         h = abs(o2_o1 / math.tan(self.adjust_angle / 2))
         rot_center_z = point_0[2] - h

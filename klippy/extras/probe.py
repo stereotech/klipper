@@ -301,6 +301,8 @@ class PrinterProbe:
         if gcmd.get_float('Z', 0.0) > 0.0:
             self.z_offset = gcmd.get_float('Z', 0.0)
             self.gcode.respond_info("Z Offset is %.3f" % (self.z_offset))
+        self.x_offset = gcmd.get_float('X', self.x_offset)
+        self.y_offset = gcmd.get_float('Y', self.y_offset)
         offset = self.gcode_move.get_status()['homing_origin'].z
         configfile = self.printer.lookup_object('configfile')
         if offset == 0:

@@ -1,5 +1,7 @@
 import math
 
+RAD_TO_DEG = 57.295779513
+
 class AutoWcs:
     def __init__(self, config):
         self.printer = config.get_printer()
@@ -10,8 +12,15 @@ class AutoWcs:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.]
         ]
+        self.wcs = [
+            [0., 0., 0.],
+            [0., 0., 0.]
+        ]
+        self.adjust_angle = 10 / RAD_TO_DEG
         self.gcode = self.printer.lookup_object('gcode')
         self.gcode.register_command(
             'SAVE_WCS_CALC_POINT', self.cmd_SAVE_WCS_CALC_POINT,
@@ -41,10 +50,22 @@ class AutoWcs:
         self.radius =  math.hypot(x0 - self.center_x, y0 - self.center_y)
 
     def _calc_wcs(self):
+        probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
-        y = self.point_coords[1][1] + 10 + 2.039418
+        y = self.point_coords[1][1] + 10 + probe_backlash
         z = self.point_coords[0][2]
         return x, y, z
+
+    def _calc_wcs_2(self):
+        x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
+        probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
+        o_cz_1 = (self.point_coords[4][2] - (self.point_coords[5][2] + probe_backlash * math.sin(self.adjust_angle))) / math.tan(self.adjust_angle)
+        o2_o1 = 45 - o_cz_1
+        h = abs(o2_o1 / math.tan(self.adjust_angle / 2))
+        rot_center_z = self.point_coords[4][2] - h
+        z = self.point_coords[0][2] - rot_center_z
+        y = self.point_coords[1][1] + 10 + probe_backlash - z
+        return x, y, rot_center_z
 
     def cmd_SAVE_WCS_CALC_POINT(self, gcmd):
         point_idx = gcmd.get_int('POINT', 0)
@@ -67,21 +88,24 @@ class AutoWcs:
 
     def cmd_CALC_WCS_PARAMS(self, gcmd):
         x, y, z = self._calc_wcs()
+        x2, y2, z2 = self._calc_wcs_2()
         out = "Calculated WCS 1 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
             x, y, z)
         out += "Calculated WCS 2 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
-            x, y-z, y)
-        out += "WCS radius: %.3f" % (self.radius)
+            x2, y2, z2)
+        self.wcs[0] = [x, y, z]
+        self.wcs[1] = [x2, y2, z2]
         gcmd.respond_info(out)
 
     cmd_CALC_WCS_PARAMS_help = "Perform WCS calculation"
 
+    def SET_AUTO_WCS(self, gcmd):
+        #TODO: set auto wcs params
+        pass
 
     def get_status(self, eventtime=None):
         return {
-            "center_x": self.center_x,
-            "center_y": self.center_y,
-            "radius": self.radius
+            "wcs": self.wcs
         }
 
 def load_config(config):

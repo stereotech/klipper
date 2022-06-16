@@ -20,12 +20,12 @@
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"
             },
-            "stopOnEntry": true,
+            "stopOnEntry": false,
             "console": "integratedTerminal",
             "cwd": "${workspaceRoot}",
             "program": "${workspaceFolder}/klippy/klippy.py",
             "args": [
-                "${workspaceFolder}/HTE530-5-6-21.cfg",
+                "${workspaceFolder}/HTE530-5-1-22.cfg",
                 "-v",
                 "-a",
                 "/tmp/klipper_uds"
