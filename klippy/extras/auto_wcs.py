@@ -59,13 +59,15 @@ class AutoWcs:
     def _calc_wcs_2(self):
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
         probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
-        o_cz_1 = (self.point_coords[4][2] - (self.point_coords[5][2] + probe_backlash * math.sin(self.adjust_angle))) / math.tan(self.adjust_angle)
-        o2_o1 = 45 - o_cz_1
-        h = abs(o2_o1 / math.tan(self.adjust_angle / 2))
-        rot_center_z = self.point_coords[4][2] - h
-        z = self.point_coords[0][2] - rot_center_z
-        y = self.point_coords[1][1] + 10 + probe_backlash - z
-        return x, y, rot_center_z
+        #o_cz_1 = (self.point_coords[4][2] - (self.point_coords[5][2] + probe_backlash * math.sin(self.adjust_angle))) / math.tan(self.adjust_angle)
+        #o2_o1 = 45 - o_cz_1
+        #h = abs(o2_o1 / math.tan(self.adjust_angle / 2))
+        #rot_center_z = self.point_coords[4][2] - h
+        #z = self.point_coords[0][2] - rot_center_z
+        #y = self.point_coords[1][1] + 10 + probe_backlash - z
+        y = self.point_coords[5][1] + probe_backlash
+        z = self.point_coords[4][2] - 55 - probe_backlash
+        return x, y, z
 
     def cmd_SAVE_WCS_CALC_POINT(self, gcmd):
         point_idx = gcmd.get_int('POINT', 0)
@@ -100,8 +102,20 @@ class AutoWcs:
     cmd_CALC_WCS_PARAMS_help = "Perform WCS calculation"
 
     def SET_AUTO_WCS(self, gcmd):
-        #TODO: set auto wcs params
-        pass
+        point_idx = gcmd.get_int('WCS', 0)
+        coords = gcmd.get('COORDS', None)
+        if coords is not None:
+            try:
+                coords = coords.strip().split(",", 2)
+                coords = [float(l.strip()) for l in coords]
+                if len(coords) != 3:
+                    raise Exception
+            except Exception:
+                raise gcmd.error(
+                    "auto_wcs: improperly formatted entry for "
+                    "point\n%s" % (gcmd.get_commandline()))
+            for axis, coord in enumerate(coords):
+                self.wcs[point_idx][axis] = coord
 
     def get_status(self, eventtime=None):
         return {
