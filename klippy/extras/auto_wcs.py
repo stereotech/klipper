@@ -28,6 +28,9 @@ class AutoWcs:
         self.gcode.register_command(
             'CALC_WCS_PARAMS', self.cmd_CALC_WCS_PARAMS,
             desc=self.cmd_CALC_WCS_PARAMS_help)
+        self.gcode.register_command(
+            'SET_AUTO_WCS', self.cmd_SET_AUTO_WCS,
+            desc=self.cmd_CALC_WCS_PARAMS_help)
 
     def _calc_circle(self):
         x0 = self.point_coords[0][0]
@@ -66,7 +69,7 @@ class AutoWcs:
         #z = self.point_coords[0][2] - rot_center_z
         #y = self.point_coords[1][1] + 10 + probe_backlash - z
         y = self.point_coords[5][1] + probe_backlash
-        z = self.point_coords[4][2] - 55 - probe_backlash
+        z = self.point_coords[4][2] - 60 - probe_backlash
         return x, y, z
 
     def cmd_SAVE_WCS_CALC_POINT(self, gcmd):
@@ -101,7 +104,7 @@ class AutoWcs:
 
     cmd_CALC_WCS_PARAMS_help = "Perform WCS calculation"
 
-    def SET_AUTO_WCS(self, gcmd):
+    def cmd_SET_AUTO_WCS(self, gcmd):
         point_idx = gcmd.get_int('WCS', 0)
         coords = gcmd.get('COORDS', None)
         if coords is not None:
@@ -116,6 +119,8 @@ class AutoWcs:
                     "point\n%s" % (gcmd.get_commandline()))
             for axis, coord in enumerate(coords):
                 self.wcs[point_idx][axis] = coord
+
+    cmd_CALC_WCS_PARAMS_help = "Perform WCS calculation"
 
     def get_status(self, eventtime=None):
         return {

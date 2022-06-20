@@ -167,9 +167,9 @@ class BAxisCompensation:
     def cmd_CALC_B_AXIS_COMPENSATION(self, gcmd):
         b_angle, rot_center_x, rot_center_z = self._calc_b_axis_compensation(
             self.point_coords[0], self.point_coords[1], self.point_coords[2], self.point_coords[3], self.point_coords[4], self.point_coords[5])
+        self._update_compensation(b_angle, rot_center_x, rot_center_z)
         enable = gcmd.get_int('ENABLE', 0)
         if enable:
-            self._update_compensation(b_angle, rot_center_x, rot_center_z)
             self.enabled = True
         else:
             self.enabled = False
