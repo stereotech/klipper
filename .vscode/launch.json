@@ -17,10 +17,15 @@
             "name": "Run klipper",
             "type": "python",
             "request": "launch",
-            "stopOnEntry": true,
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal",
+            "cwd": "${workspaceRoot}",
             "program": "${workspaceFolder}/klippy/klippy.py",
             "args": [
-                "${workspaceFolder}/stereotech_config/HTE530-5-1-22.cfg",
+                "${workspaceFolder}/HTE530-5-1-22.cfg",
                 "-v",
                 "-a",
                 "/tmp/klipper_uds"
