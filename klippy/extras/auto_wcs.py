@@ -62,12 +62,6 @@ class AutoWcs:
     def _calc_wcs_2(self):
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
         probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
-        #o_cz_1 = (self.point_coords[4][2] - (self.point_coords[5][2] + probe_backlash * math.sin(self.adjust_angle))) / math.tan(self.adjust_angle)
-        #o2_o1 = 45 - o_cz_1
-        #h = abs(o2_o1 / math.tan(self.adjust_angle / 2))
-        #rot_center_z = self.point_coords[4][2] - h
-        #z = self.point_coords[0][2] - rot_center_z
-        #y = self.point_coords[1][1] + 10 + probe_backlash - z
         y = self.point_coords[5][1] + probe_backlash
         z = self.point_coords[4][2] - 60 - probe_backlash
         return x, y, z

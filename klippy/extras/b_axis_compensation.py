@@ -134,7 +134,8 @@ class BAxisCompensation:
     def _calc_b_axis_center(self, point_0, point_1, point_2, point_3):
         probe_backlash = (abs(point_2[0] - point_3[0]) - 110) / 2
         rot_center_x = (point_2[0] + point_3[0]) / 2
-        o_cz_1 = (point_0[2] - (point_1[2] + probe_backlash * math.sin(self.adjust_angle))) / math.tan(self.adjust_angle)
+        o_cz_1 = (point_0[2] - (point_1[2] + probe_backlash *
+                                math.sin(self.adjust_angle))) / math.tan(self.adjust_angle)
         o2_o1 = 45 - o_cz_1
         h = abs(o2_o1 / math.tan(self.adjust_angle / 2))
         rot_center_z = point_0[2] - h
@@ -166,7 +167,8 @@ class BAxisCompensation:
 
     def cmd_CALC_B_AXIS_COMPENSATION(self, gcmd):
         b_angle, rot_center_x, rot_center_z = self._calc_b_axis_compensation(
-            self.point_coords[0], self.point_coords[1], self.point_coords[2], self.point_coords[3], self.point_coords[4], self.point_coords[5])
+            self.point_coords[0], self.point_coords[1], self.point_coords[2],
+            self.point_coords[3], self.point_coords[4], self.point_coords[5])
         self._update_compensation(b_angle, rot_center_x, rot_center_z)
         enable = gcmd.get_int('ENABLE', 0)
         if enable:
@@ -185,7 +187,9 @@ class BAxisCompensation:
     cmd_CALC_B_AXIS_COMPENSATION_help = "Calculate B axis compensation"
 
     def cmd_CALC_B_AXIS_CENTER(self, gcmd):
-        rot_center_x, rot_center_z = self._calc_b_axis_center(self.point_coords[0], self.point_coords[1], self.point_coords[4], self.point_coords[5])
+        rot_center_x, rot_center_z = \
+        self._calc_b_axis_center(self.point_coords[0], self.point_coords[1],
+                                 self.point_coords[4], self.point_coords[5])
         gcmd.respond_info("B axis rotation center: X%.3f Y%.3f Z%.3f" % (
             rot_center_x, 0, rot_center_z))
 
