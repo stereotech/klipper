@@ -817,7 +817,7 @@ class MoveSplitter:
             raise self.gcode.error(
                 "bed_mesh: Slice distance is negative "
                 "or greater than entire move length")
-        for i in range(4):
+        for i in range(6):
             if self.axis_move[i]:
                 self.current_pos[i] = lerp(
                     t, self.prev_pos[i], self.next_pos[i])
