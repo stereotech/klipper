@@ -421,7 +421,7 @@ class GCodeMove:
         wcs_offsets = " "
         for wcs_n in range(6):
             wcs_offsets = wcs_offsets + "%d " % (wcs_n) + " ".join(
-                ["%s:%d" % (a, v) for a, v in zip("XYZ", self.wcs_offsets[wcs_n])])
+                ["%s:%.3f" % (a, v) for a, v in zip("XYZ", self.wcs_offsets[wcs_n])])
             wcs_offsets += "\n"
         gcmd.respond_info("current_wcs: %s\n"
                           "wcs_offsets: \n"

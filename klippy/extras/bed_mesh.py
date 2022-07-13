@@ -802,8 +802,8 @@ class MoveSplitter:
         self.z_offset = self._calc_z_offset(prev_pos)
         self.traverse_complete = False
         self.distance_checked = 0.
-        axes_d = [self.next_pos[i] - self.prev_pos[i] for i in range(4)]
-        self.total_move_length = math.sqrt(sum([d*d for d in axes_d[:3]]))
+        axes_d = [self.next_pos[i] - self.prev_pos[i] for i in range(6)]
+        self.total_move_length = math.sqrt(sum([d*d for d in axes_d[:5]]))
         self.axis_move = [not isclose(d, 0., abs_tol=1e-10) for d in axes_d]
 
     def _calc_z_offset(self, pos):
@@ -817,7 +817,7 @@ class MoveSplitter:
             raise self.gcode.error(
                 "bed_mesh: Slice distance is negative "
                 "or greater than entire move length")
-        for i in range(4):
+        for i in range(6):
             if self.axis_move[i]:
                 self.current_pos[i] = lerp(
                     t, self.prev_pos[i], self.next_pos[i])
@@ -835,7 +835,9 @@ class MoveSplitter:
                         self.z_offset = next_z
                         return self.current_pos[0], self.current_pos[1], \
                             self.current_pos[2] + self.z_offset, \
-                            self.current_pos[3]
+                            self.current_pos[3], \
+                            self.current_pos[4], \
+                            self.current_pos[5]
             # end of move reached
             self.current_pos[:] = self.next_pos
             self.z_offset = self._calc_z_offset(self.current_pos)
@@ -1271,6 +1273,29 @@ class ProfileManager:
         self.current_profile = prof_name
         self.bedmesh.set_mesh(z_mesh)
 
+    def add_profile(self, prof_name, gcmd):
+        profile = self.profiles.get(prof_name, None)
+        if profile is None:
+            raise self.gcode.error(
+                    "bed_mesh: Unknown profile [%s]" % prof_name)
+        else:
+            mesh_params = profile['mesh_params']
+            probed_matrix = list(list(line) for line in profile['points'])
+            for y in range(mesh_params['y_count']):
+                for x in range(mesh_params['x_count']):
+                    argument = 'POINT_%d_%d' % (y, x)
+                    point = gcmd.get_float(argument, 0.0)
+                    probed_matrix[y][x] = point
+            profiles = dict(self.profiles)
+            profiles[prof_name] = profile = {}
+            profile['points'] = probed_matrix
+            profile['mesh_params'] = collections.OrderedDict(mesh_params)
+            self.profiles = profiles
+            self.gcode.respond_info(
+            "Bed Mesh state has been added to profile [%s]\n"
+            % (prof_name))
+
+
     def remove_profile(self, prof_name):
         if prof_name in self.profiles:
             configfile = self.printer.lookup_object('configfile')
@@ -1291,7 +1316,8 @@ class ProfileManager:
         options = collections.OrderedDict({
             'LOAD': self.load_profile,
             'SAVE': self.save_profile,
-            'REMOVE': self.remove_profile
+            'REMOVE': self.remove_profile,
+            'ADD': None
         })
         for key in options:
             name = gcmd.get(key, None)
@@ -1300,6 +1326,8 @@ class ProfileManager:
                     gcmd.respond_info(
                         "Profile 'default' is reserved, please choose"
                         " another profile name.")
+                elif key == 'ADD':
+                    self.add_profile(name, gcmd)
                 else:
                     options[key](name)
                 return
