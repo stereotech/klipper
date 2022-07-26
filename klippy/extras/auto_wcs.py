@@ -63,7 +63,7 @@ class AutoWcs:
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
         probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
         y = self.point_coords[5][1] + probe_backlash
-        z = self.point_coords[4][2] - 60 - probe_backlash
+        z = self.point_coords[4][2] - 60 # - probe_backlash
         return x, y, z
 
     def cmd_SAVE_WCS_CALC_POINT(self, gcmd):
