@@ -377,6 +377,7 @@ class GCodeMove:
     def cmd_G10(self, gcmd):
         offset_mode = gcmd.get_int('L', 2)
         n = gcmd.get_int('P', 0)
+        relative = gcmd.get_int('R', 0)
         offsets = [gcmd.get_float(a, None) for a in 'XYZ']
         if n == 0:
             n = self.current_wcs
@@ -388,9 +389,14 @@ class GCodeMove:
                 if offset is not None:
                     self.wcs_offsets[n][i] -= offset - (pos[i] - self.homing_position[i])
         elif self.absolute_coord:
-            for i, offset in enumerate(offsets):
-                if offset is not None:
-                    self.wcs_offsets[n][i] = offset
+            if relative:
+                for i, offset in enumerate(offsets):
+                    if offset is not None:
+                        self.wcs_offsets[n][i] += offset
+            else:
+                for i, offset in enumerate(offsets):
+                    if offset is not None:
+                        self.wcs_offsets[n][i] = offset
         else:
             for i, offset in enumerate(offsets):
                 if offset is not None:
