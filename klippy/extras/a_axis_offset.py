@@ -55,4 +55,4 @@ class AAxisOffsetCalculation:
 
 
 def load_config(config):
-    AAxisOffsetCalculation(config)
+    return AAxisOffsetCalculation(config)
