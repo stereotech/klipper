@@ -47,6 +47,9 @@ class AAxisOffsetCalculation:
     def cmd_CALC_A_AXIS_OFFSET(self, gcmd):
         offset = self._calc_a_axis_offset(
             self.point_coords[0], self.point_coords[1])
+        homing_origin_a = self.gcode_move.get_status()['homing_origin'].a
+        if homing_origin_a + offset > 0.0:
+            offset = 0.0
         offset_gcmd = self.gcode.create_gcode_command(
             'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A_ADJUST': offset})
         self.gcode_move.cmd_SET_GCODE_OFFSET(offset_gcmd)
