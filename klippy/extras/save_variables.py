@@ -31,7 +31,9 @@ class SaveVariables:
             logging.exception(msg)
             raise self.printer.command_error(msg)
         self.allVariables = allvars
+
     cmd_SAVE_VARIABLE_help = "Save arbitrary variables to disk"
+
     def cmd_SAVE_VARIABLE(self, gcmd):
         varname = gcmd.get('VARIABLE')
         value = gcmd.get('VALUE')
@@ -56,8 +58,10 @@ class SaveVariables:
             raise gcmd.error(msg)
         gcmd.respond_info("Variable Saved")
         self.loadVariables()
+        
     def get_status(self, eventtime):
         return {'variables': self.allVariables}
+
 
 def load_config(config):
     return SaveVariables(config)
