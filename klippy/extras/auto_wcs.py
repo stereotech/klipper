@@ -14,6 +14,7 @@ class AutoWcs:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.]
         ]
         self.wcs = [
@@ -61,8 +62,8 @@ class AutoWcs:
 
     def _calc_wcs_2(self):
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
-        probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
-        y = self.point_coords[5][1] + probe_backlash / 2
+        # probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
+        y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2 - 5
         z = self.point_coords[4][2] - 60 # - probe_backlash
         return x, y, z
 
