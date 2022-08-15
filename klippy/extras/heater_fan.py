@@ -16,7 +16,7 @@ class PrinterHeaterFan:
         self.printer.register_event_handler("klippy:ready", self.handle_ready)
         self.fan_name = config.get_name().split()[-1]
         gcode = self.printer.lookup_object('gcode')
-        gcode.register_mux_command('HEATER_FAN_TEST', 'FUN',
+        gcode.register_mux_command('HEATER_FAN_TEST', 'FAN',
                                     self.fan_name,
                                     self.cmd_HEATER_FAN_TEST,
                                     desc=self.help_text)
