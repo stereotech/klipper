@@ -9,6 +9,7 @@ import logging
 
 PIN_MIN_TIME = 0.100
 
+
 class PrinterHeaterFan:
     def __init__(self, config):
         self.printer = config.get_printer()
