@@ -49,7 +49,7 @@ class PrinterHeaterFan:
 
     def get_status(self, eventtime):
         return self.fan.get_status(eventtime)
-        
+
     def callback(self, eventtime):
         speed = 0.
         for heater in self.heaters:

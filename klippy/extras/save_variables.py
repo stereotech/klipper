@@ -59,7 +59,7 @@ class SaveVariables:
             raise gcmd.error(msg)
         gcmd.respond_info("Variable Saved")
         self.loadVariables()
-        
+
     def get_status(self, eventtime):
         return {'variables': self.allVariables}
 
