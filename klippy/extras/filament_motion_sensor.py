@@ -83,8 +83,6 @@ class EncoderSensor:
             # Filament is always assumed to be present on an encoder event
             self.runout_helper.note_filament_present(True)
 
-    # def get_status(self, eventtime):
-    #     return self.fan.get_status(eventtime)
-
+            
 def load_config_prefix(config):
     return EncoderSensor(config)
