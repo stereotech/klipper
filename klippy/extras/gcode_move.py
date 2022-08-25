@@ -5,6 +5,7 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
 import math
+import ast
 
 DEG_TO_RAD = 0.01745329252
 
@@ -41,6 +42,8 @@ class GCodeMove:
         gcode.register_command('M114', self.cmd_M114, True)
         gcode.register_command('GET_POSITION', self.cmd_GET_POSITION, True,
                                desc=self.cmd_GET_POSITION_help)
+        gcode.register_command('LOAD_GCODE_STATE', self.cmd_LOAD_GCODE_STATE, True,
+                               desc=self.cmd_LOAD_GCODE_STATE_help)
         self.Coord = gcode.Coord
         # G-Code coordinate manipulation
         self.absolute_coord = self.absolute_extrude = True
@@ -150,6 +153,7 @@ class GCodeMove:
             'gcode_position': self.Coord(*move_position),
             'current_wcs': self.current_wcs,
             'wcs_offsets': self.wcs_offsets,
+            'base_position': self.Coord(*self.base_position)
         }
 
     def reset_last_position(self):
@@ -325,6 +329,49 @@ class GCodeMove:
             self.move_with_transform(self.last_position, speed)
     cmd_GET_POSITION_help = (
         "Return information on the current location of the toolhead")
+
+    def cmd_LOAD_GCODE_STATE(self, gcmd):
+        """
+        Loads state from gcode file.
+        """
+        state_name = gcmd.get('NAME', 'default')
+        params = gcmd.get('PARAMS', 'default')
+        params_dict = ast.literal_eval(params)
+        homing_position = [
+                params_dict['gcode_move']['homing_origin'][0],
+                params_dict['gcode_move']['homing_origin'][1],
+                params_dict['gcode_move']['homing_origin'][2],
+                params_dict['gcode_move']['homing_origin'][3],
+                params_dict['gcode_move']['homing_origin'][4],
+                params_dict['gcode_move']['homing_origin'][5]]
+        last_position = [
+                params_dict['gcode_move']['position'][0],
+                params_dict['gcode_move']['position'][1],
+                params_dict['gcode_move']['position'][2],
+                params_dict['gcode_move']['position'][3],
+                params_dict['gcode_move']['position'][4],
+                params_dict['gcode_move']['position'][5]]
+        base_position = [
+                params_dict['gcode_move']['base_position'][0],
+                params_dict['gcode_move']['base_position'][1],
+                params_dict['gcode_move']['base_position'][2],
+                params_dict['gcode_move']['base_position'][3],
+                params_dict['gcode_move']['base_position'][4],
+                params_dict['gcode_move']['base_position'][5]]
+        self.saved_states[state_name] = {
+            'absolute_coord': params_dict['gcode_move']['absolute_coordinates'],
+            'absolute_extrude': params_dict['gcode_move']['absolute_extrude'],
+            'base_position': list(base_position),
+            'last_position': list(last_position),
+            'homing_position': list(homing_position),
+            'speed': params_dict['gcode_move']['speed'],
+            'speed_factor': params_dict['gcode_move']['speed_factor'] / 60.,
+            'extrude_factor': params_dict['gcode_move']['extrude_factor'],
+            'current_wcs': params_dict['gcode_move']['current_wcs'],
+        }
+        self.last_position = last_position
+        logging.info(f'\n\n---cmd_LOAD_GCODE_STATE-----self.saved_states[state_name-- :  {self.saved_states[state_name]} \n')
+    cmd_LOAD_GCODE_STATE_help = 'Loading Print Status and Data from a vars.cfg File'
 
     def cmd_GET_POSITION(self, gcmd):
         toolhead = self.printer.lookup_object('toolhead', None)
