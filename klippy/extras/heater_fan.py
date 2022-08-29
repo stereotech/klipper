@@ -7,11 +7,18 @@ from . import fan
 
 PIN_MIN_TIME = 0.100
 
+
 class PrinterHeaterFan:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.printer.load_object(config, 'heaters')
         self.printer.register_event_handler("klippy:ready", self.handle_ready)
+        self.fan_name = config.get_name().split()[-1]
+        gcode = self.printer.lookup_object('gcode')
+        gcode.register_mux_command('HEATER_FAN_TEST', 'FAN',
+                                    self.fan_name,
+                                    self.cmd_HEATER_FAN_TEST,
+                                    desc=self.help_text)
         self.heater_names = config.getlist("heater", ("extruder",))
         self.heater_temp = config.getfloat("heater_temp", 50.0)
         self.heaters = []
@@ -27,7 +34,7 @@ class PrinterHeaterFan:
 
     def get_status(self, eventtime):
         return self.fan.get_status(eventtime)
-        
+
     def callback(self, eventtime):
         speed = 0.
         for heater in self.heaters:
