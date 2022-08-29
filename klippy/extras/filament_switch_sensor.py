@@ -100,8 +100,12 @@ class RunoutHelper:
             msg = "Filament Sensor %s: filament not detected" % (self.name)
         gcmd.respond_info(msg)
     cmd_SET_FILAMENT_SENSOR_help = "Sets the filament sensor on/off"
+
     def cmd_SET_FILAMENT_SENSOR(self, gcmd):
         self.sensor_enabled = gcmd.get_int("ENABLE", 1)
+        logging.info(
+                "Filament Sensor %s: enable %d" %
+                (self.name, self.sensor_enabled))
 
 class SwitchSensor:
     def __init__(self, config):

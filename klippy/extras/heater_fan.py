@@ -9,6 +9,7 @@ import logging
 
 PIN_MIN_TIME = 0.100
 
+
 class PrinterHeaterFan:
     def __init__(self, config):
         self.printer = config.get_printer()
@@ -38,6 +39,7 @@ class PrinterHeaterFan:
             speed = 0.
         self.fan.set_speed_from_command(speed)
         gcmd.respond_info("Fan started: fan_speed=%.1f, fan_name= %s" % (speed, self.fan_name))
+        logging.info("Start command HEATER_FAN_TEST")
 
     def handle_ready(self):
         pheaters = self.printer.lookup_object('heaters')
@@ -47,6 +49,7 @@ class PrinterHeaterFan:
 
     def get_status(self, eventtime):
         return self.fan.get_status(eventtime)
+
     def callback(self, eventtime):
         speed = 0.
         for heater in self.heaters:
@@ -59,6 +62,7 @@ class PrinterHeaterFan:
             print_time = self.fan.get_mcu().estimated_print_time(curtime)
             self.fan.set_speed(print_time + PIN_MIN_TIME, speed)
         return eventtime + 1.
+
 
 def load_config_prefix(config):
     return PrinterHeaterFan(config)
