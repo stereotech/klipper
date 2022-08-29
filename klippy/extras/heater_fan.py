@@ -4,8 +4,6 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 from . import fan
-import logging
-
 
 PIN_MIN_TIME = 0.100
 
@@ -14,31 +12,12 @@ class PrinterHeaterFan:
         self.printer = config.get_printer()
         self.printer.load_object(config, 'heaters')
         self.printer.register_event_handler("klippy:ready", self.handle_ready)
-        self.fan_name = config.get_name().split()[-1]
-        gcode = self.printer.lookup_object('gcode')
-        gcode.register_mux_command('HEATER_FAN_TEST', 'FUN',
-                                    self.fan_name,
-                                    self.cmd_HEATER_FAN_TEST,
-                                    desc=self.help_text)
         self.heater_names = config.getlist("heater", ("extruder",))
         self.heater_temp = config.getfloat("heater_temp", 50.0)
         self.heaters = []
         self.fan = fan.Fan(config, default_shutdown_speed=1.)
         self.fan_speed = config.getfloat("fan_speed", 1., minval=0., maxval=1.)
         self.last_speed = 0.
-
-    help_text = "Turns on the FAN to test it(heatsink_fan)"
-
-    def cmd_HEATER_FAN_TEST(self, gcmd):
-        """
-        Handler for test run of the fan
-        """
-        speed = gcmd.get_float('SPEED', 1.)
-        if speed < 1.:
-            speed = 0.
-        self.fan.set_speed_from_command(speed)
-        gcmd.respond_info("Fan started: fan_speed=%.1f, fan_name= %s" % (speed, self.fan_name))
-        logging.info("Start command HEATER_FAN_TEST")
 
     def handle_ready(self):
         pheaters = self.printer.lookup_object('heaters')

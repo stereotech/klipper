@@ -45,7 +45,7 @@ class EncoderSensor:
                 self.detection_length)
 
     def _handle_ready(self):
-        self.extruder = self.printer.lookup_object(self.extruder_name) 
+        self.extruder = self.printer.lookup_object(self.extruder_name)
         self.estimated_print_time = (
                 self.printer.lookup_object('mcu').estimated_print_time)
         self._update_filament_runout_pos()
