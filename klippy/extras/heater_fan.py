@@ -18,13 +18,25 @@ class PrinterHeaterFan:
         gcode.register_mux_command('HEATER_FAN_TEST', 'FAN',
                                     self.fan_name,
                                     self.cmd_HEATER_FAN_TEST,
-                                    desc=self.help_text)
+                                    desc=self.cmd_HEATER_FAN_TEST_help)
         self.heater_names = config.getlist("heater", ("extruder",))
         self.heater_temp = config.getfloat("heater_temp", 50.0)
         self.heaters = []
         self.fan = fan.Fan(config, default_shutdown_speed=1.)
         self.fan_speed = config.getfloat("fan_speed", 1., minval=0., maxval=1.)
         self.last_speed = 0.
+
+    def cmd_HEATER_FAN_TEST(self, gcmd):
+        """
+        Handler for test run of the fan
+        """
+        speed = gcmd.get_float('SPEED', 1.)
+        if speed < 1.:
+            speed = 0.
+        self.fan.set_speed_from_command(speed)
+        gcmd.respond_info("Fan started: fan_speed=%.1f, fan_name= %s" % (speed, self.fan_name))
+
+    cmd_HEATER_FAN_TEST_help = 'Tests heater fan'
 
     def handle_ready(self):
         pheaters = self.printer.lookup_object('heaters')
@@ -47,6 +59,7 @@ class PrinterHeaterFan:
             print_time = self.fan.get_mcu().estimated_print_time(curtime)
             self.fan.set_speed(print_time + PIN_MIN_TIME, speed)
         return eventtime + 1.
+
 
 
 def load_config_prefix(config):
