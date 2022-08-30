@@ -1312,12 +1312,24 @@ class ProfileManager:
                 "No profile named [%s] to remove" % (prof_name))
     cmd_BED_MESH_PROFILE_help = "Bed Mesh Persistent Storage management"
 
+    def reset_profile(self, prof_name):
+        if prof_name in self.profiles:
+            for point_list in self.profiles[prof_name]['points']:
+                for i in range(0, len(point_list)):
+                    point_list[i] = 0.
+            self.gcode.respond_info(
+                "Profile [%s] is reset" % (prof_name))
+        else:
+            self.gcode.respond_info(
+                "No profile named [%s]" % (prof_name))
+
     def cmd_BED_MESH_PROFILE(self, gcmd):
         options = collections.OrderedDict({
             'LOAD': self.load_profile,
             'SAVE': self.save_profile,
             'REMOVE': self.remove_profile,
-            'ADD': None
+            'ADD': None,
+            'RESET': self.reset_profile
         })
         for key in options:
             name = gcmd.get(key, None)
