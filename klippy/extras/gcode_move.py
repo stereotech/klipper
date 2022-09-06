@@ -369,8 +369,8 @@ class GCodeMove:
             'extrude_factor': params_dict['gcode_move']['extrude_factor'],
             'current_wcs': params_dict['gcode_move']['current_wcs'],
         }
-        logging.info(f'Realised cmd LOAD_GCODE_STATE, state:  {self.saved_states[state_name]} \n')
-    cmd_LOAD_GCODE_STATE_help = 'Loading Print Status and Data from a vars.cfg File'
+        logging.info('Realised cmd LOAD_GCODE_STATE, state: %s' % self.saved_states[state_name])
+    cmd_LOAD_GCODE_STATE_help = 'Loading Print Status and Data from a params sended from STEAPP-server'
 
     def cmd_GET_POSITION(self, gcmd):
         toolhead = self.printer.lookup_object('toolhead', None)
