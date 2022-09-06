@@ -369,8 +369,7 @@ class GCodeMove:
             'extrude_factor': params_dict['gcode_move']['extrude_factor'],
             'current_wcs': params_dict['gcode_move']['current_wcs'],
         }
-        self.last_position = last_position
-        logging.info(f'\n\n---cmd_LOAD_GCODE_STATE-----self.saved_states[state_name-- :  {self.saved_states[state_name]} \n')
+        logging.info(f'Realised cmd LOAD_GCODE_STATE, state:  {self.saved_states[state_name]} \n')
     cmd_LOAD_GCODE_STATE_help = 'Loading Print Status and Data from a vars.cfg File'
 
     def cmd_GET_POSITION(self, gcmd):

@@ -25,28 +25,12 @@ class GCodeButton:
         self.press_template = gcode_macro.load_template(config, 'press_gcode')
         self.release_template = gcode_macro.load_template(config,
                                                           'release_gcode', '')
-        # for power off                                                  
-        self.release_fast_stop_template = gcode_macro.load_template(config,
-        'release_fast_stop_gcode', '')
         self.gcode = self.printer.lookup_object('gcode')
         self.gcode.register_mux_command("QUERY_BUTTON", "BUTTON", self.name,
                                         self.cmd_QUERY_BUTTON,
                                         desc=self.cmd_QUERY_BUTTON_help)
-        # handle for realese gcode in release_fast_stop_gcode area
-        self.printer.register_event_handler("klippy:shutdown",
-                                            self._handle_fast_stop)
 
     cmd_QUERY_BUTTON_help = "Report on the state of a button"
-
-    def _handle_fast_stop(self):
-        # if power_detection button is pressed
-        if self.last_state:
-            try:
-                self.gcode.run_script(self.release_fast_stop_template.render())
-                logging.info("Script < _handle_fast_stop > running")
-            except:
-                logging.exception("Script < _handle_fast_stop > running error")
-        pass
 
     def cmd_QUERY_BUTTON(self, gcmd):
         gcmd.respond_info(self.name + ": " + self.get_status()['state'])
