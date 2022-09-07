@@ -24,9 +24,11 @@ class colorArray(list):
             return super(colorArray, self).__getitem__(
                             slice(a*3, a*3+3))
         if isinstance(a, slice):
-            return colorArray(
+                start = a.start*3 if a.start != None else None
+                stop = a.stop*3 if a.stop != None else None
+                return colorArray(
                         super(colorArray, self).__getitem__(
-                            slice(a.start*3, a.stop*3, a.step)))
+                            slice(start, stop, a.step)))
     def __getslice__(self, a, b):
         return self.__getitem__(slice(a,b))
     def __setitem__(self, a, v):
@@ -35,21 +37,21 @@ class colorArray(list):
             super(colorArray, self).__setitem__(a*3+1, v[1])
             super(colorArray, self).__setitem__(a*3+2, v[2])
     def __len__(self):
-        return super(colorArray, self).__len__() / 3
+        return super(colorArray, self).__len__() // 3
     def reverse(self):
-        self[:] = [c for cl in range(len(self)-1,-1, -1)
-                        for c in self[cl]]
+        self.__init__([c for cl in range(len(self)-1,-1, -1)
+                        for c in self[cl]])
     def shift(self, shift=1, direction=True):
         if direction:
             #shift array to the right
-            self[:] = self[-shift:] + self[:-shift]
+            self.__init__(self[-shift:] + self[:-shift])
         else:
             #shift array to the left
-            self[:] = self[shift:] + self[:shift]
+            self.__init__(self[shift:] + self[:shift])
     def padLeft(self, v, a):
-        self[:] = v * a + self[:]
+        self.__init__(v * a + self)
     def padRight(self, v, a):
-        self[:] = self[:] + v * a
+        self += v * a
 
 ######################################################################
 # LED Effect handler
