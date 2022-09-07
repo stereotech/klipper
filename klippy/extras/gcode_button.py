@@ -5,12 +5,14 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
 
+
 class GCodeButton:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.name = config.get_name().split(' ')[-1]
         self.pin = config.get('pin')
         self.last_state = 0
+        self.toolhead = None
         buttons = self.printer.load_object(config, "buttons")
         if config.get('analog_range', None) is None:
             buttons.register_buttons([self.pin], self.button_callback)
@@ -29,6 +31,7 @@ class GCodeButton:
                                         desc=self.cmd_QUERY_BUTTON_help)
 
     cmd_QUERY_BUTTON_help = "Report on the state of a button"
+
     def cmd_QUERY_BUTTON(self, gcmd):
         gcmd.respond_info(self.name + ": " + self.get_status()['state'])
 
