@@ -62,10 +62,11 @@ class AutoWcs:
         z = self.point_coords[0][2]
         return x, y, z
 
-    def _calc_wcs_2(self):
+    def _calc_wcs_2(self, thickness):
+        thickness = thickness / 2
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
         # probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
-        y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2 - 5
+        y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2 - thickness
         z = self.point_coords[4][2] - 60 # - probe_backlash
         return x, y, z
 
@@ -89,8 +90,10 @@ class AutoWcs:
 
 
     def cmd_CALC_WCS_PARAMS(self, gcmd):
+        #todo: get thickness default 10
+        thickness =  gcmd.get_float('THICKNESS', 10.)
         x, y, z = self._calc_wcs()
-        x2, y2, z2 = self._calc_wcs_2()
+        x2, y2, z2 = self._calc_wcs_2(thickness)
         out = "Calculated WCS 1 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
             x, y, z)
         out += "Calculated WCS 2 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
