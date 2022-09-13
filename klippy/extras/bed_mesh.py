@@ -1295,7 +1295,6 @@ class ProfileManager:
             "Bed Mesh state has been added to profile [%s]\n"
             % (prof_name))
 
-
     def remove_profile(self, prof_name):
         if prof_name in self.profiles:
             configfile = self.printer.lookup_object('configfile')
@@ -1313,10 +1312,14 @@ class ProfileManager:
     cmd_BED_MESH_PROFILE_help = "Bed Mesh Persistent Storage management"
 
     def reset_profile(self, prof_name):
+        """
+        BED_MESH_PROFILE reset function. Nulls out all internal elements
+        """
         if prof_name in self.profiles:
+            reset_tuples = []
             for point_list in self.profiles[prof_name]['points']:
-                for i in range(0, len(point_list)):
-                    point_list[i] = 0.
+                reset_tuples.append(tuple(i - i for i in point_list))
+            self.profiles[prof_name]['points'] = tuple(reset_tuples)
             self.gcode.respond_info(
                 "Profile [%s] is reset" % (prof_name))
         else:
