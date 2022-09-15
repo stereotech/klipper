@@ -63,7 +63,7 @@ class AutoWcs:
         return x, y, z
 
     def _calc_wcs_2(self, thickness):
-        thickness = thickness / 2
+        thickness = thickness / 2.0
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
         # probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
         y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2 - thickness
