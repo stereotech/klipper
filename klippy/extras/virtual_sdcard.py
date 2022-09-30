@@ -88,7 +88,9 @@ class VirtualSD:
         }
     def file_path(self):
         if self.current_file:
-            return self.current_file.name
+            path = self.current_file.name
+            path_file = path.split('/').pop()
+            return path_file
         return None
     def progress(self):
         if self.file_size:
@@ -139,9 +141,10 @@ class VirtualSD:
             raise gcmd.error("SD busy")
         self._reset_file()
         filename = gcmd.get("FILENAME")
+        file_position = gcmd.get_int('POSITION', 0)
         if filename[0] == '/':
             filename = filename[1:]
-        self._load_file(gcmd, filename, check_subdirs=True)
+        self._load_file(gcmd, filename, file_position, check_subdirs=True)
         self.do_resume()
     def cmd_M20(self, gcmd):
         # List SD card
@@ -162,7 +165,7 @@ class VirtualSD:
         if filename.startswith('/'):
             filename = filename[1:]
         self._load_file(gcmd, filename)
-    def _load_file(self, gcmd, filename, check_subdirs=False):
+    def _load_file(self, gcmd, filename, file_position=0, check_subdirs=False):
         files = self.get_file_list(check_subdirs)
         flist = [f[0] for f in files]
         files_by_lower = { fname.lower(): fname for fname, fsize in files }
@@ -181,7 +184,7 @@ class VirtualSD:
         gcmd.respond_raw("File opened:%s Size:%d" % (filename, fsize))
         gcmd.respond_raw("File selected")
         self.current_file = f
-        self.file_position = 0
+        self.file_position = file_position
         self.file_size = fsize
         self.print_stats.set_current_file(filename)
     def cmd_M24(self, gcmd):
