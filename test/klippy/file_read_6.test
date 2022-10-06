@@ -1,0 +1,6 @@
+# file for testing
+GCODE ../files_for_test/STEH530V5_PLA_check_offset_XY.gcode
+
+# Test read gcode file
+DICTIONARY lpc176x.dict
+CONFIG ../HTE530-5-6-21.cfg
