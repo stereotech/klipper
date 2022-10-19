@@ -28,7 +28,7 @@ jobs:
       - name: Getting commits
         run: |
           touch changelog
-          echo "${{ toJSON(github.event) }}" >> ./changelog
+          echo "${{ toJSON(github.event.commits) }}" >> ./changelog
           cat ./changelog
       
       - name: Prepare environment
