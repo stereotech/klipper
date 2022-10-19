@@ -24,12 +24,18 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+
+      # - name: Getting commits
+      #   run: |
+      #     touch changelog
+      #     echo "${{ toJSON(github.event.commits) }}" >> ./changelog
+      #     cat ./changelog
       
       - name: Getting commits
-        run: |
-          touch changelog
-          echo "${{ toJSON(github.event.commits) }}" >> ./changelog
-          cat ./changelog
+        uses: scripts/commits.py
+        with:
+          commits: ${{ toJSON(github.event.commits) }}
+
       
       - name: Prepare environment
         run: ./scripts/ci-install.sh
