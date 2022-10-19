@@ -102,6 +102,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
 
+      - name: Getting commits
+        run: |
+          touch changelog
+          echo ${{ github.event.commits }} >> ./changelog
+          cat ./changelog
+
+
   triggerUpdate:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
