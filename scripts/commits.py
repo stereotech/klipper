@@ -12,9 +12,9 @@ parser.add_argument(
     metavar='commits',
     help="commits from github")
 cmd_line_args = parser.parse_args()
-commits_link = cmd_line_args.commits
-with open(commits_link, "r", encoding='utf-8') as f:
-    commits = json.load(f)
+commits_json = cmd_line_args.commits
+# with open(commits_link, "r", encoding='utf-8') as f:
+commits = json.loads(commits_json)
 print(commits)
 # message_list = []
 # for commit in commits:
