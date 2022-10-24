@@ -28,7 +28,8 @@ def main():
         message_list.append(message)
     for message in message_list:
         #print(message)
-        id_issue = re.findall(r"STEAPP-\d{1,3}", message)
+        id_issue_list = re.findall(r"STEAPP-\d{1,3}", message)
+        id_issue = id_issue_list[0]
         print(id_issue)
         list_issue_id.append(id_issue)
         
