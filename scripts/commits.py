@@ -13,8 +13,8 @@ parser.add_argument(
     help="commits from github")
 cmd_line_args = parser.parse_args()
 commits = cmd_line_args.commits
-with open(commits, "r") as f:
-    commits = f.read()
+# with open(commits, "r") as f:
+#     commits = f.read()
 json_commits = json.loads(commits)
 message_list = []
 for commit in json_commits:
