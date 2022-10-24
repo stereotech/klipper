@@ -17,12 +17,12 @@ with open(commits, "r") as f:
     commits = f.read()
 json_commits = json.dumps(commits)
 message_list = []
-commit: Any
 for commit in json_commits:
-    dict_commit: Dict[str, Any]
-    dict_commit = commit
-    message = commit["message"]
-    message_list.append(message)
-print(message_list)
+    print(commit)
+    # dict_commit: Dict[str, Any]
+    # dict_commit = commit
+    # message = commit["message"]
+    # message_list.append(message)
+# print(message_list)
 # dict_commits = json_commits[0]
 # print(commits)
