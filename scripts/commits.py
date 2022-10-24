@@ -15,7 +15,8 @@ cmd_line_args = parser.parse_args()
 commits_link = cmd_line_args.commits
 with open(commits_link, "r", encoding='utf-8') as f:
     commits = json.load(f)
-print(commits)
+for commit in commits:
+    print(commit)
 # message_list = []
 # for commit in commits:
 #     print(commit)
