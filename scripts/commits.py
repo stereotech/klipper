@@ -8,4 +8,7 @@ parser.add_argument(
     help="commits from github")
 cmd_line_args = parser.parse_args()
 commits = cmd_line_args.commits
-print(commits)
+with open(commits, "r") as f:
+    for line in f:
+        print(line)
+# print(commits)
