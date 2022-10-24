@@ -9,7 +9,7 @@
             "args": [
                 "-d",
                 "dict/",
-                "test/klippy/stereotech.test",
+                "test/klippy/file_read_4.test",
                 "-v"
             ]
         },
