@@ -44,7 +44,9 @@ jobs:
           python-version: '3.10'
 
       - name: Getting commit in python
-        run: python scripts/commits.py -c ./changelog.json
+        run: |
+        pip install yandex_tracker_client
+        python scripts/commits.py -c ./changelog.json
       
       # - name: Getting commits
       # uses: scripts/commits.py
