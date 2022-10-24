@@ -15,10 +15,13 @@ cmd_line_args = parser.parse_args()
 commits_link = cmd_line_args.commits
 with open(commits_link, "r", encoding='utf-8') as f:
     commits = json.load(f)
+message_list = []
 for commit in commits:
     message = commit['message']
+    message_list.append(message)
+for message in message_list:
     print(message)
-# message_list = []
+# 
 # for commit in commits:
 #     print(commit)
     # dict_commit: Dict[str, Any]
