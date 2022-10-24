@@ -12,5 +12,5 @@ commits = cmd_line_args.commits
 with open(commits, "r") as f:
     commits = f.read()
 json_commits = json.dumps(commits)
-      
+dict_commits = json_commits[0]
 # print(commits)
