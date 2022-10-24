@@ -23,7 +23,11 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+      - run: python scripts\commits.py -c '${{ toJSON(github.event.commits) }}'
 
       # - name: Getting commits
       #   run: |
@@ -31,10 +35,10 @@ jobs:
       #     echo "${{ toJSON(github.event.commits) }}" >> ./changelog
       #     cat ./changelog
       
-      - name: Getting commits
-        uses: scripts/commits.py
-        with:
-          commits: ${{ toJSON(github.event.commits) }}
+      # - name: Getting commits
+        # uses: scripts/commits.py
+        # with:
+        #   commits: ${{ toJSON(github.event.commits) }}
 
       
       - name: Prepare environment

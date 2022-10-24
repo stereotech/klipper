@@ -1,0 +1,36 @@
+[
+    {
+        "version": "0.2.18",
+        "flow": "stable",
+        "release_date": "number",
+        "changelog": ["Версия 0.2.18", "добавлено + 3"]
+    },
+
+    {
+        "version": "0.2.17",
+        "flow": "stable",
+        "release_date": "number",
+        "changelog": ["Версия 0.2.17", "добавлено + 2"]
+    },
+
+    {
+        "version": "0.2.16",
+        "flow": "stable",
+        "release_date": "number",
+        "changelog": ["Версия 0.2.16", "добавлено + 1"]
+    },
+
+    {
+        "version": "0.2.15",
+        "flow": "stable",
+        "release_date": "number",
+        "changelog": ["Версия 0.2.15", "добавлено + 0"]
+    },
+    
+    {
+        "version": "0.2.19",
+        "flow": "develop",
+        "release_date": "number",
+        "changelog": ["Версия 0.2.19", "добавлено + test"]
+    }
+]
