@@ -9,6 +9,7 @@ parser.add_argument(
 cmd_line_args = parser.parse_args()
 commits = cmd_line_args.commits
 with open(commits, "r") as f:
-    for line in f:
-        print(line)
+    commits = f.read()
+    print(commits)
+        
 # print(commits)
