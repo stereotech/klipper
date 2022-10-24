@@ -1,6 +1,10 @@
 import argparse
 import json
-
+from typing import (
+    Dict,
+    List,
+    Any,
+)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -12,5 +16,13 @@ commits = cmd_line_args.commits
 with open(commits, "r") as f:
     commits = f.read()
 json_commits = json.dumps(commits)
-dict_commits = json_commits[0]
+message_list = []
+commit: Any
+for commit in json_commits:
+    dict_commit: Dict[str, Any]
+    dict_commit = commit
+    message = commit["message"]
+    message_list.append(message)
+print(message_list)
+# dict_commits = json_commits[0]
 # print(commits)
