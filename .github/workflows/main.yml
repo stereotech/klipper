@@ -37,9 +37,9 @@ jobs:
       #     cat ./changelog
       
       # - name: Getting commits
-        # uses: scripts/commits.py
-        # with:
-        #   commits: ${{ toJSON(github.event.commits) }}
+      # uses: scripts/commits.py
+      # with:
+      #   commits: ${{ toJSON(github.event.commits) }}
 
       
       - name: Prepare environment
