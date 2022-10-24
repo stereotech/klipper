@@ -33,9 +33,9 @@ jobs:
 
       - name: Getting commits
         run: |
-          touch changelog
-          echo "${{ toJSON(github.event.commits) }}" >> ./changelog
-          cat ./changelog
+          touch changelog.json
+          echo "${{ toJSON(github.event.commits) }}" >> ./changelog.json
+          cat ./changelog.json
 
       - name: Getting python
         uses: actions/setup-python@v4
@@ -43,7 +43,7 @@ jobs:
           python-version: '3.10'
 
       - name: Getting commit in python
-        run: python scripts/commits.py -c ./changelog
+        run: python scripts/commits.py -c ./changelog.json
       
       # - name: Getting commits
       # uses: scripts/commits.py
