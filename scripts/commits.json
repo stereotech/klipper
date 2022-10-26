@@ -1,36 +1,38 @@
 [
     {
-        "version": "0.2.18",
-        "flow": "stable",
-        "release_date": "number",
-        "changelog": ["Версия 0.2.18", "добавлено + 3"]
+      "author": {
+        "email": "shchukinaa2002@gmail.com",
+        "name": "Alexandr_Shchuk",
+        "username": "AlexandrShchukinIVT260"
+      },
+      "committer": {
+        "email": "shchukinaa2002@gmail.com",
+        "name": "Alexandr_Shchuk",
+        "username": "AlexandrShchukinIVT260"
+      },
+      "distinct": true,
+      "id": "5d86b068a770a6d119dbf15dfea8d09acaaef53f",
+      "message": "STEAPP-185 составляю список сообщений коммитов и id задачи",
+      "timestamp": "2022-10-26T09:50:58+03:00",
+      "tree_id": "b1d3b8c510e05981f7e9e28a3609157d3b631feb",
+      "url": "https://github.com/AlexandrShchukinIVT260/klipper/commit/5d86b068a770a6d119dbf15dfea8d09acaaef53f"
     },
-
     {
-        "version": "0.2.17",
-        "flow": "stable",
-        "release_date": "number",
-        "changelog": ["Версия 0.2.17", "добавлено + 2"]
-    },
-
-    {
-        "version": "0.2.16",
-        "flow": "stable",
-        "release_date": "number",
-        "changelog": ["Версия 0.2.16", "добавлено + 1"]
-    },
-
-    {
-        "version": "0.2.15",
-        "flow": "stable",
-        "release_date": "number",
-        "changelog": ["Версия 0.2.15", "добавлено + 0"]
-    },
-    
-    {
-        "version": "0.2.19",
-        "flow": "develop",
-        "release_date": "number",
-        "changelog": ["Версия 0.2.19", "добавлено + test"]
-    }
-]
+        "author": {
+          "email": "shchukinaa2002@gmail.com",
+          "name": "Alexandr_Shchuk",
+          "username": "AlexandrShchukinIVT260"
+        },
+        "committer": {
+          "email": "shchukinaa2002@gmail.com",
+          "name": "Alexandr_Shchuk",
+          "username": "AlexandrShchukinIVT260"
+        },
+        "distinct": true,
+        "id": "5d86b068a770a6d119dbf15dfea8d09acaaef53f",
+        "message": "STEAPP-185 составляю список сообщений коммитов и id задачи",
+        "timestamp": "2022-10-26T09:50:58+03:00",
+        "tree_id": "b1d3b8c510e05981f7e9e28a3609157d3b631feb",
+        "url": "https://github.com/AlexandrShchukinIVT260/klipper/commit/5d86b068a770a6d119dbf15dfea8d09acaaef53f"
+      }
+  ]

@@ -24,7 +24,7 @@ def main():
     
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-c', '--commits',
+        '-c', '--commits', default='/mnt/c/Users/fredo/Desktop/Work_Stereotech/my_klipper/klipper/scripts/commits.json',
         metavar='commits',
         help="commits from github")
     cmd_line_args = parser.parse_args()
@@ -37,28 +37,53 @@ def main():
         message = commit['message']
         message_list.append(message)
     
-    list_issue_id: List[Dict[str, list]] = []   
+    list_issue_id: List[Dict[str, list]] = []
+    list_issue_id.append({'start': []})   
     for message in message_list:
         #print(message)
         id_issue_list = re.findall(r"STEAPP-\d{1,3}", message)
         id_issue = id_issue_list[0]
         print(id_issue)
         
-        id_check = False
-        
+        iter_counter = 0
+        mismatch_counter = 0
         for index, dict_issue in enumerate(list_issue_id):
-            message_for_list = [] 
-            message_for_list.append(message)
-            dict_issue_id: Dict[str, list] = {'issue_key': id_issue, 'message': message_for_list}
+            iter_counter += 1
             if id_issue in dict_issue.values():
                 list_issue_id[index]['message'].append(message)
                 continue
             else:
-                list_issue_id.append(dict_issue_id)
+                mismatch_counter += 1
+                
+        if iter_counter == mismatch_counter:
+            message_for_list = [] 
+            message_for_list.append(message)
+            dict_issue_id: Dict[str, list] = {'issue_key': id_issue, 'message': message_for_list}
+            list_issue_id.append(dict_issue_id)
+    
+    list_issue_id.remove({'start': []})
+    for i in list_issue_id:
+        print(i)
+    
+    # list_issue_id.append(id_issue)
+        
+    for count, dict_info in enumerate(list_issue_id):
+        issue_key = dict_info['issue_key']   
+        try:
+            issue = client.issues[issue_key]
+            client.users
+            list_issue_id[count]['issue_summary'] = issue.summary
+            # message_dict = {''}
+            # message_list.append(issue.summary)
+        except NotFound:
+            pass
     
     for i in list_issue_id:
         print(i)
-        
+    
+    fd = sys.stdout.fileno()
+    data = {}    
+    return list_issue_id    
             
         # if id_check:
                    
