@@ -25,7 +25,7 @@ def main():
     
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-c', '--commits', default='/mnt/c/Users/fredo/Desktop/Work_Stereotech/my_klipper/klipper/scripts/commits.json',
+        '-c', '--commits',
         metavar='commits',
         help="commits from github")
     cmd_line_args = parser.parse_args()
@@ -71,8 +71,8 @@ def main():
         except NotFound:
             pass
     
-    for i in list_issue_id:
-        print(i)
+    # for i in list_issue_id:
+    #     print(i)
     
     fd = sys.stdout.fileno()
     data = json.dumps(list_issue_id).encode()
