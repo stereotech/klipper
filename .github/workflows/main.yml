@@ -115,6 +115,7 @@ jobs:
     needs: [build, test]
     env:
       RELEASE_TYPE: testing
+      CHANGELOG_FOLDER: changelog_folder
     
     steps:
       - name: Set release type
@@ -128,6 +129,13 @@ jobs:
       
       - name: Upload to AWS
         run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp klipper.tar.bz2 s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/ --acl public-read
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
+
+      - name: Upload changelog to AWS
+        run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.CHANGELOG_FOLDER }}/ --acl public-read
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
