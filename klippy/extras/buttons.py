@@ -22,22 +22,8 @@ class MCU_buttons:
         self.pin_list = []
         self.callbacks = []
         self.invert = self.last_button = 0
-        # self.pin_powerr_off = None
-        # self.cb_power_off = None
         self.ack_cmd = None
-        # self.count = True
         self.ack_count = 0
-    #     self.printer.register_event_handler("klippy:ready", self.handle_ready)
-
-    # def handle_ready(self):
-    #     self.toolhead = self.printer.lookup_object('toolhead')
-    #     self.heaters = self.printer.lookup_object('heaters')
-    #     self.gcode = self.printer.lookup_object('gcode')
-    #     self.pause_resume = self.printer.lookup_object('pause_resume')
-    #     self.v_sd = self.printer.lookup_object('virtual_sdcard', None)
-    #     self.reactor = self.printer.get_reactor()
-    #     self.fmove = self.printer.lookup_object('force_move')
-    #     self.stepper_x = self.fmove.steppers['stepper_x']
 
     def setup_buttons(self, pins, callback):
         mask = 0
@@ -47,9 +33,6 @@ class MCU_buttons:
                 self.invert |= 1 << len(self.pin_list)
             mask |= 1 << len(self.pin_list)
             self.pin_list.append((pin_params['pin'], pin_params['pullup']))
-        # if pins[0]['pin'] == 'PC0':
-        #     self.pin_powerr_off = mask
-        #     self.cb_power_off = callback
         self.callbacks.append((mask, shift, callback))
     def build_config(self):
         if not self.pin_list:
@@ -75,40 +58,6 @@ class MCU_buttons:
                                    "buttons_state", self.oid)
     def handle_buttons_state(self, params):
         # Expand the message ack_count from 8-bit
-        # print('-------------------', params)
-        # if params['state'] == '\x01' and self.count:
-            
-            # print('!!!!!!!!!!!!!!!!!!')
-            # v1
-            # self.reactor.register_async_callback(
-            #     (lambda e: self.fmove.manual_move(self.stepper_x, 10.0, 100.0, 0.)))
-            # self.reactor.register_async_callback(
-            #     (lambda e: self.heaters.turn_off_all_heaters()))
-            # self.reactor.register_async_callback(
-            #     (lambda e: self.pause_resume.send_pause_command()))
-
-            # v2
-            # self.reactor.register_async_callback(
-            #     (lambda e: self.v_sd.do_pause()))
-
-            # # v3 +-
-            # self.v_sd.do_pause()
-
-            # v4 +-
-            # self.fmove.manual_move(self.stepper_x, 10.0, 100.0, 0.)
-            # self.reactor.register_async_callback(
-            #     (lambda e: self.pause_resume.send_pause_command()))
-            # self.reactor.register_async_callback(
-            #     (lambda e: self.heaters.turn_off_all_heaters()))
-            # self.count = False
-
-            # v5 
-            # self.pause_resume.send_pause_command()
-            # self.reactor.register_async_callback(
-            #     (lambda e: self.heaters.turn_off_all_heaters()))
-            # self.pause_resume.send_pause_command()
-            # self.reactor.register_async_callback(
-            #     (lambda e: self.gcode.run_script_from_command("G1 Z80")))
         ack_count = self.ack_count
         ack_diff = (ack_count - params['ack_count']) & 0xff
         if ack_diff & 0x80:

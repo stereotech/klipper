@@ -335,7 +335,6 @@ class GCodeMove:
             speed = gcmd.get_float('MOVE_SPEED', self.speed, above=0.)
             self.last_position[:5] = state['last_position'][:5]
             self.move_with_transform(self.last_position, speed)
-            
     cmd_GET_POSITION_help = (
         "Return information on the current location of the toolhead")
 
@@ -382,11 +381,6 @@ class GCodeMove:
         position = toolhead.commanded_pos[:]
         position[4] = last_position[4]
         toolhead.set_position(position)
-        print('---------start---------')
-        print('cmd_LOAD_GCODE_STATE: ', )
-        print('last_position: ' , last_position)
-        print('base_position: ' , base_position)
-        print('---------end---------')
         logging.info('Realised cmd LOAD_GCODE_STATE, state: %s' % self.saved_states[state_name])
     cmd_LOAD_GCODE_STATE_help = 'Loading Print Status and Data from a params sended from STEAPP-server'
 
