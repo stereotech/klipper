@@ -33,10 +33,10 @@ jobs:
 
       - name: Getting commits
         run: |
-          touch changelog.json
+          touch changelog_json.json
           json='${{ toJSON(github.event.commits) }}'
-          echo "$json" >> ./changelog.json
-          cat ./changelog.json
+          echo "$json" >> ./changelog_json.json
+          cat ./changelog_json.json
 
       - name: Getting python
         uses: actions/setup-python@v4
@@ -46,7 +46,9 @@ jobs:
       - name: Getting commit in python
         run: |
            pip install yandex_tracker_client
-           python scripts/commits.py -c ./changelog.json
+           touch changelog
+           python scripts/commits.py -c ./changelog_json.json >> ./changelog
+           cat ./changelog
       
       # - name: Getting commits
       # uses: scripts/commits.py

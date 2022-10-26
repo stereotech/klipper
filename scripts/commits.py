@@ -2,6 +2,7 @@ import argparse
 import json
 import re
 import sys
+import os
 from typing import List
 from yandex_tracker_client import TrackerClient
 from yandex_tracker_client.exceptions import NotFound
@@ -40,10 +41,8 @@ def main():
     list_issue_id: List[Dict[str, list]] = []
     list_issue_id.append({'start': []})   
     for message in message_list:
-        #print(message)
         id_issue_list = re.findall(r"STEAPP-\d{1,3}", message)
         id_issue = id_issue_list[0]
-        print(id_issue)
         
         iter_counter = 0
         mismatch_counter = 0
@@ -62,10 +61,6 @@ def main():
             list_issue_id.append(dict_issue_id)
     
     list_issue_id.remove({'start': []})
-    for i in list_issue_id:
-        print(i)
-    
-    # list_issue_id.append(id_issue)
         
     for count, dict_info in enumerate(list_issue_id):
         issue_key = dict_info['issue_key']   
@@ -73,8 +68,6 @@ def main():
             issue = client.issues[issue_key]
             client.users
             list_issue_id[count]['issue_summary'] = issue.summary
-            # message_dict = {''}
-            # message_list.append(issue.summary)
         except NotFound:
             pass
     
@@ -82,16 +75,15 @@ def main():
         print(i)
     
     fd = sys.stdout.fileno()
-    data = {}    
-    return list_issue_id    
+    data = json.dumps(list_issue_id).encode()
+    while data:
+        try:
+            ret = os.write(fd, data)
+        except OSError:
+            continue
+        data = data[ret:]
             
-        # if id_check:
-                   
-        #         cur_mess_mass = []
-        #         dict_issue_id = {'issue_key': id_issue, 'message': cur_mess_mass.append(message)}
-        #     else:
-        #         dict_issue_id['message'].append()
-        
+    return list_issue_id    
         
 
 if __name__ == '__main__':
