@@ -72,6 +72,23 @@ class PrinterGCodeMacro:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.env = jinja2.Environment('{%', '%}', '{', '}')
+        self.printer.register_event_handler("klippy:ready", self.handle_ready)
+
+    def handle_ready(self):
+        self.toolhead = self.printer.lookup_object('toolhead')
+        self.heaters = self.printer.lookup_object('heaters')
+        self.gcode = self.printer.lookup_object('gcode')
+        self.pause_resume = self.printer.lookup_object('pause_resume')
+        self.v_sd = self.printer.lookup_object('virtual_sdcard', None)
+        self.reactor = self.printer.get_reactor()
+        self.fmove = self.printer.lookup_object('force_move')
+
+        if 'stepper_x' not in self.fmove.steppers:
+            raise self.printer.config_error("Unknown stepper %s" % ('stepper_x',))
+        else:
+            self.stepper_x = self.fmove.steppers['stepper_x']
+
+
     def load_template(self, config, option, default=None):
         name = "%s:%s" % (config.get_name(), option)
         if default is None:
@@ -82,6 +99,148 @@ class PrinterGCodeMacro:
     def _action_emergency_stop(self, msg="action_emergency_stop"):
         self.printer.invoke_shutdown("Shutdown due to %s" % (msg,))
         return ""
+
+    def _action_emergency_stop_for_power_off(self, msg="action_emergency_stop_for_power_off"):
+        # t0 = time()
+        
+        # v1 0.005634 - not 
+        # pos = self.toolhead.commanded_pos[:]
+        # pos[2] = 250.0
+        # self.toolhead.move_queue.reset()
+        # self.toolhead.move(pos, 1800.0)
+        # logging.error("Transition to shutdown state: %s", msg)
+
+        # v2  0.835873 not
+        # self.heaters.turn_off_all_heaters()
+        # pos = self.toolhead.commanded_pos[:]
+        # pos[2] = 250.0
+        # self.toolhead.move_queue.reset()
+        # self.toolhead.move(pos, 1800.0)
+        # logging.error("Transition to shutdown state: %s", msg)
+
+        # v3  13.454492 not
+        # pos = self.toolhead.commanded_pos[:]
+        # pos[2] = 250.0
+        # self.toolhead.move_queue.reset()
+        # self.toolhead.move(pos, 1750.0)
+        # self.toolhead.wait_moves()
+        # logging.error("Transition to shutdown state: %s", msg)
+
+        # v4  0.002058/0.3 not
+        # self.toolhead.move_queue.reset()
+        # self.gcode.run_script_from_command("G1 Z80")
+        # logging.error("Transition to shutdown state: %s", msg)
+
+        # v5  0.006946,0.002(power_ff) not
+        # self.pause_resume.send_pause_command()
+        # self.pause_resume.is_paused = True
+        # # self.gcode.run_script_from_command("G1 Z50")
+        # logging.error("Transition to shutdown state: %s", msg)
+
+
+        # v6  0.000061 not +-
+        # self.v_sd.do_pause()
+
+        # v7  0.000061 not
+        # self.heaters.turn_off_all_heaters()
+        # self.v_sd.do_pause()
+        
+        # v8  0.000061 not
+        # self.reactor.register_async_callback(lambda e: self.v_sd.do_pause())
+   
+
+        # v9  0.000061 not 
+        # self.reactor.register_async_callback(lambda e: self.heaters.turn_off_all_heaters())
+        # self.v_sd.do_pause()
+
+        # v10  0.000061 not
+        # self.gcode.run_script_from_command("G1 Z50")
+
+        # v11  0.000061 not 
+        # self.toolhead.move_queue.reset()
+        # self.gcode.run_script_from_command("G1 Z50")
+
+        # v12  0.000061 not +-
+        # self.reactor.register_async_callback(lambda e: self.gcode.run_script_from_command("G1 Z50"))
+        
+
+        # v13  0.000061 not
+        # self.reactor.register_async_callback(lambda e: self.heaters.turn_off_all_heaters())
+        # self.reactor.register_async_callback(lambda e: self.gcode.run_script_from_command("G1 Z50"))
+
+        # v14  0.000061 not -- (asunc donot work too)
+        # self.gcode.run_script_from_command("G1 X20")
+
+        # v15  0.000061 not 
+        # self.reactor.register_async_callback(lambda e: self.toolhead.move_queue.reset())
+        # self.reactor.register_async_callback(lambda e: self.heaters.turn_off_all_heaters())
+        # self.gcode.run_script_from_command("G1 Z50")
+        # print('-----------------------------run')
+
+        # v16  0.000061 not 
+        # self.reactor.register_async_callback(lambda e: self.toolhead.move_queue.reset())
+        # self.reactor.register_async_callback(lambda e: self.heaters.turn_off_all_heaters())
+        # self.gcode.run_script_from_command("G1 Z50")
+        # print('-----------------------------run')
+
+        # v17  0.000061 not 
+        # self.gcode.run_script_from_command("FORCE_MOVE STEPPER=stepper_x DISTANCE=10 VELOCITY=100")
+
+        # v18  0.000061 not 
+        # self.fmove._force_enable(self.stepper_x)
+        # self.fmove.manual_move(self.stepper_x, 10.0, 100.0, 0.)
+        # print('----------------------complite-------------')
+        # logging.info("FORCE_MOVE %s distance=%.3f velocity=%.3f accel=%.3f",
+        #              self.stepper_x.get_name(), 10.0, 100.0, 0.)
+
+        # v19  0.000061 not 
+        # self.v_sd.do_cancel()
+        # self.fmove._force_enable(self.stepper_x)
+        # self.fmove.manual_move(self.stepper_x, 10.0, 100.0, 0.)
+        # print('----------------------complite-------------')
+        # logging.info("FORCE_MOVE %s distance=%.3f velocity=%.3f accel=%.3f",
+        #              self.stepper_x.get_name(), 10.0, 100.0, 0.)
+
+
+
+        # v20  0.000061 not 
+        # self.toolhead.move_queue.reset()
+        # self.fmove._force_enable(self.stepper_x)
+        # self.fmove.manual_move(self.stepper_x, 10.0, 100.0, 0.)
+        print('----------------------complite-------------')
+        # logging.info("FORCE_MOVE %s distance=%.3f velocity=%.3f accel=%.3f",
+        #              self.stepper_x.get_name(), 10.0, 100.0, 0.)
+
+
+        # v21  0.000061 not 
+        # self.toolhead.power_off = True
+
+
+
+
+
+        # if self.printer.in_shutdown_state:
+        #     return
+        # logging.error("Transition to shutdown state: %s", msg)
+        # heaters = self.printer.lookup_object('heaters')
+        # heaters.turn_off_all_heaters()
+        # toolhead = self.printer.lookup_object('toolhead')
+        # # v_sd = self.printer.lookup_object('virtual_sdcard')
+        # # v_sd.do_cancel()
+        # # gcode = self.printer.lookup_object('gcode')
+        # # toolhead._handle_shutdown()
+        # pos = toolhead.commanded_pos[:]
+        # pos[2] = 250.0
+        # toolhead.move_queue.reset()
+        # toolhead.move(pos, 1800.0)
+        # logging.error("Transition to shutdown state: %s", msg)
+        # gcode.run_script_from_command("G28 Z0")
+        # self.printer.invoke_shutdown("Shutdown due to %s" % (msg,))
+        # return ""
+        # t1 = time()
+        # print('---------------------------function vers1 takes %f' %(t1-t0))
+        # return ""
+
     def _action_respond_info(self, msg):
         self.printer.lookup_object('gcode').respond_info(msg)
         return ""
@@ -101,6 +260,7 @@ class PrinterGCodeMacro:
             'action_respond_info': self._action_respond_info,
             'action_raise_error': self._action_raise_error,
             'action_call_remote_method': self._action_call_remote_method,
+            'action_emergency_stop_for_power_off': self._action_emergency_stop_for_power_off
         }
 
 def load_config(config):
