@@ -62,13 +62,14 @@ class BAxisCompensation:
         self.axes_max = kin.axes_max
 
     def get_position(self):
-        move_d = math.sqrt(sum([d * d for d in self.next_transform.get_position()[:5]]))
-        if not self.enabled or move_d < .000000001:
+        if not self.enabled:
             return self.next_transform.get_position()
         return self.calc_untransformed(self.next_transform.get_position())
 
     def move(self, newpos, speed):
-        move_d = math.sqrt(sum([d * d for d in newpos[:5]]))
+        axes_d = [self.get_position()[i] - newpos[i] for i in
+                                (0, 1, 2, 3, 4, 5)]
+        move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
         if not self.enabled or move_d < .000000001:
             self.next_transform.move(newpos, speed)
             return
