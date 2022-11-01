@@ -152,7 +152,7 @@ class GCodeMove:
             'position': self.Coord(*self.last_position),
             'gcode_position': self.Coord(*move_position),
             'current_wcs': self.current_wcs,
-            'wcs_offsets': self.wcs_offsets,
+            'wcs_offsets': [[a for a in line] for line in self.wcs_offsets],
             'base_position': self.Coord(*self.base_position)
         }
 
