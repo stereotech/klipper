@@ -59,7 +59,7 @@ jobs:
            cat ./changelog.json
 
       - name: Upload changelog to AWS
-        run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog.json s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/klipper --acl public-read
+        run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog.json s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/klipper/ --acl public-read
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
