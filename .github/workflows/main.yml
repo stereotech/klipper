@@ -21,11 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CHANGELOG_FOLDER: changelog_folder
+      RELEASE_TYPE: testing
+
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+
+      - name: Set release type
+        run: echo "RELEASE_TYPE=stable" >> $GITHUB_ENV
+        if: github.ref == 'refs/heads/master'
 
       # - name: Getting commits
       #   uses: actions/setup-python@v4
@@ -35,10 +41,10 @@ jobs:
 
       - name: Getting commits
         run: |
-          touch changelog_json.json
+          touch changelog_raw.json
           json='${{ toJSON(github.event.commits) }}'
-          echo "$json" >> ./changelog_json.json
-          cat ./changelog_json.json
+          echo "$json" >> ./changelog_raw.json
+          cat ./changelog_raw.json
 
       - name: Getting python
         uses: actions/setup-python@v4
@@ -48,16 +54,17 @@ jobs:
       - name: Getting commit in python
         run: |
            pip install yandex_tracker_client
-           touch changelog
-           python scripts/commits.py -c ./changelog_json.json >> ./changelog
-           cat ./changelog
+           touch changelog.json
+           python scripts/commits.py -c ./changelog_raw.json >> ./changelog.json
+           cat ./changelog.json
 
       - name: Upload changelog to AWS
-        run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.CHANGELOG_FOLDER }}/ --acl public-read
+        run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog.json s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/klipper --acl public-read
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
+  
       
       # - name: Getting commits
       # uses: scripts/commits.py
