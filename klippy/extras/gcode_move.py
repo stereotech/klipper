@@ -6,7 +6,6 @@
 import logging
 import math
 import ast
-import copy
 
 DEG_TO_RAD = 0.01745329252
 
@@ -142,13 +141,6 @@ class GCodeMove:
         return self.speed_factor * 60.
 
     def get_status(self, eventtime=None):
-        # 
-        # 
-        # /
-        # /
-        # /
-
-
         move_position = self._get_gcode_position()
         return {
             'speed_factor': self._get_gcode_speed_override(),
@@ -459,8 +451,6 @@ class GCodeMove:
             for i, offset in enumerate(offsets):
                 if offset is not None:
                     self.wcs_offsets[n][i] += offset
-        
-
         configfile = self.printer.lookup_object('configfile')
         configfile.set('wcs_%d' % n, 'x', self.wcs_offsets[n][0])
         configfile.set('wcs_%d' % n, 'y', self.wcs_offsets[n][1])

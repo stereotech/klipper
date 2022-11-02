@@ -15,7 +15,6 @@ RETRANSMIT_COUNT = 50
 
 class MCU_buttons:
     def __init__(self, printer, mcu):
-        self.printer = printer
         self.reactor = printer.get_reactor()
         self.mcu = mcu
         self.mcu.register_config_callback(self.build_config)
@@ -24,7 +23,6 @@ class MCU_buttons:
         self.invert = self.last_button = 0
         self.ack_cmd = None
         self.ack_count = 0
-
     def setup_buttons(self, pins, callback):
         mask = 0
         shift = len(self.pin_list)
