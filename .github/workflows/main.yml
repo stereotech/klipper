@@ -19,6 +19,8 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    env:
+      CHANGELOG_FOLDER: changelog_folder
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -49,6 +51,13 @@ jobs:
            touch changelog
            python scripts/commits.py -c ./changelog_json.json >> ./changelog
            cat ./changelog
+
+      - name: Upload changelog to AWS
+        run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.CHANGELOG_FOLDER }}/ --acl public-read
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
       
       # - name: Getting commits
       # uses: scripts/commits.py
@@ -115,7 +124,6 @@ jobs:
     needs: [build, test]
     env:
       RELEASE_TYPE: testing
-      CHANGELOG_FOLDER: changelog_folder
     
     steps:
       - name: Set release type
@@ -134,12 +142,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
 
-      - name: Upload changelog to AWS
-        run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.CHANGELOG_FOLDER }}/ --acl public-read
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
+      
 
   triggerUpdate:
     if: github.event_name == 'push'
