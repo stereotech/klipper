@@ -39,6 +39,38 @@ class PrinterSkew:
                                desc=self.cmd_SET_SKEW_help)
         gcode.register_command('SKEW_PROFILE', self.cmd_SKEW_PROFILE,
                                desc=self.cmd_SKEW_PROFILE_help)
+        gcode.register_command('SAVE_SKEW_AXIS_POINT',
+                               self.cmd_SAVE_SKEW_AXIS_POINT,
+                               desc=self.cmd_SAVE_SKEW_AXIS_POINT_help)
+        self.point_coords = [
+            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.]
+        ]
+    
+    def cmd_SAVE_SKEW_AXIS_POINT(self, gcmd):
+        point_idx = gcmd.get_int('POINT', 0)
+        coords = gcmd.get('COORDS', None)
+        if coords is not None:
+            try:
+                coords = coords.strip().split(",", 2)
+                coords = [float(l.strip()) for l in coords]
+                if len(coords) != 3:
+                    raise Exception
+            except Exception:
+                raise gcmd.error(
+                    "skew_corection: improperly formatted entry for "
+                    "point\n%s" % (gcmd.get_commandline()))
+            for axis, coord in enumerate(coords):
+                self.point_coords[point_idx][axis] = coord
+    cmd_SAVE_SKEW_AXIS_POINT_help = "Save point for align skew"
+    
+    def _calc_length(self, point_0, point_1):
+        # offset = math.atan((point_1[1] - point_0[1]) / 90) * RAD_TO_DEG / 3
+        # return offset
+        pass
+
     def _handle_connect(self):
         gcode_move = self.printer.lookup_object('gcode_move')
         self.next_transform = gcode_move.set_move_transform(self, force=True)
