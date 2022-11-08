@@ -23,7 +23,6 @@ jobs:
       CHANGELOG_FOLDER: changelog_folder
       RELEASE_TYPE: testing
 
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -32,12 +31,6 @@ jobs:
       - name: Set release type
         run: echo "RELEASE_TYPE=stable" >> $GITHUB_ENV
         if: github.ref == 'refs/heads/master'
-
-      # - name: Getting commits
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.10' 
-      #   run: python scripts/commits.py -c "${{ toJSON(github.event.commits) }}"
 
       - name: Getting commits
         run: |
