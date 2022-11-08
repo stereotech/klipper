@@ -15,7 +15,6 @@ from typing import (
 )
 
 OAUTH_TOKEN = 'y0_AgAEA7qinHIPAAhewAAAAADNhpkJH-QqLI6uQRGPbD3H_oZIxtiICV0'
-# iam_token = 't1.9euelZrMzoqQxo-LkM3JjJ3MipOYze3rnpWakZSXkI2OnI3NzZmPlsbOzZvl8_dpFkhn-e9GOwYP_t3z9ylFRWf570Y7Bg_-.oq21aVP0HwK9JyCB0IEqTqUxsVURpZOtJV5ExW86RYvZBHq8Ihy0cWj1RfM9Pl8djqLFcQTTZUPzK2qyFb5dBg'
 ORG_ID = '70246'
 
 
@@ -39,10 +38,14 @@ def main():
         message_list.append(message)
     
     list_issue_id: List[Dict[str, list]] = []
-    list_issue_id.append({'start': []})   
+    list_issue_id.append({'start': []})
+    id_issue: str   
     for message in message_list:
         id_issue_list = re.findall(r"STEAPP-\d{1,3}", message)
-        id_issue = id_issue_list[0]
+        if id_issue_list == []:
+            id_issue = ""
+        else:    
+            id_issue = id_issue_list[0]
         
         iter_counter = 0
         mismatch_counter = 0
@@ -57,7 +60,7 @@ def main():
         if iter_counter == mismatch_counter:
             message_for_list = [] 
             message_for_list.append(message)
-            dict_issue_id: Dict[str, list] = {'issue_key': id_issue, 'message': message_for_list}
+            dict_issue_id: Dict[str, Any] = {'issue_key': id_issue, 'message': message_for_list}
             list_issue_id.append(dict_issue_id)
     
     list_issue_id.remove({'start': []})
@@ -70,9 +73,6 @@ def main():
             list_issue_id[count]['issue_summary'] = issue.summary
         except NotFound:
             pass
-    
-    # for i in list_issue_id:
-    #     print(i)
     
     fd = sys.stdout.fileno()
     data = json.dumps(list_issue_id).encode()
@@ -88,13 +88,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-# 
-# for commit in commits:
-#     print(commit)
-    # dict_commit: Dict[str, Any]
-    # dict_commit = commit
-    # message = commit["message"]
-    # message_list.append(message)
-# print(message_list)
-# dict_commits = json_commits[0]
-# print(commits)
