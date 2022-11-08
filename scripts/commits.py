@@ -37,7 +37,7 @@ def main():
         message = commit['message']
         message_list.append(message)
     
-    list_issue_id: List[Dict[str, list]] = []
+    list_issue_id: List[Dict[str, Any]] = []
     list_issue_id.append({'start': []})
     id_issue: str   
     for message in message_list:
@@ -68,9 +68,12 @@ def main():
     for count, dict_info in enumerate(list_issue_id):
         issue_key = dict_info['issue_key']   
         try:
-            issue = client.issues[issue_key]
-            client.users
-            list_issue_id[count]['issue_summary'] = issue.summary
+            if issue_key != "":
+                issue = client.issues[issue_key]
+                client.users
+                list_issue_id[count]['issue_summary'] = issue.summary
+            else:
+                list_issue_id[count]['issue_summary'] = ""
         except NotFound:
             pass
     
