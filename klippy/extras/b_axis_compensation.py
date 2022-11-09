@@ -80,7 +80,6 @@ class BAxisCompensation:
         gcode_move = self.printer.lookup_object('gcode_move')
         base_position = gcode_move.base_position
         a = math.radians(pos[3] - base_position[3])
-        a = math.radians(pos[3])
         sin_a = math.sin(a)
         cos_a = math.cos(a)
         a_rot_matrix = [1., 0., 0, 0., cos_a, -sin_a, 0., sin_a, cos_a]
