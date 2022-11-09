@@ -93,14 +93,14 @@ jobs:
       - name: Set release type
         run: echo "RELEASE_TYPE=stable" >> $GITHUB_ENV
         if: github.ref == 'refs/heads/master'
+        
+      - uses: actions/checkout@v2
 
       - name: Download a Build Artifact
         uses: actions/download-artifact@v2.0.10
         with:
           name: klipper
           
-      - uses: actions/checkout@v2
-
       - name: Getting commits
         run: |
           touch changelog_raw.json
