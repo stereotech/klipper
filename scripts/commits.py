@@ -14,8 +14,10 @@ from typing import (
     List
 )
 
-OAUTH_TOKEN = 'y0_AgAEA7qinHIPAAhewAAAAADNhpkJH-QqLI6uQRGPbD3H_oZIxtiICV0'
-ORG_ID = '70246'
+OAUTH_TOKEN = os.getenv('OAUTH_TOKEN')
+#'y0_AgAEA7qinHIPAAhewAAAAADNhpkJH-QqLI6uQRGPbD3H_oZIxtiICV0'
+ORG_ID = os.getenv('ORG_ID')
+#'70246'
 
 
 def main():
