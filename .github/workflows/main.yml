@@ -50,6 +50,9 @@ jobs:
            touch changelog.json
            python scripts/commits.py -c ./changelog_raw.json >> ./changelog.json
            cat ./changelog.json
+        env:
+          OAUTH_TOKEN: ${{ secrets.OAUTH_TOKEN }}
+          ORG_ID: ${{ secrets.ORG_ID }}
 
       - name: Upload changelog to AWS
         run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog.json s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/klipper/ --acl public-read
