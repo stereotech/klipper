@@ -6,9 +6,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master, develop ]
+    branches: [master, develop]
   pull_request:
-    branches: [ master, develop ]
+    branches: [master, develop]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -20,25 +20,29 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    env:
+      CHANGELOG_FOLDER: changelog_folder
+      RELEASE_TYPE: testing
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
+
       - name: Prepare environment
         run: ./scripts/ci-install.sh
-        
+
       - name: Get packages
         run: |
-           ./ci_build/python-env/bin/pip freeze > requirements.txt
-           pip download -r requirements.txt -d packages  --python-version 27 --platform linux_armv7l --no-deps
-        
+          ./ci_build/python-env/bin/pip freeze > requirements.txt
+          pip download -r requirements.txt -d packages  --python-version 27 --platform linux_armv7l --no-deps
+
       - name: Compile MCU firmware
         run: ./scripts/ci-build-stereotech.sh
-        
+
       - name: Compile C Helper
         run: ./ci_build/python-env/bin/python ./klippy/chelper/__init__.py
-        
+
       - name: Create dist
         run: |
           mkdir dist
@@ -48,55 +52,79 @@ jobs:
           cp -R ./packages/. ./dist/packages
           cp ./requirements.txt ./dist/requirements.txt
           tar -cvjf klipper.tar.bz2 -C dist .
-             
+
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.4
         with:
           name: klipper
           path: klipper.tar.bz2
-          
+
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Setup cache
-      uses: actions/cache@v2
-      with:
-        path: ci_cache
-        key: ${{ runner.os }}-build-${{ hashFiles('scripts/ci-install.sh') }}
+      - name: Setup cache
+        uses: actions/cache@v2
+        with:
+          path: ci_cache
+          key: ${{ runner.os }}-build-${{ hashFiles('scripts/ci-install.sh') }}
 
-    - name: Prepare tests
-      run: ./scripts/ci-install.sh
+      - name: Prepare tests
+        run: ./scripts/ci-install.sh
 
-    - name: Test
-      run: ./scripts/ci-build.sh 2>&1
+      - name: Test
+        run: ./scripts/ci-build.sh 2>&1
 
-    - name: Upload micro-controller data dictionaries
-      uses: actions/upload-artifact@v2
-      with:
-        name: data-dict
-        path: ci_build/dict
-          
+      - name: Upload micro-controller data dictionaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: data-dict
+          path: ci_build/dict
+
   deploy:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: [build, test]
     env:
       RELEASE_TYPE: testing
-    
+
     steps:
       - name: Set release type
         run: echo "RELEASE_TYPE=stable" >> $GITHUB_ENV
-        if: github.ref == 'refs/heads/master' 
-    
+        if: github.ref == 'refs/heads/master'
+
       - name: Download a Build Artifact
         uses: actions/download-artifact@v2.0.10
         with:
           name: klipper
-      
+
+      - name: Getting commits
+        run: |
+          touch changelog_raw.json
+          json='${{ toJSON(github.event.commits) }}'
+          echo "$json" >> ./changelog_raw.json
+          cat ./changelog_raw.json
+
+      - name: Getting commit in python
+        run: |
+          pip install yandex_tracker_client
+          touch changelog.json
+          python scripts/commits.py -c ./changelog_raw.json >> ./changelog.json
+          cat ./changelog.json
+        env:
+          OAUTH_TOKEN: ${{ secrets.OAUTH_TOKEN }}
+          ORG_ID: ${{ secrets.ORG_ID }}
+
       - name: Upload to AWS
         run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp klipper.tar.bz2 s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/ --acl public-read
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
+
+      - name: Upload changelog to AWS
+        run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog.json s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/klipper/ --acl public-read
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.YC_STORAGE_SECRET_ACCESS_KEY }}
@@ -108,12 +136,12 @@ jobs:
     needs: [deploy]
     env:
       RELEASE_TYPE: testing
-      
+
     steps:
       - name: Set release type
         run: echo "RELEASE_TYPE=stable" >> $GITHUB_ENV
-        if: github.ref == 'refs/heads/master' 
-        
+        if: github.ref == 'refs/heads/master'
+
       - name: Trigger update build
         run: |
           curl -X POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${{ secrets.STE_APP_BUILD_TOKEN }}" --data '{"event_type": "build", "client_payload": { "release": "${{ env.RELEASE_TYPE }}", "bump": "patch"}}' https://api.github.com/repos/stereotech/STE-App-Build/dispatches
