@@ -98,6 +98,8 @@ jobs:
         uses: actions/download-artifact@v2.0.10
         with:
           name: klipper
+          
+      - uses: actions/checkout@v2
 
       - name: Getting commits
         run: |
