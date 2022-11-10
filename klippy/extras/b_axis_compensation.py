@@ -229,6 +229,7 @@ class BAxisCompensation:
             'b_angle': self.b_angle,
             'rot_center_x': self.rot_center_x,
             'rot_center_z': self.rot_center_z,
+            'enabled': self.enabled
         }
 
 def load_config(config):
