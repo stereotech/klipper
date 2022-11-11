@@ -153,7 +153,8 @@ class GCodeMove:
             'gcode_position': self.Coord(*move_position),
             'current_wcs': self.current_wcs,
             'wcs_offsets': [[a for a in line] for line in self.wcs_offsets],
-            'base_position': self.Coord(*self.base_position)
+            'base_position': self.Coord(*self.base_position),
+            'compensation_enabled': self.compensation_enabled
         }
 
     def reset_last_position(self):
@@ -499,7 +500,7 @@ class GCodeMove:
         # Radius vector from center to current location
         linear_x = target_pos[0] - current_pos[0]
         linear_a = target_pos[3] - current_pos[3]
-        linear_c = target_pos[5] - current_pos[5]
+        linear_c = target_pos[4] - current_pos[4]
 
         r_Y = -offset[1]
         r_Z = -offset[2]
