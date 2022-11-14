@@ -61,6 +61,16 @@ class BAxisCompensation:
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
 
+    def set_move_transform(self, transform, force=False):
+        if self.next_transform is not None and not force:
+            raise self.printer.config_error(
+                "G-Code move transform already specified")
+        old_transform = self.next_transform
+        if old_transform is None:
+            old_transform = self.printer.lookup_object('toolhead', None)
+        self.next_transform = transform
+        return old_transform
+
     def get_position(self):
         if not self.enabled:
             return self.next_transform.get_position()
