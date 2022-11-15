@@ -9,7 +9,7 @@
             "args": [
                 "-d",
                 "dict/",
-                "test/klippy/skew_correction.test",
+                "test/klippy/file_read_4.test",
                 "-v"
             ]
         },

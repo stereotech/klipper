@@ -73,8 +73,6 @@ class BAxisCompensation:
             self.next_transform.move(newpos, speed)
             return
         corrected_pos = self.calc_tranformed(newpos)
-        self.next_transform.move(corrected_pos, speed)
-        print('------b_axis_compensation')
 
     def calc_tranformed(self, pos):
         a = math.radians(pos[3])
