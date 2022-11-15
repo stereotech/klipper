@@ -244,7 +244,6 @@ class PrinterSkew:
             return
         corrected_pos = self.calc_skew(newpos)
         self.next_transform.move(corrected_pos, speed)
-        print('------skew_corection')
 
     def _update_skew(self, xy_factor, xz_factor, yz_factor):
         self.xy_factor = xy_factor

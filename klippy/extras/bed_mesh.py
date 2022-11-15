@@ -246,7 +246,6 @@ class BedMesh:
             while not self.splitter.traverse_complete:
                 split_move = self.splitter.split()
                 if split_move:
-                    print('------bed_mesh')
                     self.next_transform.move(split_move, speed)
                 else:
                     raise self.gcode.error(
