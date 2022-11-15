@@ -51,25 +51,14 @@ class BAxisCompensation:
         )
         self.printer.register_event_handler("klippy:connect",
                                             self._handle_connect)
+        # Register transform
+        self.printer.lookup_object('bed_mesh').next_transform = self
         self.next_transform = None
 
-
     def _handle_connect(self):
-        gcode_move = self.printer.lookup_object('gcode_move')
-        self.next_transform = gcode_move.set_move_transform(self, force=True)
         kin = self.printer.lookup_object('toolhead').get_kinematics()
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
-
-    def set_move_transform(self, transform, force=False):
-        if self.next_transform is not None and not force:
-            raise self.printer.config_error(
-                "G-Code move transform already specified")
-        old_transform = self.next_transform
-        if old_transform is None:
-            old_transform = self.printer.lookup_object('toolhead', None)
-        self.next_transform = transform
-        return old_transform
 
     def get_position(self):
         if not self.enabled:
@@ -85,6 +74,7 @@ class BAxisCompensation:
             return
         corrected_pos = self.calc_tranformed(newpos)
         self.next_transform.move(corrected_pos, speed)
+        print('------b_axis_compensation')
 
     def calc_tranformed(self, pos):
         a = math.radians(pos[3])
@@ -235,6 +225,7 @@ class BAxisCompensation:
             'b_angle': self.b_angle,
             'rot_center_x': self.rot_center_x,
             'rot_center_z': self.rot_center_z,
+            'enable': self.enabled
         }
 
 def load_config(config):

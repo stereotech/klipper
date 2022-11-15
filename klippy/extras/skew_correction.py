@@ -103,12 +103,14 @@ class PrinterSkew:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
         ]
+        # Register transform
+        self.next_transform = None
+        self.printer.lookup_object('b_axis_compensation').next_transform = self
 
     def _handle_connect(self):
-        b_axis_compensation = self.printer.lookup_object('b_axis_compensation')
-        self.next_transform = b_axis_compensation.set_move_transform(self, force=True)
-
-        kin = self.printer.lookup_object('toolhead').get_kinematics()
+        # set transform object
+        self.next_transform = self.printer.lookup_object('toolhead')
+        kin = self.next_transform.get_kinematics()
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
 
@@ -242,6 +244,7 @@ class PrinterSkew:
             return
         corrected_pos = self.calc_skew(newpos)
         self.next_transform.move(corrected_pos, speed)
+        print('------skew_corection')
 
     def _update_skew(self, xy_factor, xz_factor, yz_factor):
         self.xy_factor = xy_factor
@@ -269,8 +272,10 @@ class PrinterSkew:
             return
         if gcmd.get_int('ENABLE', 0):
             self.enabled = True
+            gcmd.respond_info('Skew compensation enabled.')
         else:
             self.enabled = False
+            gcmd.respond_info('Skew compensation disabled.')
         planes = ["XY", "XZ", "YZ"]
         for plane in planes:
             skew = gcmd.get_float(plane, None)
@@ -278,7 +283,7 @@ class PrinterSkew:
                 try:
                     factor = plane.lower() + '_factor'
                     setattr(self, factor, skew)
-                    out = "Set skew correction %s: %.6f radians, %.2f degrees\n" % (
+                    out = "Set skew correction %s: %.6f radians, %.2f degrees." % (
                         factor, skew, math.degrees(skew))
                     gcmd.respond_info(out)
                 except Exception:
