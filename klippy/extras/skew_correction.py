@@ -155,7 +155,7 @@ class PrinterSkew:
                 self.b_point[0] = self.c_point[0] - 50
                 self.d_point = point(self.point_coords[2], self.point_coords[3])
                 self.a_point = list(self.d_point)
-                self.a_point[0] = self.d_point[0] - 50 
+                self.a_point[0] = self.d_point[0] - 50
                 cd = side(self.c_point[0], self.c_point[1], self.d_point[0], self.d_point[1])
                 bc = side(self.b_point[0], self.b_point[1], self.c_point[0], self.c_point[1])
                 bd = side(self.b_point[0], self.b_point[1], self.d_point[0], self.d_point[1])
@@ -284,7 +284,7 @@ class PrinterSkew:
                 except Exception:
                     raise gcmd.error(
                         "skew_correction: improperly formatted entry for "
-                        "plane [%s]\n%s" % (plane, gcmd.get_commandline()))                 
+                        "plane [%s]\n%s" % (plane, gcmd.get_commandline()))
     cmd_SKEW_PROFILE_help = "Profile management for skew_correction"
 
     def cmd_SKEW_PROFILE(self, gcmd):
