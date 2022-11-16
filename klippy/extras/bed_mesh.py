@@ -197,10 +197,10 @@ class BedMesh:
             return 1.
 
     def get_position(self):
-        if not self.enabled:
-            return self.next_transform.get_position()
+        # if not self.enabled:
+        #     return self.next_transform.get_position()
         # Return last, non-transformed position
-        elif self.z_mesh is None:
+        if self.z_mesh is None and not self.enabled:
             # No mesh calibrated, so send toolhead position
             self.last_position[:] = self.next_transform.get_position()
             self.last_position[2] -= self.fade_target

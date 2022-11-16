@@ -73,6 +73,7 @@ class BAxisCompensation:
             self.next_transform.move(newpos, speed)
             return
         corrected_pos = self.calc_tranformed(newpos)
+        self.next_transform.move(corrected_pos, speed)
 
     def calc_tranformed(self, pos):
         a = math.radians(pos[3])
@@ -174,10 +175,10 @@ class BAxisCompensation:
         enable = gcmd.get_int('ENABLE', 0)
         if enable:
             self.enabled = True
-            gcmd.respond_info('Bed_mesh compensation enabled.')
+            gcmd.respond_info('B_axis_compesation  enabled.')
         else:
             self.enabled = False
-            gcmd.respond_info('Bed_mesh compensation disabled.')
+            gcmd.respond_info('B_axis_compesation disabled.')
         save = gcmd.get_int('SAVE', 0)
         if save:
             self._save_compensation(b_angle, rot_center_x, rot_center_z)
