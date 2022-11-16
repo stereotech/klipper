@@ -112,7 +112,6 @@ class BedMesh:
         self.last_position = [0., 0., 0., 0., 0., 0., 0.]
         self.bmc = BedMeshCalibrate(config, self)
         self.z_mesh = None
-        self.toolhead = None
         self.horizontal_move_z = config.getfloat('horizontal_move_z', 5.)
         self.fade_start = config.getfloat('fade_start', 1.)
         self.fade_end = config.getfloat('fade_end', 0.)
@@ -138,14 +137,19 @@ class BedMesh:
             'BED_MESH_CLEAR', self.cmd_BED_MESH_CLEAR,
             desc=self.cmd_BED_MESH_CLEAR_help)
         self.gcode.register_command(
+            'BED_MESH_ENABLE', self.cmd_BED_MESH_ENABLE,
+            desc=self.cmd_BED_MESH_ENABLE_help)
+        self.gcode.register_command(
             'BED_MESH_OFFSET', self.cmd_BED_MESH_OFFSET,
             desc=self.cmd_BED_MESH_OFFSET_help)
+        self.enabled = False
         # Register transform
         gcode_move = self.printer.load_object(config, 'gcode_move')
         gcode_move.set_move_transform(self)
+        self.next_transform = None
+
 
     def handle_connect(self):
-        self.toolhead = self.printer.lookup_object('toolhead')
         self.bmc.print_generated_points(logging.info)
         self.pmgr.initialize()
 
@@ -193,14 +197,16 @@ class BedMesh:
             return 1.
 
     def get_position(self):
+        # if not self.enabled:
+        #     return self.next_transform.get_position()
         # Return last, non-transformed position
-        if self.z_mesh is None:
+        if self.z_mesh is None and not self.enabled:
             # No mesh calibrated, so send toolhead position
-            self.last_position[:] = self.toolhead.get_position()
+            self.last_position[:] = self.next_transform.get_position()
             self.last_position[2] -= self.fade_target
         else:
             # return current position minus the current z-adjustment
-            x, y, z, a, c, e = self.toolhead.get_position()
+            x, y, z, a, c, e = self.next_transform.get_position()
             max_adj = self.z_mesh.calc_z(x, y)
             factor = 1.
             z_adj = max_adj - self.fade_target
@@ -219,6 +225,12 @@ class BedMesh:
         return list(self.last_position)
 
     def move(self, newpos, speed):
+        axes_d = [self.next_transform.get_position()[i] - newpos[i] for i in
+                                (0, 1, 2, 3, 4, 5)]
+        move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
+        if not self.enabled or move_d < .000000001:
+            self.next_transform.move(newpos, speed)
+            return
         factor = self.get_z_factor(newpos[2])
         if self.z_mesh is None or not factor:
             # No mesh calibrated, or mesh leveling phased out.
@@ -228,13 +240,13 @@ class BedMesh:
                 logging.info(
                     "bed_mesh fade complete: Current Z: %.4f fade_target: %.4f "
                     % (z, self.fade_target))
-            self.toolhead.move([x, y, z + self.fade_target, a, c, e], speed)
+            self.next_transform.move([x, y, z + self.fade_target, a, c, e], speed)
         else:
             self.splitter.build_move(self.last_position, newpos, factor)
             while not self.splitter.traverse_complete:
                 split_move = self.splitter.split()
                 if split_move:
-                    self.toolhead.move(split_move, speed)
+                    self.next_transform.move(split_move, speed)
                 else:
                     raise self.gcode.error(
                         "Mesh Leveling: Error splitting move ")
@@ -247,7 +259,8 @@ class BedMesh:
             "mesh_max": (0., 0.),
             "probed_matrix": [[]],
             "mesh_matrix": [[]],
-            "profiles": self.pmgr.get_profiles()
+            "profiles": self.pmgr.get_profiles(),
+            'enable': self.enabled
         }
         if self.z_mesh is not None:
             params = self.z_mesh.get_mesh_params()
@@ -293,6 +306,16 @@ class BedMesh:
     def cmd_BED_MESH_CLEAR(self, gcmd):
         self.set_mesh(None)
     cmd_BED_MESH_OFFSET_help = "Add X/Y offsets to the mesh lookup"
+
+    def cmd_BED_MESH_ENABLE(self, gcmd):
+        enable = gcmd.get_int('ENABLE', 0)
+        if enable:
+            self.enabled = True
+            gcmd.respond_info('Bed_mesh compensation enabled.')
+        else:
+            self.enabled = False
+            gcmd.respond_info('Bed_mesh compensation disable.')
+    cmd_BED_MESH_ENABLE_help = "Enabled/disabled bed_mesh compensation"
 
     def cmd_BED_MESH_OFFSET(self, gcmd):
         if self.z_mesh is not None:

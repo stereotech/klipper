@@ -11,10 +11,14 @@
 
 import math
 
-def calc_skew_factor(ac, bd, ad, offset=0):
+def calc_skew_factor(ac, bd, ad, offset=0.):
     side = math.sqrt(2*ac*ac + 2*bd*bd - 4*ad*ad) / 2.
-    return math.tan(math.pi/2 + (math.acos(
-        (ac*ac - side*side - ad*ad) / (2*side*ad)) + offset))
+    if offset == 0.:
+        return math.tan(math.pi/2 - (math.acos(
+            (ac*ac - side*side - ad*ad) / (2*side*ad)) + offset))
+    else:
+        return math.tan(math.pi/2 + (math.acos(
+            (ac*ac - side*side - ad*ad) / (2*side*ad)) + offset))
 
 def side(x1, y1, x2, y2):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
@@ -27,16 +31,12 @@ def calc_skew_factor_my(ac, bd, bc):
     This function made spashial for five_d printers.
         b_______c
         |       |
-        a_______d 
+        a_______d
     """
     ac, bd = bd, ac
     cd = math.sqrt(2*ac*ac + 2*bd*bd - 4*bc*bc) / 2.
-    # cos_b = math.acos((bc*bc + cd*cd - ac*ac) / (2*bc*cd))
     cos_a = math.acos((bc*bc + cd*cd - bd*bd) / (2*bc*cd))
-    # tan_O = math.tan(math.pi/2 - cos_b)
     tan_O2 =  math.tan(math.pi/2 - cos_a)
-    # print('cos_b = ', math.degrees(cos_b), ', cos_a = ', math.degrees(cos_a), ', tan_O = ', math.degrees(tan_O2))
-    # print(math.degrees(tan_O2))
     return tan_O2
 
 def point(first, second):
@@ -50,7 +50,8 @@ def point(first, second):
 def  calc_xy_axis_offset(a1, b1, a2, b2):
     a_vect = [b1[0] - a1[0], b1[1] - a1[1]]
     b_vect = [b2[0] - a2[0], b2[1] - a2[1]]
-    ab_mod = abs(a_vect[0] * b_vect[0] + a_vect[1] * b_vect[1]) / (math.sqrt(a_vect[0]**2 + a_vect[1]**2) * math.sqrt(b_vect[0]**2 + b_vect[1]**2))
+    ab_mod = abs(a_vect[0] * b_vect[0] + a_vect[1] * b_vect[1]) / (math.sqrt(a_vect[0]**2 + a_vect[1]**2) \
+         * math.sqrt(b_vect[0]**2 + b_vect[1]**2))
     return   math.acos(ab_mod)
 
 # Constrain value between min and max
@@ -62,7 +63,7 @@ class PrinterSkew:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.name = config.get_name()
-        self.toolhead = None
+        self.enabled = False
         self.xy_factor = 0.
         self.xz_factor = 0.
         self.yz_factor = 0.
@@ -99,14 +100,16 @@ class PrinterSkew:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
         ]
+        # Register transform
+        self.next_transform = None
+        self.printer.lookup_object('b_axis_compensation').next_transform = self
 
     def _handle_connect(self):
-        gcode_move = self.printer.lookup_object('gcode_move')
-        self.next_transform = gcode_move.set_move_transform(self, force=True)
-        kin = self.printer.lookup_object('toolhead').get_kinematics()
+        # set transform object
+        self.next_transform = self.printer.lookup_object('toolhead')
+        kin = self.next_transform.get_kinematics()
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
-        # pass
 
     def cmd_SAVE_SKEW_POINT(self, gcmd):
         point_idx = gcmd.get_int('POINT', 0)
@@ -124,24 +127,34 @@ class PrinterSkew:
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord
     cmd_SAVE_SKEW_POINT_help = "Save point for align skew"
-    
+
+    cmd_CALC_MEASURED_SKEW_help = "Calculate skew from measured print"
+    def cmd_CALC_MEASURED_SKEW(self, gcmd):
+        ac = gcmd.get_float("AC", above=0.)
+        bd = gcmd.get_float("BD", above=0.)
+        ad = gcmd.get_float("AD", above=0.)
+        factor = calc_skew_factor(ac, bd, ad)
+        gcmd.respond_info("Calculated Skew: %.6f radians, %.2f degrees"
+                          % (factor, math.degrees(factor)))
+
     def cmd_CALC_SKEW_COMPENSATION(self, gcmd):
         """
         b_______c
         |       |
-        a_______d 
+        a_______d
         """
 
         factors = ['XY', 'XZ', 'YZ']
         factor_name = gcmd.get('FACTOR').upper()
         if factor_name in factors:
-            if factor_name == factors[0]:     
+            if factor_name == factors[0]:
+                # xy_factor
                 self.c_point = point(self.point_coords[0], self.point_coords[1])
                 self.b_point = list(self.c_point)
                 self.b_point[0] = self.c_point[0] - 50
                 self.d_point = point(self.point_coords[2], self.point_coords[3])
                 self.a_point = list(self.d_point)
-                self.a_point[0] = self.d_point[0] - 50 
+                self.a_point[0] = self.d_point[0] - 50
                 cd = side(self.c_point[0], self.c_point[1], self.d_point[0], self.d_point[1])
                 bc = side(self.b_point[0], self.b_point[1], self.c_point[0], self.c_point[1])
                 bd = side(self.b_point[0], self.b_point[1], self.d_point[0], self.d_point[1])
@@ -152,19 +165,31 @@ class PrinterSkew:
                                                   self.point_coords[5],
                                                   self.point_coords[6],
                                                   self.point_coords[7])
-                # axis_offset = 0                                  
+                # axis_offset = 0.0
             elif factor_name == factors[1]:
-                pass
+                # xz_factor
+                self.c_point = point(self.point_coords[0], self.point_coords[1])
+                self.b_point = list(self.c_point)
+                self.b_point[0] = self.c_point[0] - 50
+                self.d_point = point(self.point_coords[2], self.point_coords[3])
+                self.a_point = list(self.d_point)
+                self.a_point[0] = self.d_point[0] - 50
+                cd = side(self.c_point[0], self.c_point[2], self.d_point[0], self.d_point[2])
+                bc = side(self.b_point[0], self.b_point[2], self.c_point[0], self.c_point[2])
+                bd = side(self.b_point[0], self.b_point[2], self.d_point[0], self.d_point[2])
+                ac = side(self.a_point[0], self.a_point[2], self.c_point[0], self.c_point[2])
+                gcmd.respond_info('cd=%f, bc=%f, bd=%f, ac=%f' % (cd, bc, bd, ac))
+                axis_offset = 0.0
+                # pass
             else:
+                # yz_factor
                 pass
             sf = calc_skew_factor(ac, bd, bc, axis_offset)
-            # sf = calc_skew_factor(ac, bd, bc)
             factor_name = factor_name.lower() + '_factor'
             setattr(self, factor_name, sf)
             out = "Calculated skew compensation %s: %.6f radians, %.2f degrees\n" % (
                 factor_name, sf, math.degrees(sf))
             gcmd.respond_info(out)
-        
         else:
             raise gcmd.error(
                     "Error! Factor name %s not in list factors['XY', 'XZ', 'YZ']" % (factor_name))
@@ -203,9 +228,17 @@ class PrinterSkew:
         return newpos
 
     def get_position(self):
+        if not self.enabled:
+            return self.next_transform.get_position()
         return self.calc_unskew(self.next_transform.get_position())
+
     def move(self, newpos, speed):
-        # print('nepos= ', newpos)
+        axes_d = [self.next_transform.get_position()[i] - newpos[i] for i in
+                                (0, 1, 2, 3, 4, 5)]
+        move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
+        if not self.enabled or move_d < .000000001:
+            self.next_transform.move(newpos, speed)
+            return
         corrected_pos = self.calc_skew(newpos)
         # print('corrected_pos= ', corrected_pos)
         self.next_transform.move(corrected_pos, speed)
@@ -217,6 +250,7 @@ class PrinterSkew:
         gcode_move = self.printer.lookup_object('gcode_move')
         gcode_move.reset_last_position()
     cmd_GET_CURRENT_SKEW_help = "Report current printer skew"
+
     def cmd_GET_CURRENT_SKEW(self, gcmd):
         out = "Current Printer Skew:"
         planes = ["XY", "XZ", "YZ"]
@@ -231,21 +265,28 @@ class PrinterSkew:
     def cmd_SET_SKEW(self, gcmd):
         if gcmd.get_int("CLEAR", 0):
             self._update_skew(0., 0., 0.)
+            gcmd.respond_info('Skew points cleared.')
             return
+        if gcmd.get_int('ENABLE', 0):
+            self.enabled = True
+            gcmd.respond_info('Skew compensation enabled.')
+        else:
+            self.enabled = False
+            gcmd.respond_info('Skew compensation disabled.')
         planes = ["XY", "XZ", "YZ"]
         for plane in planes:
             skew = gcmd.get_float(plane, None)
-            if skew is not None and isinstance(skew, float):
+            if skew is not None:
                 try:
                     factor = plane.lower() + '_factor'
                     setattr(self, factor, skew)
-                    out = "Set skew correction %s: %.6f radians, %.2f degrees\n" % (
+                    out = "Set skew correction %s: %.6f radians, %.2f degrees." % (
                         factor, skew, math.degrees(skew))
                     gcmd.respond_info(out)
                 except Exception:
                     raise gcmd.error(
                         "skew_correction: improperly formatted entry for "
-                        "plane [%s]\n%s" % (plane, gcmd.get_commandline()))                
+                        "plane [%s]\n%s" % (plane, gcmd.get_commandline()))
     cmd_SKEW_PROFILE_help = "Profile management for skew_correction"
 
     def cmd_SKEW_PROFILE(self, gcmd):
@@ -293,6 +334,7 @@ class PrinterSkew:
 
     def get_status(self, eventtime=None):
         return {
+            'enable': self.enabled,
             'xy_factor': self.xy_factor,
             'xz_factor': self.xz_factor,
             'yz_factor': self.yz_factor,
