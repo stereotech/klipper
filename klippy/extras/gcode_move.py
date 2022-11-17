@@ -13,6 +13,8 @@ DEG_TO_RAD = 0.01745329252
 class GCodeMove:
     def __init__(self, config):
         self.printer = printer = config.get_printer()
+
+
         printer.register_event_handler("klippy:ready", self._handle_ready)
         printer.register_event_handler(
             "klippy:shutdown", self._handle_shutdown)
@@ -50,7 +52,9 @@ class GCodeMove:
         self.base_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.last_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.homing_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.speed = 25.
+        self.radius = 0.
+        self.square_corner_velocity = 5.
+        self.speed = self.rotary_speed = 25.
         self.speed_factor = 1. / 60.
         self.extrude_factor = 1.
         # Multiple coordinate systems
@@ -93,6 +97,7 @@ class GCodeMove:
             toolhead = self.printer.lookup_object('toolhead')
             self.move_with_transform = toolhead.move
             self.position_with_transform = toolhead.get_position
+            self.square_corner_velocity = toolhead.square_corner_velocity
         self.reset_last_position()
 
     def _handle_shutdown(self):
@@ -191,6 +196,8 @@ class GCodeMove:
                                 self.base_position[pos]
                             if pos < 3:
                                 self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
+                        if axis == 'Z':
+                            self.radius = self._get_gcode_position()[2] - self.wcs_offsets[self.current_wcs][2]
                 if 'E' in params:
                     v = float(params['E']) * self.extrude_factor
                     if not self.absolute_coord or not self.absolute_extrude:
@@ -205,6 +212,12 @@ class GCodeMove:
                         raise gcmd.error("Invalid speed in '%s'"
                                          % (gcmd.get_commandline(),))
                     self.speed = gcode_speed * self.speed_factor
+                if 'C' in params and self.radius > 0.:
+                    self.rotary_speed = 6 * self.speed / self.radius
+                    if self.rotary_speed < self.speed:
+                        self.speed = self.rotary_speed
+                    if self.rotary_speed < self.square_corner_velocity:
+                        self.speed = self.square_corner_velocity
             except ValueError as e:
                 raise gcmd.error("Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
