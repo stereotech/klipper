@@ -72,7 +72,7 @@ class PrinterGCodeMacro:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.env = jinja2.Environment('{%', '%}', '{', '}')
-        self.printer.register_event_handler("klippy:ready", self.handle_ready)
+        self.printer.register_event_handler("klippy:connect", self.handle_ready)
 
     def handle_ready(self):
         self.heaters = self.printer.lookup_object('heaters')
