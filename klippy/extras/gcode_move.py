@@ -213,7 +213,8 @@ class GCodeMove:
                                          % (gcmd.get_commandline(),))
                     self.speed = gcode_speed * self.speed_factor
                 if 'C' in params and self.radius > 0.:
-                    self.rotary_speed = 6 * self.speed / self.radius
+                    #self.rotary_speed = 6 * self.speed / self.radius
+                    self.rotary_speed = -0.667 * self.radius + self.speed
                     if self.rotary_speed < self.speed:
                         self.speed = self.rotary_speed
                     if self.rotary_speed < self.square_corner_velocity:
