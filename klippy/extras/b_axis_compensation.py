@@ -66,10 +66,13 @@ class BAxisCompensation:
         return self.calc_untransformed(self.next_transform.get_position())
 
     def move(self, newpos, speed):
+        if not self.enabled:
+            self.next_transform.move(newpos, speed)
+            return
         axes_d = [self.next_transform.get_position()[i] - newpos[i] for i in
                                 (0, 1, 2, 3, 4, 5)]
         move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
-        if not self.enabled or move_d < .000000001:
+        if move_d < .000000001:
             self.next_transform.move(newpos, speed)
             return
         corrected_pos = self.calc_tranformed(newpos)
@@ -217,8 +220,10 @@ class BAxisCompensation:
         enable = gcmd.get_int('ENABLE', 0)
         if enable:
             self.enabled = True
+            gcmd.respond_info('B_axis_compesation enabled.')
         else:
             self.enabled = False
+            gcmd.respond_info('B_axis_compesation disable.')
         save = gcmd.get_int('SAVE', 0)
         if save:
             self._save_compensation(b_angle, rot_center_x, rot_center_z)

@@ -225,10 +225,7 @@ class BedMesh:
         return list(self.last_position)
 
     def move(self, newpos, speed):
-        axes_d = [self.next_transform.get_position()[i] - newpos[i] for i in
-                                (0, 1, 2, 3, 4, 5)]
-        move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
-        if not self.enabled or move_d < .000000001:
+        if not self.enabled:
             self.next_transform.move(newpos, speed)
             return
         factor = self.get_z_factor(newpos[2])
