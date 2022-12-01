@@ -103,9 +103,9 @@ class PrinterSkew:
         ]
         self.gcode_move = self.printer.lookup_object('gcode_move')
         self.wcs_offsets = [
-            [0.000,	0.000, 0.000],
-            [0.000,	0.000, 0.000],
-            [0.000,	0.000, 0.000],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
         ]
         # Register transform
         self.next_transform = None
