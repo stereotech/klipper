@@ -53,6 +53,7 @@ class BAxisCompensation:
                                             self._handle_connect)
         # Register transform
         self.printer.lookup_object('bed_mesh').next_transform = self
+        # this variable change on skew_correction
         self.next_transform = None
 
     def _handle_connect(self):
