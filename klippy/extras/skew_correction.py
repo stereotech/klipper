@@ -11,14 +11,10 @@
 
 import math
 
-def calc_skew_factor(ac, bd, ad, offset=0.):
+def calc_skew_factor(ac, bd, ad):
     side = math.sqrt(2*ac*ac + 2*bd*bd - 4*ad*ad) / 2.
-    if offset == 0.:
-        return math.tan(math.pi/2 - (math.acos(
-            (ac*ac - side*side - ad*ad) / (2*side*ad)) + offset))
-    else:
-        return math.tan(math.pi/2 + (math.acos(
-            (ac*ac - side*side - ad*ad) / (2*side*ad)) + offset))
+    return math.tan(math.pi/2 - math.acos((
+            (ac*ac - side*side - ad*ad) / (2*side*ad))))
 
 def side(x1, y1, x2, y2):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
@@ -107,8 +103,8 @@ class PrinterSkew:
         ]
         self.gcode_move = self.printer.lookup_object('gcode_move')
         self.wcs_offsets = [[0.000,	0.000, 0.000],
-                            [162.632, 245.471, 58.613],
-                            [162.632, 207.493, 20.374]
+                            [0.000,	0.000, 0.000],
+                            [0.000,	0.000, 0.000]
                             ]
         # Register transform
         self.next_transform = None
@@ -192,8 +188,8 @@ class PrinterSkew:
                 gcmd.respond_info('cd=%f, bc=%f, bd=%f, ac=%f' % (cd, bc, bd, ac))
             else:
                 # yz_factor
-                a_point = self.point_coords[0]
-                b_point = point(self.point_coords[1], self.point_coords[2])
+                b_point = self.point_coords[0]
+                a_point = point(self.point_coords[1], self.point_coords[2])
                 d_point = list(a_point)
                 d_point[1] = d_point[1] - 50
                 c_point = list(b_point)
@@ -229,58 +225,29 @@ class PrinterSkew:
             }
 
     def calc_skew(self, pos):
+        wcs = self.wcs_offsets[self.gcode_move.current_wcs]
         newpos = list(pos)
-        newpos[0] = pos[0] - pos[1] * self.xy_factor \
-            - pos[2] * (self.xz_factor - (self.xy_factor * self.yz_factor))
-        newpos[1] = pos[1] - pos[2] * self.yz_factor
+        newpos[0] = pos[0] - (pos[1]- wcs[1]) * self.xy_factor \
+            - (pos[2] - wcs[2]) * (self.xz_factor - (self.xy_factor * self.yz_factor))
+        newpos[1] = pos[1] - (pos[2]- wcs[2]) * self.yz_factor
         newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
         newpos.append(pos[5])
         return newpos
 
     def calc_unskew(self, pos):
+        wcs = self.wcs_offsets[self.gcode_move.current_wcs]
         newpos = list(pos)
-        newpos[0] = pos[0] + pos[1] * self.xy_factor \
-            + pos[2] * self.xz_factor
-        newpos[1] = pos[1] + pos[2] * self.yz_factor
+        newpos[0] = pos[0] + (pos[1] - wcs[1]) * self.xy_factor \
+            + (pos[2] - wcs[2]) * self.xz_factor
+        newpos[1] = pos[1] + (pos[2]- wcs[2]) * self.yz_factor
         newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
         newpos.append(pos[5])
         return newpos
 
-    # def calc_skew(self, pos):
-    #     wcs = self.wcs_offsets[self.gcode_move.current_wcs]
-    #     diff_move = list(map(lambda x,y:  x - y, pos[0:3], wcs))
-    #     diff_move[0] = diff_move[0] - diff_move[1] * self.xy_factor \
-    #             - diff_move[2] * (self.xz_factor - (self.xy_factor * self.yz_factor))
-    #     diff_move[1] = diff_move[1] - diff_move[2] * self.yz_factor
-    #     new_pos = list(map(lambda x,y:  abs(x + y), diff_move, wcs)) + pos[3:]
-    #     newpos = [constrain(new_pos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-    #     newpos.append(pos[5])
-    #     if self.gcode_move.current_wcs == 1:
-    #         print(pos)
-    #     return newpos
-
-    # def calc_unskew(self, pos):
-    #         wcs = self.wcs_offsets[self.gcode_move.current_wcs]
-    #         diff_move = list(map(lambda x,y:  x - y, pos[0:3], wcs))
-    #         diff_move[0] = diff_move[0] + diff_move[1] * self.xy_factor \
-    #             + diff_move[2] * self.xz_factor
-    #         diff_move[1] = diff_move[1] + diff_move[2] * self.yz_factor
-    #         new_pos = list(map(lambda x,y:  abs(x + y), diff_move, wcs)) + pos[3:]
-    #         newpos = [constrain(new_pos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-    #         newpos.append(pos[5])
-    #         print('\n-----------unskew  ', pos)
-    #         return newpos
 
     def get_position(self):
         if not self.enabled:
             return self.next_transform.get_position()
-        # wcs = self.wcs_offsets[self.gcode_move.current_wcs]
-        # pos = list(self.next_transform.get_position())
-        # diff_move = list(map(lambda x,y:  abs(y - x), wcs, pos))
-        # corrected_pos = self.calc_skew(diff_move)
-        # diff_corrected = list(map(lambda x,y:  abs(x - y), corrected_pos, diff_move))
-        # new_pos = list(map(lambda x,y:  abs(x - y), pos, diff_corrected))
-        # return new_pos
         return self.calc_unskew(self.next_transform.get_position())
 
     def move(self, newpos, speed):
@@ -294,13 +261,6 @@ class PrinterSkew:
             self.next_transform.move(newpos, speed)
             return
         else:
-            # wcs = self.wcs_offsets[self.gcode_move.current_wcs]
-            # pos = list(newpos)
-            # diff_move = list(map(lambda x,y:  abs(y - x), wcs, pos))
-            # corrected_pos = self.calc_skew(diff_move)
-            # diff_corrected = list(map(lambda x,y:  abs(x - y), corrected_pos, diff_move))
-            # new_pos = list(map(lambda x,y:  abs(x + y), pos, diff_corrected))
-            # self.next_transform.move(new_pos, speed)
             corrected_pos = self.calc_skew(newpos)
             self.next_transform.move(corrected_pos, speed)
 
