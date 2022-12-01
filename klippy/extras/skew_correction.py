@@ -105,7 +105,7 @@ class PrinterSkew:
         self.wcs_offsets = [
             [0.000,	0.000, 0.000],
             [0.000,	0.000, 0.000],
-            [0.000,	0.000, 0.000]
+            [0.000,	0.000, 0.000],
         ]
         # Register transform
         self.next_transform = None
