@@ -142,6 +142,7 @@ class BedMesh:
         # Register transform
         gcode_move = self.printer.load_object(config, 'gcode_move')
         gcode_move.set_move_transform(self)
+        # this variable change on b_axis_compensation
         self.next_transform = None
 
 
