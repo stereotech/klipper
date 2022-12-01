@@ -102,10 +102,11 @@ class PrinterSkew:
             [0., 0., 0., 0., 0., 0.],
         ]
         self.gcode_move = self.printer.lookup_object('gcode_move')
-        self.wcs_offsets = [[0.000,	0.000, 0.000],
-                            [0.000,	0.000, 0.000],
-                            [0.000,	0.000, 0.000]
-                            ]
+        self.wcs_offsets = [
+            [0.000,	0.000, 0.000],
+            [0.000,	0.000, 0.000],
+            [0.000,	0.000, 0.000]
+        ]
         # Register transform
         self.next_transform = None
         self.printer.lookup_object('b_axis_compensation').next_transform = self
