@@ -5,15 +5,20 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging, logging.handlers, threading, queue, time
 
+
+_log_format = "%(asctime)s - [%(levelname)s] - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s"
+
+
 # Class to forward all messages through a queue to a background thread
 class QueueHandler(logging.Handler):
     def __init__(self, queue):
         logging.Handler.__init__(self)
         self.queue = queue
+        self.setFormatter(logging.Formatter(_log_format))
     def emit(self, record):
         try:
-            self.format(record)
-            record.msg = record.message
+            message = self.format(record)
+            record.msg = message
             record.args = None
             record.exc_info = None
             self.queue.put_nowait(record)
