@@ -524,29 +524,27 @@ class GCodeMove:
         center_Z = self.get_wcs(2)[2]  # current_pos[2] - r_Z
 
         angular_travel = DEG_TO_RAD * (target_pos[3] - current_pos[3])
-        angular_target = DEG_TO_RAD * (target_pos[3] - self.homing_position[3])
-        linear_dy = target_pos[1] - current_pos[1]
-        linear_dz = target_pos[2] - current_pos[2]
-        cos_a_target = math.cos(angular_target)
-        sin_a_target = math.sin(angular_target)
-        linear_y = linear_dy * cos_a_target - linear_dz * sin_a_target
-        linear_z = linear_dy * sin_a_target + linear_dz * cos_a_target
+        angular_target = DEG_TO_RAD * (target_pos[3] - self.base_position[3])
+        linear_y = target_pos[1] - current_pos[1]
+        linear_z = target_pos[2] - current_pos[2]
 
         cos_a_travel = math.cos(angular_travel)
         sin_a_travel = math.sin(angular_travel)
-        rt_Y = r_Y * cos_a_travel - r_Z * sin_a_travel
-        rt_Z = r_Y * sin_a_travel + r_Z * cos_a_travel
 
         compensated_target = list(target_pos)
         compensated_target.pop()
-        compensated_target[1] = center_Y + rt_Y + linear_y
-        compensated_target[2] = center_Z + rt_Z + linear_z
+        compensated_target[1] = target_pos[1] * \
+            cos_a_travel - target_pos[2] * sin_a_travel + \
+            center_Y - cos_a_travel * center_Y + sin_a_travel * center_Z
+        compensated_target[2] = target_pos[1] * \
+            sin_a_travel + target_pos[2] * cos_a_travel + \
+            center_Z - sin_a_travel * center_Y - cos_a_travel * center_Z
 
         radius = math.hypot(r_Y, r_Z)
         ellipse_length = math.sqrt(
             (radius + linear_y) ** 2 + (radius + linear_z) ** 2)
         mm_of_travel = math.hypot(
-            angular_travel * ellipse_length, math.fabs(linear_x))
+            (angular_travel / (2 * math.pi)) * ellipse_length, math.fabs(linear_x))
         segments = max(1., math.floor(mm_of_travel / self.mm_per_arc_segment))
         theta_per_segment = angular_travel / segments
         linear_per_segment = [linear_x / segments,
@@ -561,11 +559,13 @@ class GCodeMove:
                 dist[axis] = i * linear
             cos_Ti = math.cos(i * theta_per_segment)
             sin_Ti = math.sin(i * theta_per_segment)
-            r_Y = -offset[1] * cos_Ti + offset[2] * sin_Ti
-            r_Z = -offset[1] * sin_Ti - offset[2] * cos_Ti
+            r_Y = (-offset[1] + dist[1]) * cos_Ti - (-offset[2] + dist[2]) * sin_Ti # + \
+                #center_Y - cos_Ti * center_Y + sin_Ti * center_Z
+            r_Z = (-offset[1] + dist[1]) * sin_Ti + (-offset[2] + dist[2]) * cos_Ti # + \
+                #center_Z - sin_Ti * center_Y - cos_Ti * center_Z
             c = [current_pos[0] + dist[0],
-                 center_Y + r_Y + dist[1],
-                 center_Z + r_Z + dist[2],
+                 center_Y + r_Y ,
+                 center_Z + r_Z,
                  current_pos[3] + dist[3],
                  current_pos[4] + dist[4]]
             coords.append(c)
@@ -593,20 +593,22 @@ class GCodeMove:
             wcs_2[2] - sin_ma * wcs_1[1] - cos_ma * wcs_2[2]
 
         offset = [0., 0., 0.]
-        offset_y = wcs_1[1] - inverted_last_pos[1]
-        offset_z = wcs_2[2] - inverted_last_pos[2]
-        offset[1] = offset_y * cos_a - offset_z * sin_a
-        offset[2] = offset_y * sin_a + offset_z * cos_a
+        offset_y = wcs_1[1] - self.last_position[1] #inverted_last_pos[1]
+        offset_z = wcs_2[2] - self.last_position[2] #inverted_last_pos[2]
+        offset[1] = offset_y # * cos_a - offset_z * sin_a + \
+            #wcs_1[1] - cos_a * wcs_1[1] + sin_a * wcs_2[2]
+        offset[2] = offset_z # offset_y * sin_a + offset_z * cos_a + \
+            #wcs_2[2] - sin_a * wcs_1[1] - cos_a * wcs_2[2]
 
         inverted_pos = list(pos)
         inverted_pos[1] = pos[1] * \
-            cos_ma - pos[2] * sin_ma + \
-            wcs_1[1] - cos_ma * wcs_1[1] + sin_ma * wcs_2[2]
+            cos_a - pos[2] * sin_a + \
+            wcs_1[1] - cos_a * wcs_1[1] + sin_a * wcs_2[2]
         inverted_pos[2] = pos[1] * \
-            sin_ma + pos[2] * cos_ma + \
-            wcs_2[2] - sin_ma * wcs_1[1] - cos_ma * wcs_2[2]
+            sin_a + pos[2] * cos_a + \
+            wcs_2[2] - sin_a * wcs_1[1] - cos_a * wcs_2[2]
 
-        coords = self._plan_arc(self.last_position, pos, offset)
+        coords = self._plan_arc(self.last_position, inverted_pos, offset)
         e_per_move = e_base = 0.
         if self.absolute_extrude:
             e_base = self.last_position[5]
@@ -618,13 +620,31 @@ class GCodeMove:
                 if self.absolute_extrude:
                     e_base += e_per_move
             else:
-                coord.append(0.0)
+                coord.append(e_base)
         return coords
 
     def process_move_with_compensation(self, gcmd):
         params = gcmd.get_command_parameters()
         try:
-            new_position = list(self.last_position)
+            angular_pos = DEG_TO_RAD * \
+                (self.last_position[3] - self.base_position[3])
+            cos_a = math.cos(angular_pos)
+            sin_a = math.sin(angular_pos)
+            cos_ma = math.cos(-angular_pos)
+            sin_ma = math.sin(-angular_pos)
+
+            wcs_1 = self.get_wcs(1)
+            wcs_2 = self.get_wcs(2)
+
+            inverted_last_pos = list(self.last_position)
+            inverted_last_pos[1] = self.last_position[1] * \
+                cos_ma - self.last_position[2] * sin_ma + \
+                wcs_1[1] - cos_ma * wcs_1[1] + sin_ma * wcs_2[2]
+            inverted_last_pos[2] = self.last_position[1] * \
+                sin_ma + self.last_position[2] * cos_ma + \
+                wcs_2[2] - sin_ma * wcs_1[1] - cos_ma * wcs_2[2]
+            new_position = list(inverted_last_pos)
+
             for pos, axis in enumerate('XYZAC'):
                 if axis in params:
                     v = float(params[axis])
