@@ -10,45 +10,24 @@
 # This file may be distributed under the terms of the GNU GPLv3 license.
 
 import math
+import collections
+
 
 def calc_skew_factor(ac, bd, ad):
     side = math.sqrt(2*ac*ac + 2*bd*bd - 4*ad*ad) / 2.
     return math.tan(math.pi/2 - math.acos((
             (ac*ac - side*side - ad*ad) / (2*side*ad))))
 
-def side(x1, y1, x2, y2):
+def length_side(x1, y1, x2, y2):
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
-def diagonal_AC(cd, bc, bd):
-    return math.sqrt(2*cd*cd + 2*bc*bc - bd*bd)
-
-def calc_skew_factor_my(ac, bd, bc):
-    """
-    This function made spashial for five_d printers.
-        b_______c
-        |       |
-        a_______d
-    """
-    ac, bd = bd, ac
-    cd = math.sqrt(2*ac*ac + 2*bd*bd - 4*bc*bc) / 2.
-    cos_a = math.acos((bc*bc + cd*cd - bd*bd) / (2*bc*cd))
-    tan_O2 =  math.tan(math.pi/2 - cos_a)
-    return tan_O2
-
-def point(first, second):
+def get_point(first, second):
     return [(first[0] + second[0]) / 2.,
             (first[1] + second[1]) / 2.,
             (first[2] + second[2]) / 2.,
             0,
             0
         ]
-
-def  calc_xy_axis_offset(a1, b1, a2, b2):
-    a_vect = [b1[0] - a1[0], b1[1] - a1[1]]
-    b_vect = [b2[0] - a2[0], b2[1] - a2[1]]
-    ab_mod = abs(a_vect[0] * b_vect[0] + a_vect[1] * b_vect[1]) / (math.sqrt(a_vect[0]**2 + a_vect[1]**2) \
-         * math.sqrt(b_vect[0]**2 + b_vect[1]**2))
-    return   math.acos(ab_mod)
 
 # Constrain value between min and max
 def constrain(val, min_val, max_val):
@@ -63,13 +42,13 @@ class PrinterSkew:
         self.xy_factor = 0.
         self.xz_factor = 0.
         self.yz_factor = 0.
-        self.axis_offset = 0.
         self.b_point = None
         self.c_point = None
         self.d_point = None
         self.a_point = None
+        self.current_profile = None
         self.skew_profiles = {}
-
+        # Fetch stored profiles from Config
         self._load_storage(config)
         self.printer.register_event_handler("klippy:connect",
                                             self._handle_connect)
@@ -94,29 +73,22 @@ class PrinterSkew:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 0.],
-            # xy offset axis
-            [0., 0., 0., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.]
         ]
         self.gcode_move = self.printer.lookup_object('gcode_move')
-        self.wcs_offsets = [
-            [0., 0., 0.],
-            [0., 0., 0.],
-            [0., 0., 0.],
-        ]
+        self.wcs_list = []
+        self.current_wcs = [0., 0., 0.]
         # Register transform
         self.next_transform = None
         self.printer.lookup_object('b_axis_compensation').next_transform = self
 
     def _handle_connect(self):
-        # set transform object
+        # set transform object, end wcs with gcode_move module
         self.next_transform = self.printer.lookup_object('toolhead')
         kin = self.next_transform.get_kinematics()
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
+        self.wcs_list = self.printer.lookup_object('gcode_move').wcs_offsets
 
     def cmd_SAVE_SKEW_POINT(self, gcmd):
         point_idx = gcmd.get_int('POINT', 0)
@@ -135,7 +107,6 @@ class PrinterSkew:
                 self.point_coords[point_idx][axis] = coord
     cmd_SAVE_SKEW_POINT_help = "Save point for align skew"
 
-    cmd_CALC_MEASURED_SKEW_help = "Calculate skew from measured print"
     def cmd_CALC_MEASURED_SKEW(self, gcmd):
         ac = gcmd.get_float("AC", above=0.)
         bd = gcmd.get_float("BD", above=0.)
@@ -143,6 +114,7 @@ class PrinterSkew:
         factor = calc_skew_factor(ac, bd, ad)
         gcmd.respond_info("Calculated Skew: %.6f radians, %.2f degrees"
                           % (factor, math.degrees(factor)))
+    cmd_CALC_MEASURED_SKEW_help = "Calculate skew from measured print"
 
     def cmd_CALC_SKEW_COMPENSATION(self, gcmd):
         """
@@ -155,62 +127,47 @@ class PrinterSkew:
         if factor_name in factors:
             if factor_name == factors[0]:
                 # xy_factor
-                self.c_point = point(self.point_coords[0], self.point_coords[1])
+                self.c_point = get_point(self.point_coords[0], self.point_coords[1])
                 self.b_point = list(self.c_point)
                 self.b_point[0] = self.c_point[0] - 50.
-                self.d_point = point(self.point_coords[2], self.point_coords[3])
+                self.d_point = get_point(self.point_coords[2], self.point_coords[3])
                 self.a_point = list(self.d_point)
                 self.a_point[0] = self.d_point[0] - 50.
-                if self.point_coords[4][0] != 0:
-                    self.c_point[1] = point(self.point_coords[4], self.point_coords[5])[1]
-                    self.b_point[1] = self.point_coords[4][1]
-                    self.d_point[1] = self.c_point[1] - 50.
-                    self.a_point[1] = self.b_point[1] - 50.
-                    self.point_coords = [[i - i for i in a]
-                                        for a in self.point_coords]
-                cd = side(self.c_point[0], self.c_point[1], self.d_point[0], self.d_point[1])
-                bc = side(self.b_point[0], self.b_point[1], self.c_point[0], self.c_point[1])
-                bd = side(self.b_point[0], self.b_point[1], self.d_point[0], self.d_point[1])
-                ac = side(self.a_point[0], self.a_point[1], self.c_point[0], self.c_point[1])
-                gcmd.respond_info('cd=%f, bc=%f, bd=%f, ac=%f' % (cd, bc, bd, ac))
-                # ac, bd = bd, ac
+                bc = length_side(self.b_point[0], self.b_point[1], self.c_point[0], self.c_point[1])
+                bd = length_side(self.b_point[0], self.b_point[1], self.d_point[0], self.d_point[1])
+                ac = length_side(self.a_point[0], self.a_point[1], self.c_point[0], self.c_point[1])
             elif factor_name == factors[1]:
                 # xz_factor
-                self.c_point = point(self.point_coords[0], self.point_coords[1])
+                self.c_point = get_point(self.point_coords[0], self.point_coords[1])
                 self.b_point = list(self.c_point)
                 self.b_point[0] = self.c_point[0] - 50
-                self.d_point = point(self.point_coords[2], self.point_coords[3])
+                self.d_point = get_point(self.point_coords[2], self.point_coords[3])
                 self.a_point = list(self.d_point)
                 self.a_point[0] = self.d_point[0] - 50
-                cd = side(self.c_point[0], self.c_point[2], self.d_point[0], self.d_point[2])
-                bc = side(self.b_point[0], self.b_point[2], self.c_point[0], self.c_point[2])
-                bd = side(self.b_point[0], self.b_point[2], self.d_point[0], self.d_point[2])
-                ac = side(self.a_point[0], self.a_point[2], self.c_point[0], self.c_point[2])
-                gcmd.respond_info('cd=%f, bc=%f, bd=%f, ac=%f' % (cd, bc, bd, ac))
+                bc = length_side(self.b_point[0], self.b_point[2], self.c_point[0], self.c_point[2])
+                bd = length_side(self.b_point[0], self.b_point[2], self.d_point[0], self.d_point[2])
+                ac = length_side(self.a_point[0], self.a_point[2], self.c_point[0], self.c_point[2])
             else:
                 # yz_factor
                 b_point = self.point_coords[0]
-                a_point = point(self.point_coords[1], self.point_coords[2])
+                a_point = get_point(self.point_coords[1], self.point_coords[2])
                 d_point = list(a_point)
                 d_point[1] = d_point[1] - 50
                 c_point = list(b_point)
                 c_point[1] = c_point[1] - 50
-                cd = side(c_point[1], c_point[2], d_point[1], d_point[2])
-                bc = side(b_point[1], b_point[2], c_point[1], c_point[2])
-                bd = side(b_point[1], b_point[2], d_point[1], d_point[2])
-                ac = side(a_point[1], a_point[2], c_point[1], c_point[2])
-                gcmd.respond_info('cd=%f, bc=%f, bd=%f, ac=%f' % (cd, bc, bd, ac))
-            sf = calc_skew_factor(ac, bd, bc)
+                bc = length_side(b_point[1], b_point[2], c_point[1], c_point[2])
+                bd = length_side(b_point[1], b_point[2], d_point[1], d_point[2])
+                ac = length_side(a_point[1], a_point[2], c_point[1], c_point[2])
+            factor_value = float("%.4f" % calc_skew_factor(ac, bd, bc)) / 2
             factor_name = factor_name.lower() + '_factor'
-            setattr(self, factor_name, sf)
+            setattr(self, factor_name, factor_value)
             out = "Calculated skew compensation %s: %.6f radians, %.2f degrees\n" % (
-                factor_name, sf, math.degrees(sf))
+                factor_name, factor_value, math.degrees(factor_value))
             gcmd.respond_info(out)
         else:
             raise gcmd.error(
                     "Error! Factor name %s not in list factors['XY', 'XZ', 'YZ']" % (factor_name))
     cmd_CALC_SKEW_COMPENSATION_help = "Calculate skew compensation"
-
 
     def _load_storage(self, config):
         stored_profs = config.get_prefix_sections(self.name)
@@ -226,25 +183,22 @@ class PrinterSkew:
             }
 
     def calc_skew(self, pos):
-        wcs = self.wcs_offsets[self.gcode_move.current_wcs]
         newpos = list(pos)
-        newpos[0] = pos[0] - (pos[1]- wcs[1]) * self.xy_factor \
-            - (pos[2] - wcs[2]) * (self.xz_factor - (self.xy_factor * self.yz_factor))
-        newpos[1] = pos[1] - (pos[2]- wcs[2]) * self.yz_factor
+        newpos[0] = pos[0] - (pos[1]- self.current_wcs[1]) * self.xy_factor \
+            - (pos[2] - self.current_wcs[2]) * (self.xz_factor - (self.xy_factor * self.yz_factor))
+        newpos[1] = pos[1] - (pos[2]- self.current_wcs[2]) * self.yz_factor
         newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
         newpos.append(pos[5])
         return newpos
 
     def calc_unskew(self, pos):
-        wcs = self.wcs_offsets[self.gcode_move.current_wcs]
         newpos = list(pos)
-        newpos[0] = pos[0] + (pos[1] - wcs[1]) * self.xy_factor \
-            + (pos[2] - wcs[2]) * self.xz_factor
-        newpos[1] = pos[1] + (pos[2]- wcs[2]) * self.yz_factor
+        newpos[0] = pos[0] + (pos[1] - self.current_wcs[1]) * self.xy_factor \
+            + (pos[2] - self.current_wcs[2]) * self.xz_factor
+        newpos[1] = pos[1] + (pos[2]- self.current_wcs[2]) * self.yz_factor
         newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
         newpos.append(pos[5])
         return newpos
-
 
     def get_position(self):
         if not self.enabled:
@@ -271,7 +225,6 @@ class PrinterSkew:
         self.yz_factor = yz_factor
         gcode_move = self.printer.lookup_object('gcode_move')
         gcode_move.reset_last_position()
-    cmd_GET_CURRENT_SKEW_help = "Report current printer skew"
 
     def cmd_GET_CURRENT_SKEW(self, gcmd):
         out = "Current Printer Skew:"
@@ -282,8 +235,8 @@ class PrinterSkew:
             out += " Skew: %.6f radians, %.2f degrees" % (
                 fac, math.degrees(fac))
         gcmd.respond_info(out)
+    cmd_GET_CURRENT_SKEW_help = "Report current printer skew"
 
-    cmd_SET_SKEW_help = "Set skew based on lengths of measured object"
     def cmd_SET_SKEW(self, gcmd):
         if gcmd.get_int("CLEAR", 0):
             self._update_skew(0., 0., 0.)
@@ -292,10 +245,9 @@ class PrinterSkew:
         if gcmd.get_int('ENABLE', 0):
             self.enabled = True
             gcmd.respond_info('Skew compensation enabled.')
-            # gcode_move = self.printer.lookup_object('gcode_move')
-            # gcode_move.reset_last_position()
         else:
             self.enabled = False
+            self.current_wcs = self.wcs_list[0]
             gcmd.respond_info('Skew compensation disabled.')
         planes = ["XY", "XZ", "YZ"]
         for plane in planes:
@@ -311,63 +263,92 @@ class PrinterSkew:
                     raise gcmd.error(
                         "skew_correction: improperly formatted entry for "
                         "plane [%s]\n%s" % (plane, gcmd.get_commandline()))
-    cmd_SKEW_PROFILE_help = "Profile management for skew_correction"
+    cmd_SET_SKEW_help = "Set skew based on lengths of measured object"
 
     def cmd_SKEW_PROFILE(self, gcmd):
-        if gcmd.get('LOAD', None) is not None:
-            name = gcmd.get('LOAD')
-            prof = self.skew_profiles.get(name)
-            if prof is None:
-                gcmd.respond_info(
-                    "skew_correction:  Load failed, unknown profile [%s]"
-                    % (name))
+        options = collections.OrderedDict({
+            'LOAD': self.load_profile,
+            'SAVE': self.save_profile,
+            'REMOVE': self.remove_profile,
+            'CHANGE': None,
+            'RESET': self.reset_profile
+        })
+        for key in options:
+            name = gcmd.get(key, None)
+            profile = self.skew_profiles.get(name)
+            if name is not None and profile is not None:
+                if key == 'CHANGE':
+                    self.change_profile(name, gcmd)
+                else:
+                    options[key](name)
                 return
-            self._update_skew(prof['xy_skew'], prof['xz_skew'], prof['yz_skew'])
-        elif gcmd.get('SAVE', None) is not None:
-            name = gcmd.get('SAVE')
-            configfile = self.printer.lookup_object('configfile')
-            cfg_name = self.name + " " + name
-            configfile.set(cfg_name, 'xy_skew', self.xy_factor)
-            configfile.set(cfg_name, 'xz_skew', self.xz_factor)
-            configfile.set(cfg_name, 'yz_skew', self.yz_factor)
-            # Copy to local storage
-            self.skew_profiles[name] = {
-                'xy_skew': self.xy_factor,
-                'xz_skew': self.xz_factor,
-                'yz_skew': self.yz_factor
-            }
-            gcmd.respond_info(
-                "Skew Correction state has been saved to profile [%s]\n"
-                "for the current session.  The SAVE_CONFIG command will\n"
-                "update the printer config file and restart the printer."
-                % (name))
-        elif gcmd.get('REMOVE', None) is not None:
-            name = gcmd.get('REMOVE')
-            if name in self.skew_profiles:
-                configfile = self.printer.lookup_object('configfile')
-                configfile.remove_section('skew_correction ' + name)
-                del self.skew_profiles[name]
-                gcmd.respond_info(
-                    "Profile [%s] removed from storage for this session.\n"
-                    "The SAVE_CONFIG command will update the printer\n"
-                    "configuration and restart the printer" % (name))
-            else:
-                gcmd.respond_info(
-                    "skew_correction: No profile named [%s] to remove"
-                    % (name))
+        gcmd.respond_info("Invalid syntax '%s'" % (gcmd.get_commandline(),))
+    cmd_SKEW_PROFILE_help = "Profile management for skew_correction"
+
+    def load_profile(self, prof_name):
+        """
+        Function load profile and set neaded wcs
+        """
+        self.current_profile = prof_name
+        if prof_name == 'module_3d':
+            self.current_wcs = self.wcs_list[0]
+        # getting min value on wcs_list
+        else:
+            self.current_wcs = list(self.wcs_list[3])
+            self.current_wcs[2] = self.wcs_list[4][2]
+        profile = self.skew_profiles.get(prof_name)
+        if profile is not None:
+            self._update_skew(profile['xy_skew'], profile['xz_skew'], profile['yz_skew'])
+
+    def save_profile(self, prof_name):
+        """
+        change profile factors and change config
+        """
+        configfile = self.printer.lookup_object('configfile')
+        cfg_name = self.name + " " + prof_name
+        configfile.set(cfg_name, 'xy_skew', self.xy_factor)
+        configfile.set(cfg_name, 'xz_skew', self.xz_factor)
+        configfile.set(cfg_name, 'yz_skew', self.yz_factor)
+        # Copy to local storage
+        self.skew_profiles[prof_name] = {
+            'xy_skew': self.xy_factor,
+            'xz_skew': self.xz_factor,
+            'yz_skew': self.yz_factor
+        }
+
+    def change_profile(self, prof_name, gcmd):
+        """
+        change profile factors but don't change config
+        """
+        xy_factor = gcmd.get_float('XY', 0.)
+        xz_factor = gcmd.get_float('XZ', 0.)
+        yz_factor = gcmd.get_float('YZ', 0.)
+        self.skew_profiles[prof_name] = {
+            'xy_skew': xy_factor,
+            'xz_skew': xz_factor,
+            'yz_skew': yz_factor
+        }
+
+    def remove_profile(self, prof_name):
+        configfile = self.printer.lookup_object('configfile')
+        configfile.remove_section('skew_correction ' + prof_name)
+        del self.skew_profiles[prof_name]
+
+    def reset_profile(self, prof_name):
+        for i in self.skew_profiles[prof_name]:
+            self.skew_profiles[prof_name][i] = 0
 
     def get_status(self, eventtime=None):
         return {
             'enable': self.enabled,
-            'xy_factor': self.xy_factor,
-            'xz_factor': self.xz_factor,
-            'yz_factor': self.yz_factor,
-            'point_coords': self.point_coords,
-            'a_point':self.a_point,
-            'b_point': self.b_point,
-            'c_point': self.c_point,
-            'd_point': self.d_point,
-            'axis_offset': self.axis_offset
+            'current_xy_factor': self.xy_factor,
+            'current_xz_factor': self.xz_factor,
+            'current_yz_factor': self.yz_factor,
+            'skew_profiles': self.skew_profiles,
+            'wcs_list': self.wcs_list,
+            'current_wcs': self.current_wcs,
+            'current_profile': self.current_profile
         }
+
 def load_config(config):
     return PrinterSkew(config)
