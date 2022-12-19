@@ -103,7 +103,9 @@ class RunoutHelper:
 
     def cmd_SET_FILAMENT_SENSOR(self, gcmd):
         self.sensor_enabled = gcmd.get_int("ENABLE", 1)
-
+        sensor_name = gcmd.get('SENSOR')
+        self.gcode.run_script_from_command(
+            "SAVE_VARIABLE VARIABLE=%s VALUE=%d" % (sensor_name, self.sensor_enabled))
 
 class SwitchSensor:
     def __init__(self, config):
