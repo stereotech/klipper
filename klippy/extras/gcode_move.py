@@ -93,11 +93,11 @@ class GCodeMove:
 
     def _handle_ready(self):
         self.is_printer_ready = True
-        if self.move_transform is None:
-            toolhead = self.printer.lookup_object('toolhead')
+        toolhead = self.printer.lookup_object('toolhead')
+        if self.move_transform is None:  
             self.move_with_transform = toolhead.move
             self.position_with_transform = toolhead.get_position
-            self.square_corner_velocity = toolhead.square_corner_velocity
+        self.square_corner_velocity = toolhead.square_corner_velocity   
         self.reset_last_position()
 
     def _handle_shutdown(self):

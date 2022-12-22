@@ -78,17 +78,16 @@ class PrinterSkew:
         self.gcode_move = self.printer.lookup_object('gcode_move')
         self.wcs_list = []
         self.current_wcs = [0., 0., 0.]
-        # Register transform
         self.next_transform = None
-        self.printer.lookup_object('b_axis_compensation').next_transform = self
 
     def _handle_connect(self):
-        # set transform object, end wcs with gcode_move module
-        self.next_transform = self.printer.lookup_object('toolhead')
-        kin = self.next_transform.get_kinematics()
+        kin = self.printer.lookup_object('toolhead').get_kinematics()
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
         self.wcs_list = self.printer.lookup_object('gcode_move').wcs_offsets
+        # Register transform
+        gcode_move = self.printer.lookup_object('gcode_move')
+        self.next_transform = gcode_move.set_move_transform(self, force=True)
 
     def cmd_SAVE_SKEW_POINT(self, gcmd):
         point_idx = gcmd.get_int('POINT', 0)

@@ -51,15 +51,15 @@ class BAxisCompensation:
         )
         self.printer.register_event_handler("klippy:connect",
                                             self._handle_connect)
-        # Register transform
-        self.printer.lookup_object('bed_mesh').next_transform = self
-        # this variable change on skew_correction
         self.next_transform = None
 
     def _handle_connect(self):
         kin = self.printer.lookup_object('toolhead').get_kinematics()
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
+        # Register transform
+        gcode_move = self.printer.lookup_object('gcode_move')
+        self.next_transform = gcode_move.set_move_transform(self, force=True)
 
     def get_position(self):
         if not self.enabled:

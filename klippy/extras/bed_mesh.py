@@ -139,19 +139,15 @@ class BedMesh:
         self.gcode.register_command(
             'BED_MESH_OFFSET', self.cmd_BED_MESH_OFFSET,
             desc=self.cmd_BED_MESH_OFFSET_help)
-        # Register transform
-        gcode_move = self.printer.load_object(config, 'gcode_move')
-        gcode_move.set_move_transform(self)
-        # this variable change on b_axis_compensation or handle_connect()
         self.next_transform = None
 
 
     def handle_connect(self):
-        toolhead = self.printer.lookup_object('toolhead')
-        if self.next_transform is None:
-            self.next_transform = toolhead
         self.bmc.print_generated_points(logging.info)
         self.pmgr.initialize()
+        # Register transform
+        gcode_move = self.printer.lookup_object('gcode_move')
+        self.next_transform = gcode_move.set_move_transform(self, force=True)
 
     def set_mesh(self, mesh):
         if mesh is not None and self.fade_end != self.FADE_DISABLE:
