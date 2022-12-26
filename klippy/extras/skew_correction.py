@@ -205,18 +205,14 @@ class PrinterSkew:
         return self.calc_unskew(self.next_transform.get_position())
 
     def move(self, newpos, speed):
-        if not self.enabled:
-            self.next_transform.move(newpos, speed)
-            return
         axes_d = [self.next_transform.get_position()[i] - newpos[i] for i in
                                 (0, 1, 2, 3, 4, 5)]
         move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
-        if move_d < .000000001:
+        if not self.enabled or move_d < .000000001:
             self.next_transform.move(newpos, speed)
             return
-        else:
-            corrected_pos = self.calc_skew(newpos)
-            self.next_transform.move(corrected_pos, speed)
+        corrected_pos = self.calc_skew(newpos)
+        self.next_transform.move(corrected_pos, speed)
 
     def _update_skew(self, xy_factor, xz_factor, yz_factor):
         self.xy_factor = xy_factor
