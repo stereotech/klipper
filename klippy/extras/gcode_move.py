@@ -46,8 +46,8 @@ class GCodeMove:
                                desc=self.cmd_GET_POSITION_help)
         gcode.register_command('LOAD_GCODE_STATE', self.cmd_LOAD_GCODE_STATE, True,
                                desc=self.cmd_LOAD_GCODE_STATE_help)
-        gcode.register_command('TURN_ON_COMP_CORNER_VELOCITY', self.cmd_TURN_ON_COMP_CORNER_VELOCITY,
-                               desc=self.cmd_TURN_ON_COMP_CORNER_VELOCITY_help)
+        gcode.register_command('RADIAL_SPEED_COMPENSATION', self.cmd_RADIAL_SPEED_COMPENSATION,
+                               desc=self.cmd_RADIAL_SPEED_COMPENSATION_help)
         self.Coord = gcode.Coord
         # G-Code coordinate manipulation
         self.absolute_coord = self.absolute_extrude = True
@@ -56,7 +56,7 @@ class GCodeMove:
         self.homing_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.radius = 0.
         self.square_corner_velocity = 5.
-        self.comp_corner_velocity_on = 0
+        self.radial_speed_compensation_enabled = False
         self.speed = self.rotary_speed = 25.
         self.speed_factor = 1. / 60.
         self.extrude_factor = 1.
@@ -163,7 +163,7 @@ class GCodeMove:
             'wcs_offsets': [[a for a in line] for line in self.wcs_offsets],
             'base_position': self.Coord(*self.base_position),
             'compensation_enabled': self.compensation_enabled,
-            'comp_corner_velocity_on': self.comp_corner_velocity_on,
+            'radial_speed_compensation_enabled': self.radial_speed_compensation_enabled,
         }
 
     def reset_last_position(self):
@@ -216,7 +216,7 @@ class GCodeMove:
                         raise gcmd.error("Invalid speed in '%s'"
                                          % (gcmd.get_commandline(),))
                     self.speed = gcode_speed * self.speed_factor
-                if 'C' in params and self.radius > 0. and self.comp_corner_velocity_on:
+                if 'C' in params and self.radius > 0. and self.radial_speed_compensation_enabled:
                     #self.rotary_speed = 6 * self.speed / self.radius
                     self.rotary_speed = -0.5 * self.radius + 50.
                     if self.rotary_speed < self.speed:
@@ -349,14 +349,11 @@ class GCodeMove:
     cmd_GET_POSITION_help = (
         "Return information on the current location of the toolhead")
 
-    def cmd_TURN_ON_COMP_CORNER_VELOCITY(self, gcmd):
+    def cmd_RADIAL_SPEED_COMPENSATION(self, gcmd):
         params = gcmd.get_int('ENABLE', 0)
-        if params:
-            self.comp_corner_velocity_on = params
-        else:
-            self.comp_corner_velocity_on = params
-        logging.info('Compensation the corner velocity ENABLE=%d' % self.comp_corner_velocity_on)
-    cmd_TURN_ON_COMP_CORNER_VELOCITY_help = 'This command turn on compensation the corner velocity for the C axis'
+        self.radial_speed_compensation_enabled = params > 0
+        logging.info('Compensation the corner velocity ENABLE=%d' % self.radial_speed_compensation_enabled)
+    cmd_RADIAL_SPEED_COMPENSATION_help = 'This command turn on compensation the corner velocity for the C axis'
 
     def cmd_LOAD_GCODE_STATE(self, gcmd):
         """
