@@ -59,12 +59,12 @@ class PauseResume:
             self.pause_command_sent = True
     cmd_PAUSE_help = ("Pauses the current print")
     def cmd_PAUSE(self, gcmd):
-        param = gcmd.get_int('SAVE_GCODE_STATE', 1)
+        save_state = gcmd.get_int('SAVE_GCODE_STATE', 1)
         if self.is_paused:
             gcmd.respond_info("Print already paused")
             return
         self.send_pause_command()
-        if param:
+        if save_state:
             self.gcode.run_script_from_command("SAVE_GCODE_STATE NAME=PAUSE_STATE")
         self.is_paused = True
     def send_resume_command(self):
