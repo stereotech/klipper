@@ -43,7 +43,6 @@ class PrinterHeaterFan:
         self.heaters = [pheaters.lookup_heater(n) for n in self.heater_names]
         reactor = self.printer.get_reactor()
         reactor.register_timer(self.callback, reactor.monotonic()+PIN_MIN_TIME)
-
     def get_status(self, eventtime):
         return self.fan.get_status(eventtime)
 
