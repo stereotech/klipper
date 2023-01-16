@@ -67,14 +67,19 @@ class BAxisCompensation:
         return self.calc_untransformed(self.next_transform.get_position())
 
     def move(self, newpos, speed):
-        if not self.enabled:
+        axes_d = [self.next_transform.get_position()[i] - newpos[i] for i in
+                                (0, 1, 2, 3, 4, 5)]
+        move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
+        if not self.enabled or move_d < .000000001:
             self.next_transform.move(newpos, speed)
             return
         corrected_pos = self.calc_tranformed(newpos)
         self.next_transform.move(corrected_pos, speed)
 
     def calc_tranformed(self, pos):
-        a = math.radians(pos[3])
+        gcode_move = self.printer.lookup_object('gcode_move')
+        base_position = gcode_move.base_position
+        a = math.radians(pos[3] - base_position[3])
         sin_a = math.sin(a)
         cos_a = math.cos(a)
         a_rot_matrix = [1., 0., 0, 0., cos_a, -sin_a, 0., sin_a, cos_a]
@@ -91,7 +96,9 @@ class BAxisCompensation:
         return newpos
 
     def calc_untransformed(self, pos):
-        a = math.radians(pos[3])
+        gcode_move = self.printer.lookup_object('gcode_move')
+        base_position = gcode_move.base_position
+        a = math.radians(pos[3] - base_position[3])
         sin_a = math.sin(a)
         cos_a = math.cos(a)
         a_rot_matrix = [1., 0., 0, 0., cos_a, -sin_a, 0., sin_a, cos_a]
@@ -222,6 +229,7 @@ class BAxisCompensation:
             'b_angle': self.b_angle,
             'rot_center_x': self.rot_center_x,
             'rot_center_z': self.rot_center_z,
+            'enabled': self.enabled
         }
 
 def load_config(config):

@@ -13,6 +13,8 @@ DEG_TO_RAD = 0.01745329252
 class GCodeMove:
     def __init__(self, config):
         self.printer = printer = config.get_printer()
+
+
         printer.register_event_handler("klippy:ready", self._handle_ready)
         printer.register_event_handler(
             "klippy:shutdown", self._handle_shutdown)
@@ -44,13 +46,18 @@ class GCodeMove:
                                desc=self.cmd_GET_POSITION_help)
         gcode.register_command('LOAD_GCODE_STATE', self.cmd_LOAD_GCODE_STATE, True,
                                desc=self.cmd_LOAD_GCODE_STATE_help)
+        gcode.register_command('RADIAL_SPEED_COMPENSATION', self.cmd_RADIAL_SPEED_COMPENSATION,
+                               desc=self.cmd_RADIAL_SPEED_COMPENSATION_help)
         self.Coord = gcode.Coord
         # G-Code coordinate manipulation
         self.absolute_coord = self.absolute_extrude = True
         self.base_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.last_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.homing_position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.speed = 25.
+        self.radius = 0.
+        self.square_corner_velocity = 5.
+        self.radial_speed_compensation_enabled = False
+        self.speed = self.rotary_speed = 25.
         self.speed_factor = 1. / 60.
         self.extrude_factor = 1.
         # Multiple coordinate systems
@@ -93,6 +100,7 @@ class GCodeMove:
             toolhead = self.printer.lookup_object('toolhead')
             self.move_with_transform = toolhead.move
             self.position_with_transform = toolhead.get_position
+            self.square_corner_velocity = toolhead.square_corner_velocity
         self.reset_last_position()
 
     def _handle_shutdown(self):
@@ -152,8 +160,10 @@ class GCodeMove:
             'position': self.Coord(*self.last_position),
             'gcode_position': self.Coord(*move_position),
             'current_wcs': self.current_wcs,
-            'wcs_offsets': self.wcs_offsets,
-            'base_position': self.Coord(*self.base_position)
+            'wcs_offsets': [[a for a in line] for line in self.wcs_offsets],
+            'base_position': self.Coord(*self.base_position),
+            'compensation_enabled': self.compensation_enabled,
+            'radial_speed_compensation_enabled': self.radial_speed_compensation_enabled,
         }
 
     def reset_last_position(self):
@@ -190,6 +200,8 @@ class GCodeMove:
                                 self.base_position[pos]
                             if pos < 3:
                                 self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
+                        if axis == 'Z':
+                            self.radius = self._get_gcode_position()[2] - self.wcs_offsets[self.current_wcs][2]
                 if 'E' in params:
                     v = float(params['E']) * self.extrude_factor
                     if not self.absolute_coord or not self.absolute_extrude:
@@ -204,6 +216,13 @@ class GCodeMove:
                         raise gcmd.error("Invalid speed in '%s'"
                                          % (gcmd.get_commandline(),))
                     self.speed = gcode_speed * self.speed_factor
+                if 'C' in params and self.radius > 0. and self.radial_speed_compensation_enabled:
+                    #self.rotary_speed = 6 * self.speed / self.radius
+                    self.rotary_speed = -0.5 * self.radius + 50.
+                    if self.rotary_speed < self.speed:
+                        self.speed = self.rotary_speed
+                    if self.rotary_speed < self.square_corner_velocity:
+                        self.speed = self.square_corner_velocity
             except ValueError as e:
                 raise gcmd.error("Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
@@ -329,6 +348,12 @@ class GCodeMove:
             self.move_with_transform(self.last_position, speed)
     cmd_GET_POSITION_help = (
         "Return information on the current location of the toolhead")
+
+    def cmd_RADIAL_SPEED_COMPENSATION(self, gcmd):
+        params = gcmd.get_int('ENABLE', 0)
+        self.radial_speed_compensation_enabled = params > 0
+        logging.info('Compensation the corner velocity ENABLE=%d' % self.radial_speed_compensation_enabled)
+    cmd_RADIAL_SPEED_COMPENSATION_help = 'This command turn on compensation the corner velocity for the C axis'
 
     def cmd_LOAD_GCODE_STATE(self, gcmd):
         """
@@ -499,7 +524,7 @@ class GCodeMove:
         # Radius vector from center to current location
         linear_x = target_pos[0] - current_pos[0]
         linear_a = target_pos[3] - current_pos[3]
-        linear_c = target_pos[5] - current_pos[5]
+        linear_c = target_pos[4] - current_pos[4]
 
         r_Y = -offset[1]
         r_Z = -offset[2]
@@ -509,29 +534,27 @@ class GCodeMove:
         center_Z = self.get_wcs(2)[2]  # current_pos[2] - r_Z
 
         angular_travel = DEG_TO_RAD * (target_pos[3] - current_pos[3])
-        angular_target = DEG_TO_RAD * (target_pos[3] - self.homing_position[3])
-        linear_dy = target_pos[1] - current_pos[1]
-        linear_dz = target_pos[2] - current_pos[2]
-        cos_a_target = math.cos(angular_target)
-        sin_a_target = math.sin(angular_target)
-        linear_y = linear_dy * cos_a_target - linear_dz * sin_a_target
-        linear_z = linear_dy * sin_a_target + linear_dz * cos_a_target
+        angular_target = DEG_TO_RAD * (target_pos[3] - self.base_position[3])
+        linear_y = target_pos[1] - current_pos[1]
+        linear_z = target_pos[2] - current_pos[2]
 
         cos_a_travel = math.cos(angular_travel)
         sin_a_travel = math.sin(angular_travel)
-        rt_Y = r_Y * cos_a_travel - r_Z * sin_a_travel
-        rt_Z = r_Y * sin_a_travel + r_Z * cos_a_travel
 
         compensated_target = list(target_pos)
         compensated_target.pop()
-        compensated_target[1] = center_Y + rt_Y + linear_y
-        compensated_target[2] = center_Z + rt_Z + linear_z
+        compensated_target[1] = target_pos[1] * \
+            cos_a_travel - target_pos[2] * sin_a_travel + \
+            center_Y - cos_a_travel * center_Y + sin_a_travel * center_Z
+        compensated_target[2] = target_pos[1] * \
+            sin_a_travel + target_pos[2] * cos_a_travel + \
+            center_Z - sin_a_travel * center_Y - cos_a_travel * center_Z
 
         radius = math.hypot(r_Y, r_Z)
         ellipse_length = math.sqrt(
             (radius + linear_y) ** 2 + (radius + linear_z) ** 2)
         mm_of_travel = math.hypot(
-            angular_travel * ellipse_length, math.fabs(linear_x))
+            (angular_travel / (2 * math.pi)) * ellipse_length, math.fabs(linear_x))
         segments = max(1., math.floor(mm_of_travel / self.mm_per_arc_segment))
         theta_per_segment = angular_travel / segments
         linear_per_segment = [linear_x / segments,
@@ -546,11 +569,13 @@ class GCodeMove:
                 dist[axis] = i * linear
             cos_Ti = math.cos(i * theta_per_segment)
             sin_Ti = math.sin(i * theta_per_segment)
-            r_Y = -offset[1] * cos_Ti + offset[2] * sin_Ti
-            r_Z = -offset[1] * sin_Ti - offset[2] * cos_Ti
+            r_Y = (-offset[1] + dist[1]) * cos_Ti - (-offset[2] + dist[2]) * sin_Ti # + \
+                #center_Y - cos_Ti * center_Y + sin_Ti * center_Z
+            r_Z = (-offset[1] + dist[1]) * sin_Ti + (-offset[2] + dist[2]) * cos_Ti # + \
+                #center_Z - sin_Ti * center_Y - cos_Ti * center_Z
             c = [current_pos[0] + dist[0],
-                 center_Y + r_Y + dist[1],
-                 center_Z + r_Z + dist[2],
+                 center_Y + r_Y ,
+                 center_Z + r_Z,
                  current_pos[3] + dist[3],
                  current_pos[4] + dist[4]]
             coords.append(c)
@@ -578,20 +603,22 @@ class GCodeMove:
             wcs_2[2] - sin_ma * wcs_1[1] - cos_ma * wcs_2[2]
 
         offset = [0., 0., 0.]
-        offset_y = wcs_1[1] - inverted_last_pos[1]
-        offset_z = wcs_2[2] - inverted_last_pos[2]
-        offset[1] = offset_y * cos_a - offset_z * sin_a
-        offset[2] = offset_y * sin_a + offset_z * cos_a
+        offset_y = wcs_1[1] - self.last_position[1] #inverted_last_pos[1]
+        offset_z = wcs_2[2] - self.last_position[2] #inverted_last_pos[2]
+        offset[1] = offset_y # * cos_a - offset_z * sin_a + \
+            #wcs_1[1] - cos_a * wcs_1[1] + sin_a * wcs_2[2]
+        offset[2] = offset_z # offset_y * sin_a + offset_z * cos_a + \
+            #wcs_2[2] - sin_a * wcs_1[1] - cos_a * wcs_2[2]
 
         inverted_pos = list(pos)
         inverted_pos[1] = pos[1] * \
-            cos_ma - pos[2] * sin_ma + \
-            wcs_1[1] - cos_ma * wcs_1[1] + sin_ma * wcs_2[2]
+            cos_a - pos[2] * sin_a + \
+            wcs_1[1] - cos_a * wcs_1[1] + sin_a * wcs_2[2]
         inverted_pos[2] = pos[1] * \
-            sin_ma + pos[2] * cos_ma + \
-            wcs_2[2] - sin_ma * wcs_1[1] - cos_ma * wcs_2[2]
+            sin_a + pos[2] * cos_a + \
+            wcs_2[2] - sin_a * wcs_1[1] - cos_a * wcs_2[2]
 
-        coords = self._plan_arc(self.last_position, pos, offset)
+        coords = self._plan_arc(self.last_position, inverted_pos, offset)
         e_per_move = e_base = 0.
         if self.absolute_extrude:
             e_base = self.last_position[5]
@@ -603,13 +630,31 @@ class GCodeMove:
                 if self.absolute_extrude:
                     e_base += e_per_move
             else:
-                coord.append(0.0)
+                coord.append(e_base)
         return coords
 
     def process_move_with_compensation(self, gcmd):
         params = gcmd.get_command_parameters()
         try:
-            new_position = list(self.last_position)
+            angular_pos = DEG_TO_RAD * \
+                (self.last_position[3] - self.base_position[3])
+            cos_a = math.cos(angular_pos)
+            sin_a = math.sin(angular_pos)
+            cos_ma = math.cos(-angular_pos)
+            sin_ma = math.sin(-angular_pos)
+
+            wcs_1 = self.get_wcs(1)
+            wcs_2 = self.get_wcs(2)
+
+            inverted_last_pos = list(self.last_position)
+            inverted_last_pos[1] = self.last_position[1] * \
+                cos_ma - self.last_position[2] * sin_ma + \
+                wcs_1[1] - cos_ma * wcs_1[1] + sin_ma * wcs_2[2]
+            inverted_last_pos[2] = self.last_position[1] * \
+                sin_ma + self.last_position[2] * cos_ma + \
+                wcs_2[2] - sin_ma * wcs_1[1] - cos_ma * wcs_2[2]
+            new_position = list(inverted_last_pos)
+
             for pos, axis in enumerate('XYZAC'):
                 if axis in params:
                     v = float(params[axis])
