@@ -104,7 +104,6 @@ class RunoutHelper:
     def cmd_SET_FILAMENT_SENSOR(self, gcmd):
         self.sensor_enabled = gcmd.get_int("ENABLE", 1)
 
-
 class SwitchSensor:
     def __init__(self, config):
         printer = config.get_printer()
