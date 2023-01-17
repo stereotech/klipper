@@ -112,7 +112,6 @@ class BedMesh:
         self.last_position = [0., 0., 0., 0., 0., 0., 0.]
         self.bmc = BedMeshCalibrate(config, self)
         self.z_mesh = None
-        self.toolhead = None
         self.horizontal_move_z = config.getfloat('horizontal_move_z', 5.)
         self.fade_start = config.getfloat('fade_start', 1.)
         self.fade_end = config.getfloat('fade_end', 0.)
@@ -140,14 +139,15 @@ class BedMesh:
         self.gcode.register_command(
             'BED_MESH_OFFSET', self.cmd_BED_MESH_OFFSET,
             desc=self.cmd_BED_MESH_OFFSET_help)
-        # Register transform
-        gcode_move = self.printer.load_object(config, 'gcode_move')
-        gcode_move.set_move_transform(self)
+        self.next_transform = None
+
 
     def handle_connect(self):
-        self.toolhead = self.printer.lookup_object('toolhead')
         self.bmc.print_generated_points(logging.info)
         self.pmgr.initialize()
+        # Register transform
+        gcode_move = self.printer.lookup_object('gcode_move')
+        self.next_transform = gcode_move.set_move_transform(self, force=True)
 
     def set_mesh(self, mesh):
         if mesh is not None and self.fade_end != self.FADE_DISABLE:
@@ -196,11 +196,11 @@ class BedMesh:
         # Return last, non-transformed position
         if self.z_mesh is None:
             # No mesh calibrated, so send toolhead position
-            self.last_position[:] = self.toolhead.get_position()
+            self.last_position[:] = self.next_transform.get_position()
             self.last_position[2] -= self.fade_target
         else:
             # return current position minus the current z-adjustment
-            x, y, z, a, c, e = self.toolhead.get_position()
+            x, y, z, a, c, e = self.next_transform.get_position()
             max_adj = self.z_mesh.calc_z(x, y)
             factor = 1.
             z_adj = max_adj - self.fade_target
@@ -228,13 +228,13 @@ class BedMesh:
                 logging.info(
                     "bed_mesh fade complete: Current Z: %.4f fade_target: %.4f "
                     % (z, self.fade_target))
-            self.toolhead.move([x, y, z + self.fade_target, a, c, e], speed)
+            self.next_transform.move([x, y, z + self.fade_target, a, c, e], speed)
         else:
             self.splitter.build_move(self.last_position, newpos, factor)
             while not self.splitter.traverse_complete:
                 split_move = self.splitter.split()
                 if split_move:
-                    self.toolhead.move(split_move, speed)
+                    self.next_transform.move(split_move, speed)
                 else:
                     raise self.gcode.error(
                         "Mesh Leveling: Error splitting move ")
