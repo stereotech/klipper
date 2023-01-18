@@ -452,7 +452,7 @@ class ToolHead:
 
     def move(self, newpos, speed):
         pos = [self.constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-        pos.append(newpos[5]) 
+        pos.append(newpos[5])
         move = Move(self, self.commanded_pos, pos, speed)
         if not move.move_d:
             return
