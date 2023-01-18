@@ -279,6 +279,8 @@ class ToolHead:
         try:
             mod = importlib.import_module('kinematics.' + kin_name)
             self.kin = mod.load_kinematics(self, config)
+            self.axes_min = self.kin.axes_min
+            self.axes_max = self.kin.axes_max
         except config.error as e:
             raise
         except self.printer.lookup_object('pins').error as e:
@@ -319,6 +321,8 @@ class ToolHead:
                 m.flush_moves(mcu_flush_time)
             if self.print_time >= next_print_time:
                 break
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
 
     def _calc_print_time(self):
         curtime = self.reactor.monotonic()
@@ -447,7 +451,9 @@ class ToolHead:
         self.printer.send_event("toolhead:set_position")
 
     def move(self, newpos, speed):
-        move = Move(self, self.commanded_pos, newpos, speed)
+        pos = [self.constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
+        pos.append(newpos[5]) 
+        move = Move(self, self.commanded_pos, pos, speed)
         if not move.move_d:
             return
         if move.is_kinematic_move:
