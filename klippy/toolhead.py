@@ -276,6 +276,8 @@ class ToolHead:
         self.Coord = gcode.Coord
         self.extruder = kinematics.extruder.DummyExtruder(self.printer)
         kin_name = config.get('kinematics')
+        self.axes_min = 0.
+        self.axes_max = 1.
         try:
             mod = importlib.import_module('kinematics.' + kin_name)
             self.kin = mod.load_kinematics(self, config)
