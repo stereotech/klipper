@@ -276,13 +276,14 @@ class ToolHead:
         self.Coord = gcode.Coord
         self.extruder = kinematics.extruder.DummyExtruder(self.printer)
         kin_name = config.get('kinematics')
-        self.axes_min = 0.
-        self.axes_max = 1.
+        self.axes_min = [0. for _ in range(6)]
+        self.axes_max = [1. for _ in range(6)]
         try:
             mod = importlib.import_module('kinematics.' + kin_name)
             self.kin = mod.load_kinematics(self, config)
-            self.axes_min = self.kin.axes_min
-            self.axes_max = self.kin.axes_max
+            if hasattr(self.kin, 'axes_min') and hasattr(self.kin, 'axes_max'):
+                self.axes_min = self.kin.axes_min
+                self.axes_max = self.kin.axes_max
         except config.error as e:
             raise
         except self.printer.lookup_object('pins').error as e:
