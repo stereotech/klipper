@@ -299,11 +299,14 @@ class ToolHead:
                                self.cmd_SET_VELOCITY_LIMIT,
                                desc=self.cmd_SET_VELOCITY_LIMIT_help)
         gcode.register_command('M204', self.cmd_M204)
+        gcode.register_command('PRINT_ANOTHER_EXTRUDER',
+                               self.cmd_PRINT_ANOTHER_EXTRUDER)
         # Load some default modules
         modules = ["gcode_move", "homing", "idle_timeout", "statistics",
                    "manual_probe", "tuning_tower"]
         for module_name in modules:
             self.printer.load_object(config, module_name)
+        self.v_sd = self.printer.lookup_object('virtual_sdcard')
 
     # Print time tracking
     def _update_move_time(self, next_print_time):
@@ -667,6 +670,8 @@ class ToolHead:
         self.max_accel = accel
         self._calc_junction_deviation()
 
+    def cmd_PRINT_ANOTHER_EXTRUDER(self, gcmd):
+        another_extruder = gcmd.get_float('VELOCITY', 0)
 
 def add_printer_objects(config):
     config.get_printer().add_object('toolhead', ToolHead(config))
