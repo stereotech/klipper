@@ -9,7 +9,7 @@
             "args": [
                 "-d",
                 "dict/",
-                "test/klippy/file_read_4.test",
+                "test/klippy/stereotech.test",
                 "-v"
             ]
         },
@@ -25,7 +25,7 @@
             "cwd": "${workspaceRoot}",
             "program": "${workspaceFolder}/klippy/klippy.py",
             "args": [
-                "${workspaceFolder}/HTE530-5-4-22.cfg",
+                "${workspaceFolder}/HTE530-5-1-22.cfg",
                 "-v",
                 "-a",
                 "/tmp/klipper_uds"

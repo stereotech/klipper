@@ -53,13 +53,13 @@ class BAxisCompensation:
                                             self._handle_connect)
         self.next_transform = None
 
-
     def _handle_connect(self):
-        gcode_move = self.printer.lookup_object('gcode_move')
-        self.next_transform = gcode_move.set_move_transform(self, force=True)
         kin = self.printer.lookup_object('toolhead').get_kinematics()
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
+        # Register transform
+        gcode_move = self.printer.lookup_object('gcode_move')
+        self.next_transform = gcode_move.set_move_transform(self, force=True)
 
     def get_position(self):
         if not self.enabled:
@@ -180,8 +180,10 @@ class BAxisCompensation:
         enable = gcmd.get_int('ENABLE', 0)
         if enable:
             self.enabled = True
+            gcmd.respond_info('B_axis_compesation  enabled.')
         else:
             self.enabled = False
+            gcmd.respond_info('B_axis_compesation disabled.')
         save = gcmd.get_int('SAVE', 0)
         if save:
             self._save_compensation(b_angle, rot_center_x, rot_center_z)
@@ -216,8 +218,10 @@ class BAxisCompensation:
         enable = gcmd.get_int('ENABLE', 0)
         if enable:
             self.enabled = True
+            gcmd.respond_info('B_axis_compesation enabled.')
         else:
             self.enabled = False
+            gcmd.respond_info('B_axis_compesation disable.')
         save = gcmd.get_int('SAVE', 0)
         if save:
             self._save_compensation(b_angle, rot_center_x, rot_center_z)
@@ -229,7 +233,7 @@ class BAxisCompensation:
             'b_angle': self.b_angle,
             'rot_center_x': self.rot_center_x,
             'rot_center_z': self.rot_center_z,
-            'enabled': self.enabled
+            'enable': self.enabled
         }
 
 def load_config(config):
