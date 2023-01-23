@@ -299,16 +299,16 @@ class ToolHead:
                                self.cmd_SET_VELOCITY_LIMIT,
                                desc=self.cmd_SET_VELOCITY_LIMIT_help)
         gcode.register_command('M204', self.cmd_M204)
-        gcode.register_command('FILAMENT_MOTION_SENSOR',
-                               self.cmd_FILAMENT_MOTION_SENSOR,
-                               desc=self.cmd_FILAMENT_MOTION_SENSOR_help)
+        gcode.register_command('ENABLE_CONSTRAIN',
+                               self.cmd_ENABLE_CONSTRAIN,
+                               desc=self.cmd_ENABLE_CONSTRAIN_help)
         # Load some default modules
         modules = ["gcode_move", "homing", "idle_timeout", "statistics",
                    "manual_probe", "tuning_tower"]
         for module_name in modules:
             self.printer.load_object(config, module_name)
         # filament motion sensors state
-        self.sensor = 0
+        self.constrain_on = 0
 
     # Print time tracking
     def _update_move_time(self, next_print_time):
@@ -460,7 +460,7 @@ class ToolHead:
 
     def move(self, newpos, speed):
         pos = list(newpos)
-        if self.sensor:
+        if self.constrain_on:
             pos = [self.constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
             pos.append(newpos[5])
         move = Move(self, self.commanded_pos, pos, speed)
@@ -674,9 +674,9 @@ class ToolHead:
         self.max_accel = accel
         self._calc_junction_deviation()
 
-    cmd_FILAMENT_MOTION_SENSOR_help = 'Function set current state the filament_motion_sensor'
-    def cmd_FILAMENT_MOTION_SENSOR(self, gcmd):
-        self.sensor = gcmd.get_int('TRIGGERED', 0)
+    cmd_ENABLE_CONSTRAIN_help = 'The Function to set trigger for turn on constran the axes.'
+    def cmd_ENABLE_CONSTRAIN(self, gcmd):
+        self.constrain_on = gcmd.get_int('ENABLE', 0)
 
 def add_printer_objects(config):
     config.get_printer().add_object('toolhead', ToolHead(config))
