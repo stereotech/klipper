@@ -220,9 +220,9 @@ class GCodeMove:
                     #self.rotary_speed = 6 * self.speed / self.radius
                     self.rotary_speed = -0.5 * self.radius + 50.
                     if self.rotary_speed < self.speed:
-                        self.speed = self.rotary_speed  * self.speed_factor
+                        self.speed = self.rotary_speed * self._get_gcode_speed_override()
                     if self.rotary_speed < self.square_corner_velocity:
-                        self.speed = self.square_corner_velocity  * self.speed_factor
+                        self.speed = self.square_corner_velocity * self._get_gcode_speed_override()
             except ValueError as e:
                 raise gcmd.error("Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
