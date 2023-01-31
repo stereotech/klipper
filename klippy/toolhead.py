@@ -9,7 +9,7 @@ import importlib
 import mcu
 import chelper
 import kinematics.extruder
-
+import extras.save_variables as sv
 
 # Common suffixes: _d is distance (in mm), _v is velocity (in
 #   mm/second), _v2 is velocity squared (mm^2/s^2), _t is time (in
@@ -665,6 +665,7 @@ class ToolHead:
         
     def cmd_GET_CURENT_EXTRUDER(self, gcmd):
         msg = self.extruder.get_name()
+        # sv.SaveVariables
         gcmd.respond_info('extruder: "%s"' % (msg))
 
 
