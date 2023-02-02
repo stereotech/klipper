@@ -9,7 +9,7 @@ import importlib
 import mcu
 import chelper
 import kinematics.extruder
-import extras.save_variables as sv
+
 
 # Common suffixes: _d is distance (in mm), _v is velocity (in
 #   mm/second), _v2 is velocity squared (mm^2/s^2), _t is time (in
@@ -272,7 +272,7 @@ class ToolHead:
         self.trapq_finalize_moves = ffi_lib.trapq_finalize_moves
         self.step_generators = []
         # Create kinematics class
-        gcode = self.printer.lookup_object('gcode')
+        self.gcode = self.printer.lookup_object('gcode')
         self.Coord = gcode.Coord
         self.extruder = kinematics.extruder.DummyExtruder(self.printer)
         kin_name = config.get('kinematics')
@@ -288,13 +288,13 @@ class ToolHead:
             logging.exception(msg)
             raise config.error(msg)
         # Register commands
-        gcode.register_command('G4', self.cmd_G4)
-        gcode.register_command('M400', self.cmd_M400)
-        gcode.register_command('SET_VELOCITY_LIMIT',
+        self.gcode.register_command('G4', self.cmd_G4)
+        self.gcode.register_command('M400', self.cmd_M400)
+        self.gcode.register_command('SET_VELOCITY_LIMIT',
                                self.cmd_SET_VELOCITY_LIMIT,
                                desc=self.cmd_SET_VELOCITY_LIMIT_help)
-        gcode.register_command('M204', self.cmd_M204)
-        gcode.register_command('GET_CURENT_EXTRUDER',
+        self.gcode.register_command('M204', self.cmd_M204)
+        self.gcode.register_command('GET_CURENT_EXTRUDER',
                                self.cmd_GET_CURENT_EXTRUDER,
                                desc=self.cmd_GET_CURENT_EXTRUDER_help)
         # Load some default modules
@@ -665,7 +665,7 @@ class ToolHead:
         
     def cmd_GET_CURENT_EXTRUDER(self, gcmd):
         msg = self.extruder.get_name()
-        # sv.SaveVariables
+        self.gcode.run_script_from_command("SAVE_VARIABLE VARIABLE=extruder VALUE=%s" % (msg))
         gcmd.respond_info('extruder: "%s"' % (msg))
 
 
