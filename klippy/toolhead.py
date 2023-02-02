@@ -660,14 +660,12 @@ class ToolHead:
             accel = min(p, t)
         self.max_accel = accel
         self._calc_junction_deviation()
-        
+
     cmd_GET_CURENT_EXTRUDER_help = "Get the current extruder"
-        
+
     def cmd_GET_CURENT_EXTRUDER(self, gcmd):
-        
         msg = self.extruder.get_name()
-        
-        gcmd.respond_info('extruder: "%s"' % (msg))
+        gcmd.respond_info('extruder: "%s"' % (msg,))
 
 
 def add_printer_objects(config):
