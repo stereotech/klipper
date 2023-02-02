@@ -664,7 +664,9 @@ class ToolHead:
     cmd_GET_CURENT_EXTRUDER_help = "Get the current extruder"
         
     def cmd_GET_CURENT_EXTRUDER(self, gcmd):
+        
         msg = self.extruder.get_name()
+        
         gcmd.respond_info('extruder: "%s"' % (msg))
 
 
