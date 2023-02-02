@@ -276,9 +276,14 @@ class ToolHead:
         self.Coord = gcode.Coord
         self.extruder = kinematics.extruder.DummyExtruder(self.printer)
         kin_name = config.get('kinematics')
+        self.axes_min = [0. for _ in range(6)]
+        self.axes_max = [1. for _ in range(6)]
         try:
             mod = importlib.import_module('kinematics.' + kin_name)
             self.kin = mod.load_kinematics(self, config)
+            if hasattr(self.kin, 'axes_min') and hasattr(self.kin, 'axes_max'):
+                self.axes_min = self.kin.axes_min
+                self.axes_max = self.kin.axes_max
         except config.error as e:
             raise
         except self.printer.lookup_object('pins').error as e:
@@ -294,14 +299,16 @@ class ToolHead:
                                self.cmd_SET_VELOCITY_LIMIT,
                                desc=self.cmd_SET_VELOCITY_LIMIT_help)
         gcode.register_command('M204', self.cmd_M204)
-        gcode.register_command('GET_CURENT_EXTRUDER',
-                               self.cmd_GET_CURENT_EXTRUDER,
-                               desc=self.cmd_GET_CURENT_EXTRUDER_help)
+        gcode.register_command('ENABLE_CONSTRAIN',
+                               self.cmd_ENABLE_CONSTRAIN,
+                               desc=self.cmd_ENABLE_CONSTRAIN_help)
         # Load some default modules
         modules = ["gcode_move", "homing", "idle_timeout", "statistics",
                    "manual_probe", "tuning_tower"]
         for module_name in modules:
             self.printer.load_object(config, module_name)
+        # filament motion sensors state
+        self.constrain_on = 0
 
     # Print time tracking
     def _update_move_time(self, next_print_time):
@@ -322,6 +329,8 @@ class ToolHead:
                 m.flush_moves(mcu_flush_time)
             if self.print_time >= next_print_time:
                 break
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
 
     def _calc_print_time(self):
         curtime = self.reactor.monotonic()
@@ -450,7 +459,11 @@ class ToolHead:
         self.printer.send_event("toolhead:set_position")
 
     def move(self, newpos, speed):
-        move = Move(self, self.commanded_pos, newpos, speed)
+        pos = list(newpos)
+        if self.constrain_on:
+            pos = [self.constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
+            pos.append(newpos[5])
+        move = Move(self, self.commanded_pos, pos, speed)
         if not move.move_d:
             return
         if move.is_kinematic_move:
