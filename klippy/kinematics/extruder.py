@@ -205,9 +205,13 @@ class PrinterExtruder:
             toolhead.set_extruder(self, 0.)
             gcode.register_command("M104", self.cmd_M104)
             gcode.register_command("M109", self.cmd_M109)
+            gcode.register_command('GET_CURRENT_EXTRUDER',
+                               self.cmd_GET_CURRENT_EXTRUDER,
+                               desc=self.cmd_GET_CURRENT_EXTRUDER_help)
         gcode.register_mux_command("ACTIVATE_EXTRUDER", "EXTRUDER",
                                    self.name, self.cmd_ACTIVATE_EXTRUDER,
                                    desc=self.cmd_ACTIVATE_EXTRUDER_help)
+
     def update_move_time(self, flush_time):
         self.trapq_finalize_moves(self.trapq, flush_time)
     def get_status(self, eventtime):
@@ -315,6 +319,14 @@ class PrinterExtruder:
         toolhead.flush_step_generation()
         toolhead.set_extruder(self, self.last_position)
         self.printer.send_event("extruder:activate_extruder")
+
+    cmd_GET_CURRENT_EXTRUDER_help = "Get the current extruder"
+
+    def cmd_GET_CURRENT_EXTRUDER(self, gcmd):
+        toolhead = self.printer.lookup_object('toolhead')
+        extruder = toolhead.get_extruder()
+        msg = extruder.get_name()
+        gcmd.respond_info('extruder: "%s"' % (msg,))
 
 
 # Dummy extruder class used when a printer has no extruder at all

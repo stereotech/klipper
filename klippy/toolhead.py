@@ -299,9 +299,9 @@ class ToolHead:
                                self.cmd_SET_VELOCITY_LIMIT,
                                desc=self.cmd_SET_VELOCITY_LIMIT_help)
         gcode.register_command('M204', self.cmd_M204)
-        gcode.register_command('ENABLE_CONSTRAIN',
-                               self.cmd_ENABLE_CONSTRAIN,
-                               desc=self.cmd_ENABLE_CONSTRAIN_help)
+        # gcode.register_command('ENABLE_CONSTRAIN',
+        #                        self.cmd_ENABLE_CONSTRAIN,
+        #                        desc=self.cmd_ENABLE_CONSTRAIN_help)
         # Load some default modules
         modules = ["gcode_move", "homing", "idle_timeout", "statistics",
                    "manual_probe", "tuning_tower"]
@@ -673,12 +673,6 @@ class ToolHead:
             accel = min(p, t)
         self.max_accel = accel
         self._calc_junction_deviation()
-
-    cmd_GET_CURENT_EXTRUDER_help = "Get the current extruder"
-
-    def cmd_GET_CURENT_EXTRUDER(self, gcmd):
-        msg = self.extruder.get_name()
-        gcmd.respond_info('extruder: "%s"' % (msg,))
 
 
 def add_printer_objects(config):
