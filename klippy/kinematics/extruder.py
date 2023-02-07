@@ -212,7 +212,8 @@ class PrinterExtruder:
                                    self.name, self.cmd_ACTIVATE_EXTRUDER,
                                    desc=self.cmd_ACTIVATE_EXTRUDER_help)
 
-    cmd_GET_CURRENT_EXTRUDER_help = 'Saves the current extruder to the vars.cfg file (if "extruder", then 0, if "extruder1", then 1)'
+    cmd_GET_CURRENT_EXTRUDER_help = """Saves the current extruder to the vars.cfg file
+    (if "extruder", then 0, if "extruder1", then 1)"""
 
     def cmd_GET_CURRENT_EXTRUDER(self, gcmd):
         toolhead = self.printer.lookup_object('toolhead')
