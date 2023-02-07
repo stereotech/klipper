@@ -82,8 +82,7 @@ class PauseResume:
             return
         velocity = gcmd.get_float('VELOCITY', self.recover_velocity)
         self.gcode.run_script_from_command(
-            "RESTORE_GCODE_STATE NAME=PAUSE_STATE MOVE=1 MOVE_SPEED=%.4f"
-            % (velocity))
+            "RESTORE_GCODE_STATE NAME=PAUSE_STATE MOVE=1")
         self.send_resume_command()
         self.is_paused = False
     cmd_CLEAR_PAUSE_help = (
