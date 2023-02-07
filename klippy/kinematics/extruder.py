@@ -205,9 +205,28 @@ class PrinterExtruder:
             toolhead.set_extruder(self, 0.)
             gcode.register_command("M104", self.cmd_M104)
             gcode.register_command("M109", self.cmd_M109)
+            gcode.register_command("GET_CURRENT_EXTRUDER",
+                                   self.cmd_GET_CURRENT_EXTRUDER,
+                                   desc=self.cmd_GET_CURRENT_EXTRUDER_help)
         gcode.register_mux_command("ACTIVATE_EXTRUDER", "EXTRUDER",
                                    self.name, self.cmd_ACTIVATE_EXTRUDER,
                                    desc=self.cmd_ACTIVATE_EXTRUDER_help)
+
+    cmd_GET_CURRENT_EXTRUDER_help = 'Saves the current extruder to the vars.cfg file (if "extruder", then 0, if "extruder1", then 1)'
+
+    def cmd_GET_CURRENT_EXTRUDER(self, gcmd):
+        toolhead = self.printer.lookup_object('toolhead')
+        gcode = self.printer.lookup_object('gcode')
+        extruder = toolhead.get_extruder()
+        msg = extruder.get_name()
+        ex = -1
+        if msg == "extruder":
+            ex = 0
+        elif msg == "extruder1":
+            ex = 1
+        gcode.run_script_from_command('SAVE_VARIABLE VARIABLE=extruder VALUE="%i"' % (ex,))
+        gcmd.respond_info('extruder: "%s"' % (msg,))
+
     def update_move_time(self, flush_time):
         self.trapq_finalize_moves(self.trapq, flush_time)
     def get_status(self, eventtime):

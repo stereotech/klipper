@@ -272,13 +272,18 @@ class ToolHead:
         self.trapq_finalize_moves = ffi_lib.trapq_finalize_moves
         self.step_generators = []
         # Create kinematics class
-        self.gcode = self.printer.lookup_object('gcode')
+        gcode = self.printer.lookup_object('gcode')
         self.Coord = gcode.Coord
         self.extruder = kinematics.extruder.DummyExtruder(self.printer)
         kin_name = config.get('kinematics')
+        self.axes_min = [0. for _ in range(6)]
+        self.axes_max = [1. for _ in range(6)]
         try:
             mod = importlib.import_module('kinematics.' + kin_name)
             self.kin = mod.load_kinematics(self, config)
+            if hasattr(self.kin, 'axes_min') and hasattr(self.kin, 'axes_max'):
+                self.axes_min = self.kin.axes_min
+                self.axes_max = self.kin.axes_max
         except config.error as e:
             raise
         except self.printer.lookup_object('pins').error as e:
@@ -288,13 +293,16 @@ class ToolHead:
             logging.exception(msg)
             raise config.error(msg)
         # Register commands
-        self.gcode.register_command('G4', self.cmd_G4)
-        self.gcode.register_command('M400', self.cmd_M400)
-        self.gcode.register_command('SET_VELOCITY_LIMIT',
+        gcode.register_command('G4', self.cmd_G4)
+        gcode.register_command('M400', self.cmd_M400)
+        gcode.register_command('SET_VELOCITY_LIMIT',
                                self.cmd_SET_VELOCITY_LIMIT,
                                desc=self.cmd_SET_VELOCITY_LIMIT_help)
-        self.gcode.register_command('M204', self.cmd_M204)
-        self.gcode.register_command('GET_CURENT_EXTRUDER',
+        gcode.register_command('M204', self.cmd_M204)
+        gcode.register_command('ENABLE_CONSTRAIN',
+                               self.cmd_ENABLE_CONSTRAIN,
+                               desc=self.cmd_ENABLE_CONSTRAIN_help)
+        gcode.register_command('GET_CURENT_EXTRUDER',
                                self.cmd_GET_CURENT_EXTRUDER,
                                desc=self.cmd_GET_CURENT_EXTRUDER_help)
         # Load some default modules
@@ -302,6 +310,8 @@ class ToolHead:
                    "manual_probe", "tuning_tower"]
         for module_name in modules:
             self.printer.load_object(config, module_name)
+        # filament motion sensors state
+        self.constrain_on = 0
 
     # Print time tracking
     def _update_move_time(self, next_print_time):
@@ -322,6 +332,8 @@ class ToolHead:
                 m.flush_moves(mcu_flush_time)
             if self.print_time >= next_print_time:
                 break
+    def constrain(self, val, min_val, max_val):
+        return min(max_val, max(min_val, val))
 
     def _calc_print_time(self):
         curtime = self.reactor.monotonic()
@@ -450,7 +462,11 @@ class ToolHead:
         self.printer.send_event("toolhead:set_position")
 
     def move(self, newpos, speed):
-        move = Move(self, self.commanded_pos, newpos, speed)
+        pos = list(newpos)
+        if self.constrain_on:
+            pos = [self.constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
+            pos.append(newpos[5])
+        move = Move(self, self.commanded_pos, pos, speed)
         if not move.move_d:
             return
         if move.is_kinematic_move:
@@ -660,14 +676,19 @@ class ToolHead:
             accel = min(p, t)
         self.max_accel = accel
         self._calc_junction_deviation()
-        
-    cmd_GET_CURENT_EXTRUDER_help = "Get the current extruder"
-        
-    def cmd_GET_CURENT_EXTRUDER(self, gcmd):
-        msg = self.extruder.get_name()
-        self.gcode.run_script_from_command("SAVE_VARIABLE VARIABLE=extruder VALUE=%s" % (msg))
-        gcmd.respond_info('extruder: "%s"' % (msg))
 
+    cmd_ENABLE_CONSTRAIN_help = 'The Function to set trigger for turn on constran the axes.'
+
+    def cmd_ENABLE_CONSTRAIN(self, gcmd):
+        self.constrain_on = gcmd.get_int('ENABLE', 0)
+
+    cmd_GET_CURENT_EXTRUDER_help = "Get the current extruder"
+
+    def cmd_GET_CURENT_EXTRUDER(self, gcmd):
+        gcode = self.printer.lookup_object('gcode')
+        msg = self.extruder.get_name()
+        gcode.run_script_from_command("SAVE_VARIABLE VARIABLE=extruder VALUE=%s" % (msg))
+        gcmd.respond_info('extruder: "%s"' % (msg))
 
 def add_printer_objects(config):
     config.get_printer().add_object('toolhead', ToolHead(config))
