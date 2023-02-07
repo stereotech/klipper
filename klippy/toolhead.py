@@ -302,9 +302,6 @@ class ToolHead:
         gcode.register_command('ENABLE_CONSTRAIN',
                                self.cmd_ENABLE_CONSTRAIN,
                                desc=self.cmd_ENABLE_CONSTRAIN_help)
-        gcode.register_command('GET_CURENT_EXTRUDER',
-                               self.cmd_GET_CURENT_EXTRUDER,
-                               desc=self.cmd_GET_CURENT_EXTRUDER_help)
         # Load some default modules
         modules = ["gcode_move", "homing", "idle_timeout", "statistics",
                    "manual_probe", "tuning_tower"]
@@ -682,13 +679,6 @@ class ToolHead:
     def cmd_ENABLE_CONSTRAIN(self, gcmd):
         self.constrain_on = gcmd.get_int('ENABLE', 0)
 
-    cmd_GET_CURENT_EXTRUDER_help = "Get the current extruder"
-
-    def cmd_GET_CURENT_EXTRUDER(self, gcmd):
-        gcode = self.printer.lookup_object('gcode')
-        msg = self.extruder.get_name()
-        gcode.run_script_from_command("SAVE_VARIABLE VARIABLE=extruder VALUE=%s" % (msg))
-        gcmd.respond_info('extruder: "%s"' % (msg))
 
 def add_printer_objects(config):
     config.get_printer().add_object('toolhead', ToolHead(config))

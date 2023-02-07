@@ -224,7 +224,7 @@ class PrinterExtruder:
             ex = 0
         elif msg == "extruder1":
             ex = 1
-        gcode.run_script_from_command('SAVE_VARIABLE VARIABLE=extruder VALUE="%i"' % (ex,))
+        gcode.run_script_from_command("SAVE_VARIABLE VARIABLE=extruder VALUE=%i" % (ex))
         gcmd.respond_info('extruder: "%s"' % (msg,))
 
     def update_move_time(self, flush_time):
@@ -323,6 +323,7 @@ class PrinterExtruder:
     def cmd_M109(self, gcmd):
         # Set Extruder Temperature and Wait
         self.cmd_M104(gcmd, wait=True)
+
     cmd_ACTIVATE_EXTRUDER_help = "Change the active extruder"
 
     def cmd_ACTIVATE_EXTRUDER(self, gcmd):
