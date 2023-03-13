@@ -37,6 +37,7 @@ def constrain(val, min_val, max_val):
 class PrinterSkew:
     def __init__(self, config):
         self.printer = config.get_printer()
+        self.gcode_move = self.printer.lookup_object('gcode_move')
         self.name = config.get_name()
         self.enabled = False
         self.xy_factor = 0.
@@ -52,6 +53,8 @@ class PrinterSkew:
         self._load_storage(config)
         self.printer.register_event_handler("klippy:connect",
                                             self._handle_connect)
+        self.printer.register_event_handler("gcode_move:change_wcs",
+                                            self._change_wcs)
         self.next_transform = None
         gcode = self.printer.lookup_object('gcode')
         gcode.register_command('GET_CURRENT_SKEW', self.cmd_GET_CURRENT_SKEW,
@@ -75,19 +78,26 @@ class PrinterSkew:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.]
         ]
-        self.gcode_move = self.printer.lookup_object('gcode_move')
-        self.wcs_list = []
-        self.current_wcs = [0., 0., 0.]
+        self.wcs_list = [
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.]
+        ]
+        self.wcs =  [0., 0., 0.]
         self.next_transform = None
 
     def _handle_connect(self):
         kin = self.printer.lookup_object('toolhead').get_kinematics()
         self.axes_min = kin.axes_min
         self.axes_max = kin.axes_max
-        self.wcs_list = self.printer.lookup_object('gcode_move').wcs_offsets
+        self.wcs_list = list(self.gcode_move.wcs_offsets)
         # Register transform
-        gcode_move = self.printer.lookup_object('gcode_move')
-        self.next_transform = gcode_move.set_move_transform(self, force=True)
+        self.next_transform = self.gcode_move.set_move_transform(self, force=True)
+
+    def _change_wcs(self):
+        self.wcs_list = list(self.gcode_move.wcs_offsets)
 
     def cmd_SAVE_SKEW_POINT(self, gcmd):
         point_idx = gcmd.get_int('POINT', 0)
@@ -183,18 +193,22 @@ class PrinterSkew:
 
     def calc_skew(self, pos):
         newpos = list(pos)
-        newpos[0] = pos[0] - (pos[1]- self.current_wcs[1]) * self.xy_factor \
-            - (pos[2] - self.current_wcs[2]) * (self.xz_factor - (self.xy_factor * self.yz_factor))
-        newpos[1] = pos[1] - (pos[2]- self.current_wcs[2]) * self.yz_factor
+        # newpos[0] = pos[0] - (pos[1]- self.current_wcs[1]) * self.xy_factor \
+        #     - (pos[2] - self.current_wcs[2]) * (self.xz_factor - (self.xy_factor * self.yz_factor))
+        # newpos[1] = pos[1] - (pos[2]- self.current_wcs[2]) * self.yz_factor
+        newpos[0] = pos[0] - (pos[1] - self.wcs[1]) * (self.xy_factor * -1)
+        newpos[1] = pos[1] - pos[2] * self.yz_factor
         newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
         newpos.append(pos[5])
         return newpos
 
     def calc_unskew(self, pos):
         newpos = list(pos)
-        newpos[0] = pos[0] + (pos[1] - self.current_wcs[1]) * self.xy_factor \
-            + (pos[2] - self.current_wcs[2]) * self.xz_factor
-        newpos[1] = pos[1] + (pos[2]- self.current_wcs[2]) * self.yz_factor
+        # newpos[0] = pos[0] + (pos[1] - self.current_wcs[1]) * self.xy_factor \
+        #     + (pos[2] - self.current_wcs[2]) * self.xz_factor
+        # newpos[1] = pos[1] + (pos[2]- self.current_wcs[2]) * self.yz_factor
+        newpos[0] = pos[0] + (pos[1] - self.wcs[1]) * (self.xy_factor * -1)
+        newpos[1] = pos[1] + pos[2] * self.yz_factor
         newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
         newpos.append(pos[5])
         return newpos
@@ -237,13 +251,15 @@ class PrinterSkew:
             self._update_skew(0., 0., 0.)
             gcmd.respond_info('Skew points cleared.')
             return
-        if gcmd.get_int('ENABLE', 0):
-            self.enabled = True
-            gcmd.respond_info('Skew compensation enabled.')
-        else:
-            self.enabled = False
-            self.current_wcs = self.wcs_list[0]
-            gcmd.respond_info('Skew compensation disabled.')
+        enable = gcmd.get_int('ENABLE', None)
+        if enable is not None:
+            if enable:
+                self.enabled = True
+                gcmd.respond_info('Skew compensation enabled.')
+            else:
+                self.enabled = False
+                # self.current_wcs = self.wcs_list[0]
+                gcmd.respond_info('Skew compensation disabled.')
         planes = ["XY", "XZ", "YZ"]
         for plane in planes:
             skew = gcmd.get_float(plane, None)
@@ -285,12 +301,11 @@ class PrinterSkew:
         Function load profile and set neaded wcs
         """
         self.current_profile = prof_name
+        # get center coordinate Y with wcs
         if prof_name == 'module_3d':
-            self.current_wcs = self.wcs_list[0]
-        # getting min value on wcs_list
+            self.wcs = self.wcs_list[0]
         else:
-            self.current_wcs = list(self.wcs_list[3])
-            self.current_wcs[2] = self.wcs_list[4][2]
+            self.wcs = self.wcs_list[1]
         profile = self.skew_profiles.get(prof_name)
         if profile is not None:
             self._update_skew(profile['xy_skew'], profile['xz_skew'], profile['yz_skew'])
@@ -341,7 +356,7 @@ class PrinterSkew:
             'current_yz_factor': self.yz_factor,
             'skew_profiles': self.skew_profiles,
             'wcs_list': self.wcs_list,
-            'current_wcs': self.current_wcs,
+            'wcs': self.wcs,
             'current_profile': self.current_profile
         }
 
