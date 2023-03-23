@@ -42,7 +42,7 @@ class AutoWcs:
         y = (x - self.point_coords[1][0]) + y_probed
         y1 = (self.point_coords[5][1] + self.point_coords[6][1]) / 2 - thickness
         delta_y = y - y1
-        delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (10 - adj))
+        delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (55 - adj))
         avg_delta = (delta_y + delta_z) / 2.0
         gcmd.respond_info("D_Y: %.3f, D_Z: %.3f, Avg_D: %.3f" % (delta_y, delta_z, avg_delta))
         y = y1 + delta_y
@@ -60,7 +60,7 @@ class AutoWcs:
         #y0 = math.tan(math.radians(15)) * (x0 - self.point_coords[1][0]) + y_probed
         y0 = (x0 - self.point_coords[1][0]) + y_probed
         delta_y = y0 - y
-        delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (10 - adj))
+        delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (55 - adj))
         avg_delta = (delta_y + delta_z) / 2.0
         gcmd.respond_info("D_Y: %.3f, D_Z: %.3f, Avg_D: %.3f" % (delta_y, delta_z, avg_delta))
         z = self.point_coords[0][2] - delta_z
@@ -88,7 +88,7 @@ class AutoWcs:
     def cmd_CALC_WCS_PARAMS(self, gcmd):
         #todo: get thickness default 10
         thickness =  gcmd.get_float('THICKNESS', 10.)
-        adjustment_coeff = gcmd.get_float('ADJUSTMENT', .2)
+        adjustment_coeff = gcmd.get_float('ADJUSTMENT', .25)
         x, y, z = self._calc_wcs(thickness, adjustment_coeff, gcmd)
         x2, y2, z2 = self._calc_wcs_2(thickness, adjustment_coeff, gcmd)
         out = "Calculated WCS 1 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
