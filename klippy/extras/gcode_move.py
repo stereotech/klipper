@@ -187,6 +187,7 @@ class GCodeMove:
         else:
             # Move
             params = gcmd.get_command_parameters()
+            with_rotation = 'C' in params
             try:
                 for pos, axis in enumerate('XYZAC'):
                     if axis in params:
@@ -211,14 +212,12 @@ class GCodeMove:
                         # value relative to base coordinate position
                         self.last_position[5] = v + self.base_position[5]
                 if 'F' in params:
-                    # check need enable radial speed compensation.
-                    with_rotation = 'C' in params
                     gcode_speed = float(params['F'])
                     if gcode_speed <= 0.:
                         raise gcmd.error("Invalid speed in '%s'"
                                          % (gcmd.get_commandline(),))
                     self.speed = gcode_speed * self.speed_factor
-                if 'C' in params and self.radius > 0. and self.radial_speed_compensation_enabled:
+                if with_rotation and self.radius > 0. and self.radial_speed_compensation_enabled:
                     self.rotary_speed = (RAD_TO_DEG * self.speed) / (self.radius * 3)
                     #self.rotary_speed = -0.5 * self.radius + 50.
                     if self.rotary_speed > self.speed:
