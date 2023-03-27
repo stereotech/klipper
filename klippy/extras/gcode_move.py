@@ -211,6 +211,8 @@ class GCodeMove:
                         # value relative to base coordinate position
                         self.last_position[5] = v + self.base_position[5]
                 if 'F' in params:
+                    # this variable check rotation and if false so printer move on 3d or do retract or angular velocity compensation is not needed.
+                    with_rotation = 'C' in params
                     gcode_speed = float(params['F'])
                     if gcode_speed <= 0.:
                         raise gcmd.error("Invalid speed in '%s'"
@@ -227,7 +229,7 @@ class GCodeMove:
                 raise gcmd.error("Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
             self.move_with_transform(self.last_position, \
-                self.rotary_speed if self.radial_speed_compensation_enabled else self.speed)
+                self.rotary_speed if self.radial_speed_compensation_enabled and with_rotation else self.speed)
     # G-Code coordinate manipulation
 
     def cmd_G20(self, gcmd):
