@@ -187,8 +187,8 @@ class GCodeMove:
         else:
             # Move
             params = gcmd.get_command_parameters()
-            with_rotation = 'C' in params
             try:
+                with_rotation = 'C' in params
                 for pos, axis in enumerate('XYZAC'):
                     if axis in params:
                         v = float(params[axis])
