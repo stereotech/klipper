@@ -8,7 +8,7 @@ import math
 import ast
 
 DEG_TO_RAD = 0.01745329252
-
+RAD_TO_DEG = 57.2958
 
 class GCodeMove:
     def __init__(self, config):
@@ -143,7 +143,7 @@ class GCodeMove:
         return p
 
     def _get_gcode_speed(self):
-        return self.speed / self.speed_factor
+        return self.speed / self.speed_factor #in mm/min
 
     def _get_gcode_speed_override(self):
         return self.speed_factor * 60.
@@ -152,7 +152,7 @@ class GCodeMove:
         move_position = self._get_gcode_position()
         return {
             'speed_factor': self._get_gcode_speed_override(),
-            'speed': self._get_gcode_speed(),
+            'speed': self._get_gcode_speed(), #in mm/min
             'extrude_factor': self.extrude_factor,
             'absolute_coordinates': self.absolute_coord,
             'absolute_extrude': self.absolute_extrude,
@@ -217,16 +217,17 @@ class GCodeMove:
                                          % (gcmd.get_commandline(),))
                     self.speed = gcode_speed * self.speed_factor
                 if 'C' in params and self.radius > 0. and self.radial_speed_compensation_enabled:
-                    #self.rotary_speed = 6 * self.speed / self.radius
-                    self.rotary_speed = -0.5 * self.radius + 50.
-                    if self.rotary_speed < self.speed:
-                        self.speed = self.rotary_speed * self._get_gcode_speed_override()
+                    self.rotary_speed = (RAD_TO_DEG * self.speed) / (self.radius * 3)
+                    #self.rotary_speed = -0.5 * self.radius + 50.
+                    if self.rotary_speed > self.speed:
+                        self.rotary_speed = self.speed
                     if self.rotary_speed < self.square_corner_velocity:
-                        self.speed = self.square_corner_velocity * self._get_gcode_speed_override()
+                        self.rotary_speed = self.square_corner_velocity
             except ValueError as e:
                 raise gcmd.error("Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
-            self.move_with_transform(self.last_position, self.speed)
+            self.move_with_transform(self.last_position, \
+                self.rotary_speed if self.radial_speed_compensation_enabled else self.speed)
     # G-Code coordinate manipulation
 
     def cmd_G20(self, gcmd):
@@ -476,8 +477,7 @@ class GCodeMove:
         configfile.set('wcs_%d' % n, 'x', self.wcs_offsets[n][0])
         configfile.set('wcs_%d' % n, 'y', self.wcs_offsets[n][1])
         configfile.set('wcs_%d' % n, 'z', self.wcs_offsets[n][2])
-        self.printer.send_event("gcode_move:change_wcs")
-
+        self.printer.send_event("gcode_move:change_wcs_lists")
 
     def get_wcs(self, wcs):
         if (wcs < 6):
