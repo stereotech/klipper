@@ -72,6 +72,7 @@ class PrinterGCodeMacro:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.env = jinja2.Environment('{%', '%}', '{', '}')
+
     def load_template(self, config, option, default=None):
         name = "%s:%s" % (config.get_name(), option)
         if default is None:
@@ -82,6 +83,21 @@ class PrinterGCodeMacro:
     def _action_emergency_stop(self, msg="action_emergency_stop"):
         self.printer.invoke_shutdown("Shutdown due to %s" % (msg,))
         return ""
+
+    def _action_stop_for_power_off(self, msg="action_stop_for_power_off"):
+        """
+        Power off response function.
+        Note: can set this function in the buttons.py for increased responsiveness. try FORCE_MOVE
+        """
+        try:
+            self.printer.lookup_object('pause_resume').send_pause_command()
+            heaters = self.printer.lookup_object('heaters')
+            self.printer.get_reactor().register_async_callback(
+                (lambda e: heaters.turn_off_all_heaters()))
+            return ""
+        except Exception as e:
+            logging.exception('%s' % e)
+
     def _action_respond_info(self, msg):
         self.printer.lookup_object('gcode').respond_info(msg)
         return ""
@@ -101,6 +117,7 @@ class PrinterGCodeMacro:
             'action_respond_info': self._action_respond_info,
             'action_raise_error': self._action_raise_error,
             'action_call_remote_method': self._action_call_remote_method,
+            'action_stop_for_power_off': self._action_stop_for_power_off
         }
 
 def load_config(config):
