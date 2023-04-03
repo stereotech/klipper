@@ -482,6 +482,7 @@ class GCodeMove:
         configfile.set('wcs_%d' % n, 'x', self.wcs_offsets[n][0])
         configfile.set('wcs_%d' % n, 'y', self.wcs_offsets[n][1])
         configfile.set('wcs_%d' % n, 'z', self.wcs_offsets[n][2])
+        self.printer.send_event("gcode_move:change_wcs_lists")
 
     def get_wcs(self, wcs):
         if (wcs < 6):
