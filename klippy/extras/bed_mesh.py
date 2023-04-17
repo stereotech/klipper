@@ -142,6 +142,8 @@ class BedMesh:
         self.next_transform = None
 
 
+        # initialize status dict
+        self.update_status()
     def handle_connect(self):
         self.bmc.print_generated_points(logging.info)
         self.pmgr.initialize()
@@ -183,7 +185,7 @@ class BedMesh:
         # cache the current position before a transform takes place
         gcode_move = self.printer.lookup_object('gcode_move')
         gcode_move.reset_last_position()
-
+        self.update_status()
     def get_z_factor(self, z_pos):
         if z_pos >= self.fade_end:
             return 0.
@@ -241,7 +243,9 @@ class BedMesh:
         self.last_position[:] = newpos
 
     def get_status(self, eventtime=None):
-        status = {
+        return self.status
+    def update_status(self):
+        self.status = {
             "profile_name": "",
             "mesh_min": (0., 0.),
             "mesh_max": (0., 0.),
@@ -255,13 +259,11 @@ class BedMesh:
             mesh_max = (params['max_x'], params['max_y'])
             probed_matrix = self.z_mesh.get_probed_matrix()
             mesh_matrix = self.z_mesh.get_mesh_matrix()
-            status['profile_name'] = self.pmgr.get_current_profile()
-            status['mesh_min'] = mesh_min
-            status['mesh_max'] = mesh_max
-            status['probed_matrix'] = probed_matrix
-            status['mesh_matrix'] = mesh_matrix
-        return status
-
+            self.status['profile_name'] = self.pmgr.get_current_profile()
+            self.status['mesh_min'] = mesh_min
+            self.status['mesh_max'] = mesh_max
+            self.status['probed_matrix'] = probed_matrix
+            self.status['mesh_matrix'] = mesh_matrix
     def get_mesh(self):
         return self.z_mesh
     cmd_BED_MESH_OUTPUT_help = "Retrieve interpolated grid of probed z-points"
@@ -344,7 +346,7 @@ class BedMeshCalibrate:
         # floor distances down to next hundredth
         x_dist = math.floor(x_dist * 100) / 100
         y_dist = math.floor(y_dist * 100) / 100
-        if x_dist <= 1. or y_dist <= 1.:
+        if x_dist < 1. or y_dist < 1.:
             raise error("bed_mesh: min/max points too close together")
 
         if self.radius is not None:
@@ -637,6 +639,8 @@ class BedMeshCalibrate:
 
     def cmd_BED_MESH_CALIBRATE(self, gcmd):
         self._profile_name = gcmd.get('PROFILE', "default")
+        if not self._profile_name.strip():
+            raise gcmd.error("Value for parameter 'PROFILE' must be specified")
         self.bedmesh.set_mesh(None)
         self.update_config(gcmd)
         self.probe_helper.start_probe(gcmd)
@@ -1200,11 +1204,6 @@ class ProfileManager:
         self.gcode.register_command(
             'BED_MESH_PROFILE', self.cmd_BED_MESH_PROFILE,
             desc=self.cmd_BED_MESH_PROFILE_help)
-
-    def initialize(self):
-        self._check_incompatible_profiles()
-        if "default" in self.profiles:
-            self.load_profile("default")
     def get_profiles(self):
         return self.profiles
     def get_current_profile(self):
@@ -1252,6 +1251,7 @@ class ProfileManager:
         profile['mesh_params'] = collections.OrderedDict(mesh_params)
         self.profiles = profiles
         self.current_profile = prof_name
+        self.bedmesh.update_status()
         self.gcode.respond_info(
             "Bed Mesh state has been saved to profile [%s]\n"
             "for the current session.  The SAVE_CONFIG command will\n"
@@ -1302,6 +1302,7 @@ class ProfileManager:
             profiles = dict(self.profiles)
             del profiles[prof_name]
             self.profiles = profiles
+            self.bedmesh.update_status()
             self.gcode.respond_info(
                 "Profile [%s] removed from storage for this session.\n"
                 "The SAVE_CONFIG command will update the printer\n"
@@ -1337,6 +1338,10 @@ class ProfileManager:
         for key in options:
             name = gcmd.get(key, None)
             if name is not None:
+                if not name.strip():
+                    raise gcmd.error(
+                        "Value for parameter '%s' must be specified" % (key)
+                    )
                 if name == "default" and key == 'SAVE':
                     gcmd.respond_info(
                         "Profile 'default' is reserved, please choose"
