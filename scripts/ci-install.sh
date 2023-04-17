@@ -48,17 +48,17 @@ sudo apt-get install ${PKGS}
 #fi
 #
 
-#echo -e "\n\n=============== Install or1k-linux-musl toolchain\n\n"
-#TOOLCHAIN=or1k-linux-musl-cross
-#TOOLCHAIN_ZIP=${TOOLCHAIN}.tgz
-#GCC_VERSION=10
-#TOOLCHAIN_ZIP_V=${TOOLCHAIN}-${GCC_VERSION}.tgz
-#URL=https://more.musl.cc/${GCC_VERSION}/x86_64-linux-musl/
-#if [ ! -f ${CACHE_DIR}/${TOOLCHAIN_ZIP_V} ]; then
-#    curl ${URL}/${TOOLCHAIN_ZIP} -o ${CACHE_DIR}/${TOOLCHAIN_ZIP_V}
-#fi
-#cd ${BUILD_DIR}
-#tar xf ${CACHE_DIR}/${TOOLCHAIN_ZIP_V}
+echo -e "\n\n=============== Install or1k-linux-musl toolchain\n\n"
+TOOLCHAIN=or1k-linux-musl-cross
+TOOLCHAIN_ZIP=${TOOLCHAIN}.tgz
+GCC_VERSION=10
+TOOLCHAIN_ZIP_V=${TOOLCHAIN}-${GCC_VERSION}.tgz
+URL=https://more.musl.cc/${GCC_VERSION}/x86_64-linux-musl/
+if [ ! -f ${CACHE_DIR}/${TOOLCHAIN_ZIP_V} ]; then
+    curl ${URL}/${TOOLCHAIN_ZIP} -o ${CACHE_DIR}/${TOOLCHAIN_ZIP_V}
+fi
+cd ${BUILD_DIR}
+tar xf ${CACHE_DIR}/${TOOLCHAIN_ZIP_V}
 ######################################################################
 # Create python3 virtualenv environment
 ######################################################################
