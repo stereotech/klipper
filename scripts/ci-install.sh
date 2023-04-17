@@ -14,7 +14,6 @@ mkdir -p ${BUILD_DIR} ${CACHE_DIR}
 ######################################################################
 # Install system dependencies
 ######################################################################
-
 echo -e "\n\n=============== Install system dependencies\n\n"
 sudo apt-get update
 PKGS="virtualenv python2-dev libffi-dev build-essential"
