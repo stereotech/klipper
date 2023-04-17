@@ -7,9 +7,7 @@
 class BedScrews:
     def __init__(self, config):
         self.printer = config.get_printer()
-        self.state = None
-        self.current_screw = 0
-        self.accepted_screws = 0
+        self.reset()
         self.number_of_screws = 0
         # Read config
         screws = []
@@ -39,7 +37,10 @@ class BedScrews:
         self.gcode.register_command("BED_SCREWS_ADJUST",
                                     self.cmd_BED_SCREWS_ADJUST,
                                     desc=self.cmd_BED_SCREWS_ADJUST_help)
-
+    def reset(self):
+        self.state = None
+        self.current_screw = 0
+        self.accepted_screws = 0
     def move(self, coord, speed):
         #self.printer.lookup_object('toolhead').manual_move(coord, speed)
         self.printer.lookup_object('gcode_move').manual_move(coord, speed)
@@ -68,6 +69,13 @@ class BedScrews:
         self.gcode.register_command('ACCEPT', None)
         self.gcode.register_command('ADJUSTED', None)
         self.gcode.register_command('ABORT', None)
+    def get_status(self, eventtime):
+        return {
+            'is_active': self.state is not None,
+            'state': self.state,
+            'current_screw': self.current_screw,
+            'accepted_screws': self.accepted_screws
+        }
     cmd_BED_SCREWS_ADJUST_help = "Tool to help adjust bed leveling screws"
 
     def cmd_BED_SCREWS_ADJUST(self, gcmd):
@@ -98,7 +106,7 @@ class BedScrews:
             self.move_to_screw('fine', 0)
             return
         # Done
-        self.state = None
+        self.reset()
         self.move((None, None, self.horizontal_move_z), self.lift_speed)
         gcmd.respond_info("Bed screws tool completed successfully")
     cmd_ADJUSTED_help = "Accept bed screw position after notable adjustment"
@@ -111,7 +119,7 @@ class BedScrews:
 
     def cmd_ABORT(self, gcmd):
         self.unregister_commands()
-        self.state = None
+        self.reset()
 
 
 def load_config(config):
