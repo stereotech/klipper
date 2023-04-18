@@ -21,7 +21,9 @@ ARC_PLANE_Y_Z = 2
 X_AXIS = 0
 Y_AXIS = 1
 Z_AXIS = 2
-E_AXIS = 3
+A_AXIS = 3
+C_AXIS = 4
+E_AXIS = 5
 
 
 
@@ -70,6 +72,8 @@ class ArcSupport:
         asTarget = self.Coord(x=gcmd.get_float("X", currentPos[0]),
                               y=gcmd.get_float("Y", currentPos[1]),
                               z=gcmd.get_float("Z", currentPos[2]),
+                              a=gcmd.get_float("A", currentPos[3]),
+                              c=gcmd.get_float("C", currentPos[4]),
                               e=None)
 
         if gcmd.get_float("R", None) is not None:
@@ -169,7 +173,7 @@ class ArcSupport:
             r_Q = -offset[0] * sin_Ti - offset[1] * cos_Ti
 
             # Coord doesn't support index assignment, create list
-            c = [None, None, None, None]
+            c = [None, None, None, None, None, None]
             c[alpha_axis] = center_P + r_P
             c[beta_axis] = center_Q + r_Q
             c[helical_axis] = currentPos[helical_axis] + dist_Helical
