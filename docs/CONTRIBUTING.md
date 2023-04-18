@@ -62,6 +62,10 @@ Common things a reviewer will look for:
 
    Submissions must pass all [regression test cases](Debugging.md).
 
+   When fixing a defect in the code, submitters should have a general
+   understanding of the root cause of that defect, and the fix should
+   target that root cause.
+
    Code submissions should not contain excessive debugging code,
    debugging options, nor run-time debug logging.
 
@@ -93,21 +97,19 @@ Common things a reviewer will look for:
    real-world benefits of a change is a natural part of a review.
 
    When discussing benefits it is preferable to discuss "facts and
-   measurements" instead of "opinions and theories". In general,
-   reviewers are not looking for responses of the form "this
-   submission may improve quality because of ...", nor are they
-   looking for responses of the form "someone may find option X
-   useful", nor are they looking for responses of the form "this
-   submission adds a feature that firmware X implements". Instead, it
-   is generally preferable to discuss details on how the quality
-   improvement was measured and what were the results of those
-   measurements - for example, "tests on Acme X1000 printers show
-   improved corners as seen in picture ...", or for example "print
-   time of real-world object X on a Foomatic X900 printer went from 4
-   hours to 3.5 hours". It is understood that testing of this type can
-   take significant time and effort. Some of Klipper's most notable
-   features took years of discussion, rework, testing, and
-   documentation prior to being merged into the master branch.
+   measurements". In general, reviewers are not looking for responses
+   of the form "someone may find option X useful", nor are they
+   looking for responses of the form "this submission adds a feature
+   that firmware X implements". Instead, it is generally preferable to
+   discuss details on how the quality improvement was measured and
+   what were the results of those measurements - for example, "tests
+   on Acme X1000 printers show improved corners as seen in picture
+   ...", or for example "print time of real-world object X on a
+   Foomatic X900 printer went from 4 hours to 3.5 hours". It is
+   understood that testing of this type can take significant time and
+   effort. Some of Klipper's most notable features took months of
+   discussion, rework, testing, and documentation prior to being
+   merged into the master branch.
 
    All new modules, config options, commands, command parameters, and
    documents should have "high impact". We do not want to burden users
@@ -251,8 +253,8 @@ The Klipper "reviewers" are:
 | ---------------------- | ----------------- | ----------------- |
 | Dmitry Butyugin        | @dmbutyugin       | Input shaping, resonance testing, kinematics |
 | Eric Callahan          | @Arksine          | Bed leveling, MCU flashing |
+| James Hartley          | @JamesH1978       | Configuration files |
 | Kevin O'Connor         | @KevinOConnor     | Core motion system, Micro-controller code |
-| Paul McGowan           | @mental405        | Configuration files, documentation |
 
 Please do not "ping" any of the reviewers and please do not direct
 submissions at them. All of the reviewers monitor the forums and PRs,
