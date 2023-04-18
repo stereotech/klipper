@@ -146,7 +146,8 @@ class BedMesh:
         self.update_status()
     def handle_connect(self):
         self.bmc.print_generated_points(logging.info)
-        self.pmgr.initialize()
+        # this functions loads the "default" profile but has now been removed
+        # self.pmgr.initialize()
         # Register transform
         gcode_move = self.printer.lookup_object('gcode_move')
         self.next_transform = gcode_move.set_move_transform(self, force=True)
@@ -1204,6 +1205,10 @@ class ProfileManager:
         self.gcode.register_command(
             'BED_MESH_PROFILE', self.cmd_BED_MESH_PROFILE,
             desc=self.cmd_BED_MESH_PROFILE_help)
+    # def initialize(self):
+    #     self._check_incompatible_profiles()
+    #     if "default" in self.profiles:
+    #         self.load_profile("default")
     def get_profiles(self):
         return self.profiles
     def get_current_profile(self):
