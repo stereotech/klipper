@@ -11,6 +11,7 @@ CHECK_RUNOUT_TIMEOUT = .250
 class EncoderSensor:
     def __init__(self, config):
         # Read config
+        self.name = config.get_name().split()[-1]
         self.printer = config.get_printer()
         switch_pin = config.get('switch_pin')
         self.extruder_name = config.get('extruder')
@@ -25,9 +26,14 @@ class EncoderSensor:
         self.get_status = self.runout_helper.get_status
         self.extruder = None
         self.estimated_print_time = None
+        self.gcode = self.printer.lookup_object('gcode')
         # Initialise internal state
         self.filament_runout_pos = None
         # Register commands and event handlers
+        self.gcode.register_mux_command(
+            "UPDATE_STATE_FILAMENT_RUNOUT_POSITION", "SENSOR", self.name,
+            self.cmd_UPDATE_STATE_FILAMENT_RUNOUT_POSITION,
+            desc=self.cmd_UPDATE_STATE_FILAMENT_RUNOUT_POSITION_help)
         self.printer.register_event_handler('klippy:ready',
                 self._handle_ready)
         self.printer.register_event_handler('idle_timeout:printing',
@@ -52,7 +58,13 @@ class EncoderSensor:
         self._extruder_pos_update_timer = self.reactor.register_timer(
                 self._extruder_pos_update_event)
 
+    def cmd_UPDATE_STATE_FILAMENT_RUNOUT_POSITION(self, gcmd):
+        self._update_filament_runout_pos()
+    cmd_UPDATE_STATE_FILAMENT_RUNOUT_POSITION_help = "Update filament position for" \
+        "filament motion sensor for more accurate report."
+
     def _handle_printing(self, print_time):
+        self._update_filament_runout_pos()
         self.reactor.update_timer(self._extruder_pos_update_timer,
                 self.reactor.NOW)
 
