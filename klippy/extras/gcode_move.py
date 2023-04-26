@@ -190,6 +190,8 @@ class GCodeMove:
             try:
                 with_rotation = 'C' in params
                 for pos, axis in enumerate('XYZAC'):
+                    if pos < 3 and self.absolute_coord:
+                        self.last_position[pos] -= self.wcs_offsets[self.current_wcs][pos]
                     if axis in params:
                         v = float(params[axis])
                         if not self.absolute_coord:
@@ -199,10 +201,12 @@ class GCodeMove:
                             # value relative to base coordinate position
                             self.last_position[pos] = v + \
                                 self.base_position[pos]
-                            if pos < 3:
-                                self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
+                            #if pos < 3:
+                            #    self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
                         if axis == 'Z':
                             self.radius = self._get_gcode_position()[2] - self.wcs_offsets[self.current_wcs][2]
+                    if pos < 3 and self.absolute_coord:
+                        self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
                 if 'E' in params:
                     v = float(params['E']) * self.extrude_factor
                     if not self.absolute_coord or not self.absolute_extrude:
