@@ -174,6 +174,8 @@ class GCodeDispatch:
     args_r = re.compile('([A-Z_]+|[A-Z*/])')
     def _process_commands(self, commands, need_ack=True):
         for line in commands:
+            if line == '':
+                continue
             # Ignore comments and leading/trailing spaces
             line = origline = line.strip()
             cpos = line.find(';')
