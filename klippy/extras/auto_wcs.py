@@ -16,6 +16,8 @@ class AutoWcs:
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
+	        [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.]
         ]
         self.wcs = [
@@ -35,14 +37,20 @@ class AutoWcs:
             desc=self.cmd_CALC_WCS_PARAMS_help)
 
     def _calc_wcs(self, thickness, adj, gcmd):
+        sensor_version = gcmd.get_int('SENSOR_VERSION', 0)
         thickness = thickness / 2.0
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
         y_probed = (self.point_coords[1][1] + self.point_coords[7][1]) / 2
         #y = math.tan(math.radians(15)) * (x - self.point_coords[1][0]) + y_probed
-        y = (x - self.point_coords[1][0]) + y_probed
         y1 = (self.point_coords[5][1] + self.point_coords[6][1]) / 2 - thickness
+        if sensor_version:
+            y = y_probed
+            len_thickness = 10
+        else:
+            y = (x - self.point_coords[1][0]) + y_probed
+            len_thickness = 55
         delta_y = y - y1
-        delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (55 - adj))
+        delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (len_thickness - adj))
         avg_delta = (delta_y + delta_z) / 2.0
         gcmd.respond_info("D_Y: %.3f, D_Z: %.3f, Avg_D: %.3f" % (delta_y, delta_z, avg_delta))
         y = y1 + delta_y
@@ -50,17 +58,24 @@ class AutoWcs:
         return x, y, z
 
     def _calc_wcs_2(self, thickness, adj, gcmd):
+        sensor_version = gcmd.get_int('SENSOR_VERSION', 0)
         thickness = thickness / 2.0
-        x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
-        # probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
         y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2 - thickness
-        #z = self.point_coords[4][2] - 60 # - probe_backlash
         y_probed = (self.point_coords[1][1] + self.point_coords[7][1]) / 2
         x0 = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
-        #y0 = math.tan(math.radians(15)) * (x0 - self.point_coords[1][0]) + y_probed
-        y0 = (x0 - self.point_coords[1][0]) + y_probed
+        if sensor_version:
+            x = (self.point_coords[8][0] + self.point_coords[9][0]) / 2
+            y0 = y_probed
+            len_thickness = 10
+        else:
+            # probe_backlash = (abs(self.point_coords[2][0] - self.point_coords[3][0]) - 110) / 2
+            #z = self.point_coords[4][2] - 60 # - probe_backlash
+            #y0 = math.tan(math.radians(15)) * (x0 - self.point_coords[1][0]) + y_probed
+            x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2
+            y0 = (x0 - self.point_coords[1][0]) + y_probed
+            len_thickness = 55
         delta_y = y0 - y
-        delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (55 - adj))
+        delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (len_thickness - adj))
         avg_delta = (delta_y + delta_z) / 2.0
         gcmd.respond_info("D_Y: %.3f, D_Z: %.3f, Avg_D: %.3f" % (delta_y, delta_z, avg_delta))
         z = self.point_coords[0][2] - delta_z
@@ -88,7 +103,7 @@ class AutoWcs:
     def cmd_CALC_WCS_PARAMS(self, gcmd):
         #todo: get thickness default 10
         thickness =  gcmd.get_float('THICKNESS', 10.)
-        adjustment_coeff = gcmd.get_float('ADJUSTMENT', .25)
+        adjustment_coeff = gcmd.get_float('ADJUSTMENT', .3)
         x, y, z = self._calc_wcs(thickness, adjustment_coeff, gcmd)
         x2, y2, z2 = self._calc_wcs_2(thickness, adjustment_coeff, gcmd)
         out = "Calculated WCS 1 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
