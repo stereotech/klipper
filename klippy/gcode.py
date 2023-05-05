@@ -229,6 +229,10 @@ class GCodeDispatch:
             logging.info(msg)
         lines = [l.strip() for l in msg.strip().split('\n')]
         self.respond_raw("// " + "\n// ".join(lines))
+    def respond_warning(self, msg):
+        logging.warning(msg)
+        lines = [l.strip() for l in msg.strip().split('\n')]
+        self.respond_raw("// " + "\n// ".join(lines))
     def _respond_error(self, msg):
         logging.warning(msg)
         lines = msg.strip().split('\n')
