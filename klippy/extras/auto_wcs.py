@@ -1,5 +1,4 @@
 import math
-import logging
 
 
 RAD_TO_DEG = 57.295779513
@@ -26,7 +25,6 @@ class AutoWcs:
             [0., 0., 0.],
             [0., 0., 0.]
         ]
-        self.probe_backlash = 0.
         self.adjust_angle = 10 / RAD_TO_DEG
         self.gcode = self.printer.lookup_object('gcode')
         self.gcode.register_command(
@@ -83,7 +81,6 @@ class AutoWcs:
         len_thickness = 10.
         x = (self.point_coords[8][0] + self.point_coords[9][0]) / 2.
         y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2. - thickness
-        self.probe_backlash = (y - thickness) - self.point_coords[5][1]
         z = self.point_coords[4][2] - (len_thickness - adj)
         return x, y, z
 
@@ -151,8 +148,7 @@ class AutoWcs:
 
     def get_status(self, eventtime=None):
         return {
-            "wcs": self.wcs,
-            "probe_backlash": self.probe_backlash
+            "wcs": self.wcs
         }
 
 def load_config(config):
