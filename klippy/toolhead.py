@@ -465,7 +465,7 @@ class ToolHead:
     def move(self, newpos, speed):
         pos = list(newpos)
         if self.constrain_on:
-            pos = [self.constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
+            pos = [self.constrain(pos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
             pos.append(newpos[5])
         move = Move(self, self.commanded_pos, pos, speed)
         if not move.move_d:
@@ -578,7 +578,8 @@ class ToolHead:
                     'max_velocity': self.max_velocity,
                     'max_accel': self.max_accel,
                     'max_accel_to_decel': self.requested_accel_to_decel,
-                    'square_corner_velocity': self.square_corner_velocity})
+                    'square_corner_velocity': self.square_corner_velocity,
+                    'constrain_enabled': self.constrain_on})
         return res
 
     def _handle_shutdown(self):
