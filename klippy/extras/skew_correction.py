@@ -203,8 +203,6 @@ class PrinterSkew:
         # removed self.xy_factor from the formula for a cleaner and easier compensation application.
         newpos[0] = pos[0] - pos_z * self.xz_factor
         newpos[1] = pos[1] - pos_z * (self.yz_factor * -1)
-        newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-        newpos.append(pos[5])
         return newpos
 
     def calc_unskew(self, pos):
@@ -215,8 +213,6 @@ class PrinterSkew:
         #     + pos[2] * self.xz_factor
         newpos[0] = pos[0] + pos_z * self.xz_factor
         newpos[1] = pos[1] + pos_z * (self.yz_factor * -1)
-        newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-        newpos.append(pos[5])
         return newpos
 
     def get_position(self):
