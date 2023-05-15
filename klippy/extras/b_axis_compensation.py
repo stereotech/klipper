@@ -95,8 +95,6 @@ class BAxisCompensation:
         newpos = matrix3x3_apply(newpos, m)
         newpos[0] += self.rot_center_x
         newpos[2] += self.rot_center_z
-        newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-        newpos.append(pos[5])
         return newpos
 
     def calc_untransformed(self, pos):
@@ -115,8 +113,6 @@ class BAxisCompensation:
         newpos = matrix3x3_apply(newpos, m)
         newpos[0] += self.rot_center_x
         newpos[2] += self.rot_center_z
-        newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-        newpos.append(pos[5])
         return newpos
 
     def cmd_SAVE_B_AXIS_POINT(self, gcmd):
