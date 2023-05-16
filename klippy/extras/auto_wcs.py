@@ -119,7 +119,7 @@ class AutoWcs:
         cr = c**0.5
         r = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
         self.tooling_radius = r
-        gcmd.respond_info('radius_tooling_1= %s, centr_tool(%s;%s)' % (self.tooling_radius_2, px, py))
+        gcmd.respond_info('radius_tooling_1= %s, centr_tool(%s;%s)' % (self.tooling_radius, px, py))
         self.get_radius_2(gcmd)
         return px, py, r
     cmd_GET_RADIUS_TOOLING_help = "command for get the tooling radius from measuring points."
