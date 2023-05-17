@@ -232,7 +232,8 @@ class GCodeMove:
                 raise gcmd.error("Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
             self.move_with_transform(self.last_position, \
-                self.rotary_speed if with_rotation and self.radius > 0. and self.radial_speed_compensation_enabled else self.speed)
+                self.rotary_speed if with_rotation and self.radius > 0. \
+                                     and self.radial_speed_compensation_enabled else self.speed)
     # G-Code coordinate manipulation
 
     def cmd_G20(self, gcmd):
