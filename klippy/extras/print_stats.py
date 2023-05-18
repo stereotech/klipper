@@ -6,15 +6,19 @@
 
 class PrintStats:
     def __init__(self, config):
-        printer = config.get_printer()
-        self.gcode_move = printer.load_object(config, 'gcode_move')
-        self.reactor = printer.get_reactor()
+        self.printer = config.get_printer()
+        self.gcode_move = self.printer.load_object(config, 'gcode_move')
+        self.reactor = self.printer.get_reactor()
+        self.save_variables = None
         self.reset()
+        self.gcode = self.printer.lookup_object('gcode')
+        self.printer.register_event_handler("klippy:ready", self._handle_ready)
         # Register commands
-        self.gcode = printer.lookup_object('gcode')
         self.gcode.register_command(
             "SET_PRINT_STATS_INFO", self.cmd_SET_PRINT_STATS_INFO,
             desc=self.cmd_SET_PRINT_STATS_INFO_help)
+    def _handle_ready(self):
+        self.save_variables = self.printer.lookup_object('save_variables')
     def _update_filament_usage(self, eventtime):
         gc_status = self.gcode_move.get_status(eventtime)
         cur_epos = gc_status['position'].e
@@ -63,6 +67,7 @@ class PrintStats:
             # No positive extusion detected during print
             self.init_duration = self.total_duration - \
                 self.prev_pause_duration
+        self.trigered_filament_sensor = self.save_variables.allVariables.get('trigered_filament_sensor', 0)
         self.print_start_time = None
     cmd_SET_PRINT_STATS_INFO_help = "Pass slicer info like layer act and " \
                                     "total to klipper"
@@ -89,6 +94,7 @@ class PrintStats:
         self.filament_used = self.total_duration = 0.
         self.print_start_time = self.last_pause_time = None
         self.init_duration = 0.
+        self.trigered_filament_sensor = 0.
         self.info_total_layer = None
         self.info_current_layer = None
     def get_status(self, eventtime):
@@ -112,6 +118,7 @@ class PrintStats:
             'filament_used': self.filament_used,
             'state': self.state,
             'message': self.error_message,
+            'trigered_filament_sensor': self.trigered_filament_sensor,
             'info': {'total_layer': self.info_total_layer,
                      'current_layer': self.info_current_layer}
         }
