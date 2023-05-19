@@ -18,7 +18,10 @@ class PrintStats:
             "SET_PRINT_STATS_INFO", self.cmd_SET_PRINT_STATS_INFO,
             desc=self.cmd_SET_PRINT_STATS_INFO_help)
     def _handle_ready(self):
-        self.save_variables = self.printer.lookup_object('save_variables')
+        try:
+            self.save_variables = self.printer.lookup_object('save_variables')
+        except:
+            pass
     def _update_filament_usage(self, eventtime):
         gc_status = self.gcode_move.get_status(eventtime)
         cur_epos = gc_status['position'].e
@@ -67,7 +70,8 @@ class PrintStats:
             # No positive extusion detected during print
             self.init_duration = self.total_duration - \
                 self.prev_pause_duration
-        self.trigered_filament_sensor = self.save_variables.allVariables.get('trigered_filament_sensor', 0)
+        if self.save_variables:
+            self.trigered_filament_sensor = self.save_variables.allVariables.get('trigered_filament_sensor', 0)
         self.print_start_time = None
     cmd_SET_PRINT_STATS_INFO_help = "Pass slicer info like layer act and " \
                                     "total to klipper"
