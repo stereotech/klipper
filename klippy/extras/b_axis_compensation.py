@@ -67,10 +67,14 @@ class BAxisCompensation:
         return self.calc_untransformed(self.next_transform.get_position())
 
     def move(self, newpos, speed):
-        axes_d = [self.next_transform.get_position()[i] - newpos[i] for i in
+        if not self.enabled:
+            self.next_transform.move(newpos, speed)
+            return
+        prev_pos = self.next_transform.get_position()
+        axes_d = [prev_pos[i] - newpos[i] for i in
                                 (0, 1, 2, 3, 4, 5)]
         move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
-        if not self.enabled or move_d < .000000001:
+        if move_d < .000000001:
             self.next_transform.move(newpos, speed)
             return
         corrected_pos = self.calc_tranformed(newpos)
@@ -91,8 +95,6 @@ class BAxisCompensation:
         newpos = matrix3x3_apply(newpos, m)
         newpos[0] += self.rot_center_x
         newpos[2] += self.rot_center_z
-        newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-        newpos.append(pos[5])
         return newpos
 
     def calc_untransformed(self, pos):
@@ -111,8 +113,6 @@ class BAxisCompensation:
         newpos = matrix3x3_apply(newpos, m)
         newpos[0] += self.rot_center_x
         newpos[2] += self.rot_center_z
-        newpos = [constrain(newpos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
-        newpos.append(pos[5])
         return newpos
 
     def cmd_SAVE_B_AXIS_POINT(self, gcmd):

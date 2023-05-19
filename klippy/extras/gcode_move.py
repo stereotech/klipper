@@ -190,6 +190,8 @@ class GCodeMove:
             try:
                 with_rotation = 'C' in params
                 for pos, axis in enumerate('XYZAC'):
+                    if pos < 3 and self.absolute_coord:
+                        self.last_position[pos] -= self.wcs_offsets[self.current_wcs][pos]
                     if axis in params:
                         v = float(params[axis])
                         if not self.absolute_coord:
@@ -199,10 +201,12 @@ class GCodeMove:
                             # value relative to base coordinate position
                             self.last_position[pos] = v + \
                                 self.base_position[pos]
-                            if pos < 3:
-                                self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
+                            #if pos < 3:
+                            #    self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
                         if axis == 'Z':
-                            self.radius = self._get_gcode_position()[2] - self.wcs_offsets[self.current_wcs][2]
+                            self.radius = self._get_gcode_position()[2]
+                    if pos < 3 and self.absolute_coord:
+                        self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
                 if 'E' in params:
                     v = float(params['E']) * self.extrude_factor
                     if not self.absolute_coord or not self.absolute_extrude:
@@ -228,7 +232,8 @@ class GCodeMove:
                 raise gcmd.error("Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
             self.move_with_transform(self.last_position, \
-                self.rotary_speed if self.radial_speed_compensation_enabled and with_rotation else self.speed)
+                self.rotary_speed if with_rotation and self.radius > 0. \
+                                     and self.radial_speed_compensation_enabled else self.speed)
     # G-Code coordinate manipulation
 
     def cmd_G20(self, gcmd):
@@ -396,6 +401,10 @@ class GCodeMove:
             'extrude_factor': params_dict['gcode_move']['extrude_factor'],
             'current_wcs': params_dict['gcode_move']['current_wcs'],
         }
+        toolhead = self.printer.lookup_object('toolhead')
+        position = toolhead.commanded_pos[:]
+        position[4] = last_position[4]
+        toolhead.set_position(position)
         logging.info('Realised cmd LOAD_GCODE_STATE, state: %s' % self.saved_states[state_name])
     cmd_LOAD_GCODE_STATE_help = 'Loading Print Status and Data from a params sended from STEAPP-server'
 
@@ -478,6 +487,7 @@ class GCodeMove:
         configfile.set('wcs_%d' % n, 'x', self.wcs_offsets[n][0])
         configfile.set('wcs_%d' % n, 'y', self.wcs_offsets[n][1])
         configfile.set('wcs_%d' % n, 'z', self.wcs_offsets[n][2])
+        self.printer.send_event("gcode_move:change_wcs_lists")
 
     def get_wcs(self, wcs):
         if (wcs < 6):

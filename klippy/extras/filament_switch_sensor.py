@@ -29,12 +29,17 @@ class RunoutHelper:
         self.min_event_systime = self.reactor.NEVER
         self.filament_present = False
         self.sensor_enabled = True
+        self.trying_do_extrude = False
         # Register commands and event handlers
         self.printer.register_event_handler("klippy:ready", self._handle_ready)
         self.gcode.register_mux_command(
             "QUERY_FILAMENT_SENSOR", "SENSOR", self.name,
             self.cmd_QUERY_FILAMENT_SENSOR,
             desc=self.cmd_QUERY_FILAMENT_SENSOR_help)
+        self.gcode.register_mux_command(
+            "SET_STATE_TRY_EXTRUDE_FILAMENT", "SENSOR", self.name,
+            self.cmd_SET_STATE_TRY_EXTRUDE_FILAMENT,
+            desc=self.cmd_SET_STATE_TRY_EXTRUDE_FILAMENT_help)
         self.gcode.register_mux_command(
             "SET_FILAMENT_SENSOR", "SENSOR", self.name,
             self.cmd_SET_FILAMENT_SENSOR,
@@ -62,13 +67,19 @@ class RunoutHelper:
     def note_filament_present(self, is_filament_present):
         if is_filament_present == self.filament_present:
             return
-        self.filament_present = is_filament_present
+        if self.trying_do_extrude or not self.sensor_enabled:
+            # We need to read the states of the sensor, in all attempts to
+            # extrude the plastic. Eventtime won't let you do it.
+            self.filament_present = is_filament_present
+        # self.filament_present = is_filament_present
         eventtime = self.reactor.monotonic()
         if eventtime < self.min_event_systime or not self.sensor_enabled:
             # do not process during the initialization time, duplicates,
             # during the event delay time, while an event is running, or
             # when the sensor is disabled
             return
+        if not self.trying_do_extrude:
+            self.filament_present = is_filament_present
         # Determine "printing" status
         idle_timeout = self.printer.lookup_object("idle_timeout")
         is_printing = idle_timeout.get_status(eventtime)["state"] == "Printing"
@@ -103,6 +114,11 @@ class RunoutHelper:
 
     def cmd_SET_FILAMENT_SENSOR(self, gcmd):
         self.sensor_enabled = gcmd.get_int("ENABLE", 1)
+
+    def cmd_SET_STATE_TRY_EXTRUDE_FILAMENT(self, gcmd):
+        self.trying_do_extrude = gcmd.get_int("ENABLE", 0)
+    cmd_SET_STATE_TRY_EXTRUDE_FILAMENT_help = "Command to switch the state of the "\
+        "filament sensor to the state of trying to extrude the filament."
 
 class SwitchSensor:
     def __init__(self, config):
