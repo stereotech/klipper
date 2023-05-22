@@ -233,6 +233,7 @@ class VirtualSD:
         partial_input = ""
         lines = []
         error_message = None
+        get_layer = True
         while not self.must_pause_work:
             if not lines:
                 # Read more data
@@ -264,6 +265,13 @@ class VirtualSD:
             next_file_position = self.file_position + len(line) + 1
             self.next_file_position = next_file_position
             try:
+                if get_layer and line.find(';LAYER_COUNT'):
+                    get_layer = False
+                    logging.info('---------------%s' % line)
+                if line.find(';LAYER'):
+                    logging.info('---------------%s' % line)
+                    num = line[5:]
+                    logging.info('---------------%s' % num)
                 self.gcode.run_script(line)
             except self.gcode.error as e:
                 error_message = str(e)
