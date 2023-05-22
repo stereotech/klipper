@@ -109,6 +109,7 @@ jobs:
           cat ./changelog_raw.json
 
       - name: Getting commit in python
+        continue-on-error: true
         run: |
           pip install yandex_tracker_client
           touch changelog.json
@@ -130,6 +131,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.YC_DEFAULT_REGION }}
 
       - name: Upload changelog to AWS
+        continue-on-error: true
         run: aws s3 --endpoint-url=https://storage.yandexcloud.net cp ./changelog.json s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/klipper/ --acl public-read
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.YC_STORAGE_ACCESS_KEY_ID }}
