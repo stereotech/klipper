@@ -19,6 +19,8 @@ class VirtualSD:
         self.file_position = self.file_size = 0
         # Print Stat Tracking
         self.print_stats = self.printer.load_object(config, 'print_stats')
+        # variable
+        self.get_layer_count = True
         # Work timer
         self.reactor = self.printer.get_reactor()
         self.must_pause_work = self.cmd_from_sd = False
@@ -264,6 +266,13 @@ class VirtualSD:
             next_file_position = self.file_position + len(line) + 1
             self.next_file_position = next_file_position
             try:
+                if self.get_layer_count and line.find(';LAYER_COUNT:') >= 0:
+                    self.get_layer_count = False
+                    caunt = line[13:]
+                    self.print_stats.set_layer(total_layer=caunt)
+                if line.find(';LAYER:') >= 0:
+                    caunt = line[7:]
+                    self.print_stats.set_layer(current_layer=caunt)
                 self.gcode.run_script(line)
             except self.gcode.error as e:
                 error_message = str(e)
@@ -291,10 +300,12 @@ class VirtualSD:
         self.work_timer = None
         self.cmd_from_sd = False
         if error_message is not None:
+            self.get_layer_count = True
             self.print_stats.note_error(error_message)
         elif self.current_file is not None:
             self.print_stats.note_pause()
         else:
+            self.get_layer_count = True
             self.print_stats.note_complete()
         return self.reactor.NEVER
 

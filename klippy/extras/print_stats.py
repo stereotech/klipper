@@ -3,6 +3,8 @@
 # Copyright (C) 2020  Eric Callahan <arksine.code@gmail.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
+import logging
+
 
 class PrintStats:
     def __init__(self, config):
@@ -77,11 +79,26 @@ class PrintStats:
         elif total_layer != self.info_total_layer:
             self.info_total_layer = total_layer
             self.info_current_layer = 0
-
         if self.info_total_layer is not None and \
                 current_layer is not None and \
                 current_layer != self.info_current_layer:
             self.info_current_layer = min(current_layer, self.info_total_layer)
+
+    def set_layer(self, total_layer=None, current_layer=None):
+        if total_layer:
+            try:
+                total_layer = int(total_layer)
+                self.info_total_layer = total_layer
+            except Exception as e:
+                logging.warning('Do not get total_layer\n %s' % e)
+                self.info_total_layer = 0
+        if current_layer:
+            try:
+                current_layer = int(current_layer)
+                self.info_current_layer = current_layer
+            except Exception as e:
+                logging.warning('Do not get current_layer\n %s' % e)
+
     def reset(self):
         self.filename = self.error_message = ""
         self.state = "standby"
