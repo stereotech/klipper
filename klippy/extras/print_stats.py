@@ -89,7 +89,6 @@ class PrintStats:
             try:
                 total_layer = int(total_layer)
                 self.info_total_layer = total_layer
-                self.info_current_layer = 0
             except Exception as e:
                 logging.warning('Do not get total_layer\n %s' % e)
                 self.info_total_layer = 0
