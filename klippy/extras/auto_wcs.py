@@ -29,7 +29,6 @@ class AutoWcs:
         self.probe_backlash_y = 0.
         self.probe_backlash_y_2 = 0.
         self.tooling_radius = 0.
-        self.tooling_radius_1 = 0.
         self.tooling_radius_2 = 0.
         self.adjust_angle = 10 / RAD_TO_DEG
         self.gcode = self.printer.lookup_object('gcode')
@@ -106,29 +105,6 @@ class AutoWcs:
         self.probe_backlash_y_2 = abs(self.point_coords[1][1] - (y1 - 5))
 
     def cmd_GET_RADIUS_TOOLING(self, gcmd):
-        x1, y1 = self.point_coords[1][0] + self.probe_backlash_y, self.point_coords[1][1]
-        x2, y2 = self.point_coords[0][0], self.point_coords[0][1] + self.probe_backlash_y
-        x3, y3 = self.point_coords[2][0] - self.probe_backlash_y, self.point_coords[2][1]
-        c = (x1-x2)**2 + (y1-y2)**2
-        a = (x2-x3)**2 + (y2-y3)**2
-        b = (x3-x1)**2 + (y3-y1)**2
-        s = 2*(a*b + b*c + c*a) - (a*a + b*b + c*c)
-        px = (a*(b+c-a)*x1 + b*(c+a-b)*x2 + c*(a+b-c)*x3) / s
-        py = (a*(b+c-a)*y1 + b*(c+a-b)*y2 + c*(a+b-c)*y3) / s
-        ar = a**0.5
-        br = b**0.5
-        cr = c**0.5
-        r = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
-        self.tooling_radius = r
-        gcmd.respond_info('radius_tooling= %s,(only backlash_y) centr_tool(%s;%s)' % (
-            self.tooling_radius, px, py))
-        self.get_radius_1(gcmd)
-        self.get_radius_2(gcmd)
-        return px, py, r
-    cmd_GET_RADIUS_TOOLING_help = "command for get the tooling radius from measuring points."
-
-    def get_radius_1(self, gcmd):
-        # calculate radius whis probe_backlash_y
         x1, y1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][1]
         x2, y2 = self.point_coords[0][0], self.point_coords[0][1] + self.probe_backlash_y
         x3, y3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][1]
@@ -142,14 +118,13 @@ class AutoWcs:
         br = b**0.5
         cr = c**0.5
         r = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
-        self.tooling_radius_1 = r
-        gcmd.respond_info('radius_tooling_1= %s,(backlash_y and X) centr_tool(%s;%s)' % (
-            self.tooling_radius_1, px, py))
+        self.tooling_radius = r
+        gcmd.respond_info('radius_tooling_1= %s, centr_tool(%s;%s)' % (self.tooling_radius, px, py))
+        self.get_radius_2(gcmd)
         return px, py, r
     cmd_GET_RADIUS_TOOLING_help = "command for get the tooling radius from measuring points."
 
     def get_radius_2(self, gcmd):
-            # calculate radius whis probe_backlash_y_2
             x1, y1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][1]
             x2, y2 = self.point_coords[0][0], self.point_coords[0][1] + self.probe_backlash_y_2
             x3, y3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][1]
@@ -164,8 +139,7 @@ class AutoWcs:
             cr = c**0.5
             r = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
             self.tooling_radius_2 = r
-            gcmd.respond_info('radius_tooling_2= %s,(backlash_y_2 and X) centr_tool(%s;%s)' % (
-                self.tooling_radius_2, px, py))
+            gcmd.respond_info('radius_tooling_2= %s, centr_tool(%s;%s)' % (self.tooling_radius_2, px, py))
             return px, py, r
 
     def cmd_SAVE_WCS_CALC_POINT(self, gcmd):
@@ -237,7 +211,6 @@ class AutoWcs:
             "probe_backlash_y": self.probe_backlash_y,
             "probe_backlash_y_2": self.probe_backlash_y_2,
             'tooling_radius': self.tooling_radius,
-            'tooling_radius_1': self.tooling_radius_1,
             'tooling_radius_2': self.tooling_radius_2
         }
 
