@@ -204,7 +204,7 @@ class GCodeMove:
                             #if pos < 3:
                             #    self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
                         if axis == 'Z':
-                            self.radius = self._get_gcode_position()[2] - self.wcs_offsets[self.current_wcs][2]
+                            self.radius = self._get_gcode_position()[2]
                     if pos < 3 and self.absolute_coord:
                         self.last_position[pos] += self.wcs_offsets[self.current_wcs][pos]
                 if 'E' in params:
@@ -232,7 +232,8 @@ class GCodeMove:
                 raise gcmd.error("Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
             self.move_with_transform(self.last_position, \
-                self.rotary_speed if self.radial_speed_compensation_enabled and with_rotation else self.speed)
+                self.rotary_speed if with_rotation and self.radius > 0. \
+                                     and self.radial_speed_compensation_enabled else self.speed)
     # G-Code coordinate manipulation
 
     def cmd_G20(self, gcmd):
