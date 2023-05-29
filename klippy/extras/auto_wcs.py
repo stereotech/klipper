@@ -33,7 +33,6 @@ class AutoWcs:
         self.tooling_radius_2 = 0.
         self.adjust_angle = 10 / RAD_TO_DEG
         self.gcode = self.printer.lookup_object('gcode')
-        self.printer.register_event_handler("klippy:ready", self._handle_ready)
         self.gcode.register_command(
             'SAVE_WCS_CALC_POINT', self.cmd_SAVE_WCS_CALC_POINT,
             desc=self.cmd_SAVE_WCS_CALC_POINT_help)
@@ -43,15 +42,6 @@ class AutoWcs:
         self.gcode.register_command(
             'SET_AUTO_WCS', self.cmd_SET_AUTO_WCS,
             desc=self.cmd_CALC_WCS_PARAMS_help)
-        self.gcode.register_command(
-            'GET_RADIUS_TOOLING', self.cmd_GET_RADIUS_TOOLING,
-            desc=self.cmd_GET_RADIUS_TOOLING_help)
-
-    def _handle_ready(self):
-        save_variables = self.printer.lookup_object('save_variables')
-        self.probe_backlash_x = save_variables.allVariables.get('probe_backlash_x', 0.)
-        self.probe_backlash_y = save_variables.allVariables.get('probe_backlash_y', 0.)
-        self.probe_backlash_y_2 = save_variables.allVariables.get('probe_backlash_y_2', 0.)
 
     def _calc_wcs_old_sensor(self, thickness, adj, gcmd):
         thickness = thickness / 2.0
@@ -96,7 +86,7 @@ class AutoWcs:
         thickness = thickness / 2.
         len_thickness = 10.
         x = (self.point_coords[8][0] + self.point_coords[9][0]) / 2.
-        y = ((self.point_coords[5][1] + self.point_coords[6][1]) / 2.) - thickness
+        y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2. - thickness
         z = self.point_coords[4][2] - (len_thickness - adj)
         return x, y, z
 
@@ -186,6 +176,7 @@ class AutoWcs:
 
     cmd_SAVE_WCS_CALC_POINT_help = "Save point for WCS calculation"
 
+
     def cmd_CALC_WCS_PARAMS(self, gcmd):
         #todo: get thickness default 10
         thickness =  gcmd.get_float('THICKNESS', 10.)
@@ -194,7 +185,6 @@ class AutoWcs:
         if sensor_version:
             x, y, z = self._calc_wcs_new_sensor(thickness, adjustment_coeff, gcmd)
             x2, y2, z2 = self._calc_wcs_2_new_sensor(thickness, adjustment_coeff, gcmd)
-            self.calculate_probe_backlash(x, y, y2)
             delta_y = y - y2
             delta_z = z - z2
             avg_delta = (delta_y + delta_z) / 2.0
