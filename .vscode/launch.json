@@ -28,7 +28,9 @@
                 "${workspaceFolder}/HTE530-5-4-22.cfg",
                 "-v",
                 "-a",
-                "/tmp/klipper_uds"
+                "/tmp/klipper_uds",
+                // "-l",
+                // "/tmp/dev_klipper_log.log"
             ]
         }
     ]
