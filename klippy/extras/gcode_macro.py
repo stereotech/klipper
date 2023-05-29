@@ -101,6 +101,9 @@ class PrinterGCodeMacro:
     def _action_respond_info(self, msg):
         self.printer.lookup_object('gcode').respond_info(msg)
         return ""
+    def _action_respond_warning(self, msg):
+        self.printer.lookup_object('gcode').respond_warning(msg)
+        return ""
     def _action_raise_error(self, msg):
         raise self.printer.command_error(msg)
     def _action_call_remote_method(self, method, **kwargs):
@@ -115,6 +118,7 @@ class PrinterGCodeMacro:
             'printer': GetStatusWrapper(self.printer, eventtime),
             'action_emergency_stop': self._action_emergency_stop,
             'action_respond_info': self._action_respond_info,
+            'action_respond_warning': self._action_respond_warning,
             'action_raise_error': self._action_raise_error,
             'action_call_remote_method': self._action_call_remote_method,
             'action_stop_for_power_off': self._action_stop_for_power_off
