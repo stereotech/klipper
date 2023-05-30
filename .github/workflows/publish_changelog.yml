@@ -16,4 +16,4 @@ jobs:
 
     - name: Update wiki
       run: |
-        curl -XPOST --data '{"repo":"${{github.repository}}","version":"${{ env.RELEASE_VERSION }}", "description": "${{ env.RELEASE_DESCRIPTION }}"}'  "https://functions.yandexcloud.net/${{ secrets.FUNCTION_ID }}"
+        curl -XPOST --data '{"repo":"${{github.repository}}","version":"${{ env.RELEASE_VERSION }}", "description": ${{ env.RELEASE_DESCRIPTION }} }'  "https://functions.yandexcloud.net/${{ secrets.FUNCTION_ID }}"
