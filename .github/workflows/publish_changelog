@@ -1,0 +1,19 @@
+# CI Code for generating and publishing beta assets
+
+name: publish_changelog
+on:
+  release:
+    types: [published]
+jobs:
+  generate_assets:
+    runs-on: ubuntu-latest
+    env:
+      WIKI_API_KEY: ${{ secrets.WIKI_API_KEY }}
+      RELEASE_VERSION: ${{ github.event.release.tag_name }}
+      RELEASE_DESCRIPTION: ${{ github.event.release.body }}
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Update wiki
+      run: |
+        curl -XPOST --data '{"repo":"${{github.repository}}","version":"${{ env.RELEASE_VERSION }}", "description": "${{ env.RELEASE_DESCRIPTION }}"}'  "https://functions.yandexcloud.net/${{ secrets.FUNCTION_ID }}"
