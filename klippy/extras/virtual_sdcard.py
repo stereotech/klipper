@@ -268,11 +268,11 @@ class VirtualSD:
             try:
                 if self.get_layer_count and line.find(';LAYER_COUNT:') >= 0:
                     self.get_layer_count = False
-                    caunt = line[13:]
-                    self.print_stats.set_layer(total_layer=caunt)
+                    total_layers = line[13:]
+                    self.print_stats.set_layer(total_layer=total_layers)
                 if line.find(';LAYER:') >= 0:
-                    caunt = line[7:]
-                    self.print_stats.set_layer(current_layer=caunt)
+                    layer_number = line[7:]
+                    self.print_stats.set_layer(current_layer=layer_number)
                 self.gcode.run_script(line)
             except self.gcode.error as e:
                 error_message = str(e)
