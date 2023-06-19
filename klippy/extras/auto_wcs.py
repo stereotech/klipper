@@ -44,6 +44,9 @@ class AutoWcs:
             'SET_AUTO_WCS', self.cmd_SET_AUTO_WCS,
             desc=self.cmd_CALC_WCS_PARAMS_help)
         self.gcode.register_command(
+            'GET_RADIUS_TOOLING', self.cmd_GET_RADIUS_TOOLING,
+            desc=self.cmd_GET_RADIUS_TOOLING_help)
+        self.gcode.register_command(
             'SET_PROBE_BACKLASH', self.cmd_SET_PROBE_BACKLASH,
             desc=self.cmd_SET_PROBE_BACKLASH_help)
 
