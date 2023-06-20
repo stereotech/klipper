@@ -34,7 +34,8 @@ class AAxisOffsetCalculation:
         if homing_origin_a + offset > 0.0:
             offset = 0.0
         offset = offset * -1
-        gcmd.respond_info("calculate offset for the axis A: %f.\nFor apply this params use command 'SET_GCODE_OFFSET A_ADJUST=%f'" % (offset, offset))
+        gcmd.respond_info("""calculate offset for the axis A: %f.\nFor apply this
+            params use command 'SET_GCODE_OFFSET A_ADJUST=%f'""" % (offset, offset))
         # offset_gcmd = self.gcode.create_gcode_command(
         #     'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A_ADJUST': offset})
         # self.gcode_move.cmd_SET_GCODE_OFFSET(offset_gcmd)
