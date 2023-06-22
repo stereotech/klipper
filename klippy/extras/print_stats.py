@@ -8,12 +8,12 @@ import logging
 
 class PrintStats:
     def __init__(self, config):
-        printer = config.get_printer()
-        self.gcode_move = printer.load_object(config, 'gcode_move')
-        self.reactor = printer.get_reactor()
+        self.printer = config.get_printer()
+        self.gcode_move = self.printer.load_object(config, 'gcode_move')
+        self.reactor = self.printer.get_reactor()
         self.reset()
+        self.gcode = self.printer.lookup_object('gcode')
         # Register commands
-        self.gcode = printer.lookup_object('gcode')
         self.gcode.register_command(
             "SET_PRINT_STATS_INFO", self.cmd_SET_PRINT_STATS_INFO,
             desc=self.cmd_SET_PRINT_STATS_INFO_help)
@@ -66,17 +66,12 @@ class PrintStats:
             self.init_duration = self.total_duration - \
                 self.prev_pause_duration
         self.print_start_time = None
-    cmd_SET_PRINT_STATS_INFO_help = "Pass slicer info like layer act and " \
-                                    "total to klipper"
+    cmd_SET_PRINT_STATS_INFO_help = "Set info about current file."
     def cmd_SET_PRINT_STATS_INFO(self, gcmd):
-        total_layer = gcmd.get_int("TOTAL_LAYER", self.info_total_layer, \
-                                   minval=0)
-        current_layer = gcmd.get_int("CURRENT_LAYER", self.info_current_layer, \
-                                     minval=0)
-        if total_layer == 0:
-            self.info_total_layer = None
-            self.info_current_layer = None
-        elif total_layer != self.info_total_layer:
+        total_layer = gcmd.get_int("TOTAL_LAYER", 0)
+        current_layer = gcmd.get_int("CURRENT_LAYER", 0)
+        count_trigered_sensor = gcmd.get_int("COUNT_TRIGERED_SENSOR", 0)
+        if total_layer:
             self.info_total_layer = total_layer
             self.info_current_layer = 0
         if self.info_total_layer is not None and \
@@ -98,7 +93,8 @@ class PrintStats:
                 self.info_current_layer = current_layer
             except Exception as e:
                 logging.warning('Do not get current_layer\n %s' % e)
-
+        elif count_trigered_sensor:
+            self.count_trigered_sensor = count_trigered_sensor
     def reset(self):
         self.filename = self.error_message = ""
         self.state = "standby"
@@ -106,6 +102,7 @@ class PrintStats:
         self.filament_used = self.total_duration = 0.
         self.print_start_time = self.last_pause_time = None
         self.init_duration = 0.
+        self.count_trigered_sensor = 0
         self.info_total_layer = None
         self.info_current_layer = None
     def get_status(self, eventtime):
@@ -129,6 +126,7 @@ class PrintStats:
             'filament_used': self.filament_used,
             'state': self.state,
             'message': self.error_message,
+            'count_trigered_sensor': self.count_trigered_sensor,
             'info': {'total_layer': self.info_total_layer,
                      'current_layer': self.info_current_layer}
         }
