@@ -1,4 +1,5 @@
 import math
+import logging
 
 
 RAD_TO_DEG = 57.295779513
@@ -42,6 +43,12 @@ class AutoWcs:
         self.gcode.register_command(
             'SET_AUTO_WCS', self.cmd_SET_AUTO_WCS,
             desc=self.cmd_CALC_WCS_PARAMS_help)
+        self.gcode.register_command(
+            'GET_RADIUS_TOOLING', self.cmd_GET_RADIUS_TOOLING,
+            desc=self.cmd_GET_RADIUS_TOOLING_help)
+        self.gcode.register_command(
+            'SET_PROBE_BACKLASH', self.cmd_SET_PROBE_BACKLASH,
+            desc=self.cmd_SET_PROBE_BACKLASH_help)
 
     def _calc_wcs_old_sensor(self, thickness, adj, gcmd):
         thickness = thickness / 2.0
@@ -136,7 +143,6 @@ class AutoWcs:
         gcmd.respond_info('radius_tooling_1= %s,(backlash_y and X) centr_tool(%s;%s)' % (
             self.tooling_radius_1, px, py))
         return px, py, r
-    cmd_GET_RADIUS_TOOLING_help = "command for get the tooling radius from measuring points."
 
     def get_radius_2(self, gcmd):
             # calculate radius whis probe_backlash_y_2
@@ -176,7 +182,6 @@ class AutoWcs:
 
     cmd_SAVE_WCS_CALC_POINT_help = "Save point for WCS calculation"
 
-
     def cmd_CALC_WCS_PARAMS(self, gcmd):
         #todo: get thickness default 10
         thickness =  gcmd.get_float('THICKNESS', 10.)
@@ -185,6 +190,7 @@ class AutoWcs:
         if sensor_version:
             x, y, z = self._calc_wcs_new_sensor(thickness, adjustment_coeff, gcmd)
             x2, y2, z2 = self._calc_wcs_2_new_sensor(thickness, adjustment_coeff, gcmd)
+            self.calculate_probe_backlash(x, y, y2)
             delta_y = y - y2
             delta_z = z - z2
             avg_delta = (delta_y + delta_z) / 2.0
@@ -218,7 +224,15 @@ class AutoWcs:
             for axis, coord in enumerate(coords):
                 self.wcs[point_idx][axis] = coord
 
-    cmd_CALC_WCS_PARAMS_help = "Perform WCS calculation"
+    def cmd_SET_PROBE_BACKLASH(self, gcmd):
+        self.probe_backlash_x = gcmd.get_float('BACKLASH_X', self.probe_backlash_x)
+        self.probe_backlash_y = gcmd.get_float('BACKLASH_Y', self.probe_backlash_y)
+        self.probe_backlash_y_2 = gcmd.get_float('BACKLASH_Y_2', self.probe_backlash_y_2)
+        logging.info(
+            'Probe backlash is set:\nprobe_backlash_x=%f, probe_backlash_y=%f, probe_backlash_y_2=%f' % (
+                self.probe_backlash_x, self.probe_backlash_y, self.probe_backlash_y_2)
+            )
+    cmd_SET_PROBE_BACKLASH_help = "Set the sensor backlash for the current sensor."
 
     def get_status(self, eventtime=None):
         return {
