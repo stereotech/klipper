@@ -78,6 +78,8 @@ class PrintStats:
                 current_layer is not None and \
                 current_layer != self.info_current_layer:
             self.info_current_layer = min(current_layer, self.info_total_layer)
+        if count_trigered_sensor:
+            self.count_trigered_sensor = count_trigered_sensor
 
     def set_layer(self, total_layer=None, current_layer=None):
         if total_layer:
@@ -93,8 +95,7 @@ class PrintStats:
                 self.info_current_layer = current_layer
             except Exception as e:
                 logging.warning('Do not get current_layer\n %s' % e)
-        elif count_trigered_sensor:
-            self.count_trigered_sensor = count_trigered_sensor
+
     def reset(self):
         self.filename = self.error_message = ""
         self.state = "standby"
