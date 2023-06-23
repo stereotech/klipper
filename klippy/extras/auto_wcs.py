@@ -1,5 +1,4 @@
 import math
-import logging
 
 
 RAD_TO_DEG = 57.295779513
@@ -49,6 +48,12 @@ class AutoWcs:
         self.gcode.register_command(
             'SET_PROBE_BACKLASH', self.cmd_SET_PROBE_BACKLASH,
             desc=self.cmd_SET_PROBE_BACKLASH_help)
+        self.gcode.register_command(
+            'CALC_WCS_ONE_X', self.cmd_CALC_WCS_ONE_X,
+            desc=self.cmd_CALC_WCS_ONE_X_help)
+        self.gcode.register_command(
+            'CALC_WCS_ONE_Y', self.cmd_CALC_WCS_ONE_Y,
+            desc=self.cmd_CALC_WCS_ONE_Y_help)
 
     def _calc_wcs_old_sensor(self, thickness, adj, gcmd):
         thickness = thickness / 2.0
@@ -101,6 +106,26 @@ class AutoWcs:
         self.probe_backlash_x = abs(self.point_coords[3][0] - (x1 + 55))
         self.probe_backlash_y = abs(self.point_coords[5][1] - y2)
         self.probe_backlash_y_2 = abs(self.point_coords[1][1] - (y1 - 5))
+
+    cmd_CALC_WCS_ONE_X_help = "command for calculate wcs_1_x coordinate for SPIRALL-FULL."
+    def cmd_CALC_WCS_ONE_X(self, gcmd):
+        x = (self.point_coords[0][0] + self.point_coords[1][0]) / 2.
+        gcode_move = self.printer.lookup_object('gcode_move')
+        x_raw = gcode_move.wcs_offsets[1][0]
+        diff_x = x - x_raw
+        gcmd.respond_info("""calculated wcs_1_x=%f, difference between tool and template=%f.\n
+            For apply this data use command 'SET_GCODE_OFFSET X_ADJUST=%f'""" % (x, diff_x, diff_x))
+        return x
+
+    cmd_CALC_WCS_ONE_Y_help = "command for calculate wcs_1_y coordinate for SPIRALL-FULL."
+    def cmd_CALC_WCS_ONE_Y(self, gcmd):
+        y = (self.point_coords[0][1] + self.point_coords[1][1]) / 2.
+        gcode_move = self.printer.lookup_object('gcode_move')
+        y_raw = gcode_move.wcs_offsets[1][1]
+        diff_y = y - y_raw
+        gcmd.respond_info("""calculated wcs_1_y=%f, difference between tool and template=%f.\n
+            For apply this data use command 'SET_GCODE_OFFSET Y_ADJUST=%f'""" % (y, diff_y, diff_y))
+        return y
 
     def cmd_GET_RADIUS_TOOLING(self, gcmd):
         x1, y1 = self.point_coords[1][0] + self.probe_backlash_y, self.point_coords[1][1]
@@ -228,7 +253,7 @@ class AutoWcs:
         self.probe_backlash_x = gcmd.get_float('BACKLASH_X', self.probe_backlash_x)
         self.probe_backlash_y = gcmd.get_float('BACKLASH_Y', self.probe_backlash_y)
         self.probe_backlash_y_2 = gcmd.get_float('BACKLASH_Y_2', self.probe_backlash_y_2)
-        logging.info(
+        gcmd.respond_info(
             'Probe backlash is set:\nprobe_backlash_x=%f, probe_backlash_y=%f, probe_backlash_y_2=%f' % (
                 self.probe_backlash_x, self.probe_backlash_y, self.probe_backlash_y_2)
             )
@@ -242,7 +267,8 @@ class AutoWcs:
             "probe_backlash_y_2": self.probe_backlash_y_2,
             'tooling_radius': self.tooling_radius,
             'tooling_radius_1': self.tooling_radius_1,
-            'tooling_radius_2': self.tooling_radius_2
+            'tooling_radius_2': self.tooling_radius_2,
+            'self.point_coords': self.point_coords
         }
 
 def load_config(config):
