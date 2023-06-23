@@ -19,6 +19,7 @@ class GCodeCommand:
         self._need_ack = need_ack
         # Method wrappers
         self.respond_info = gcode.respond_info
+        self.respond_warning = gcode.respond_warning
         self.respond_raw = gcode.respond_raw
     def get_command(self):
         return self._command
@@ -298,6 +299,7 @@ class GCodeDispatch:
             # Don't warn about requests to turn off fan when fan not present
             return
         gcmd.respond_info('Unknown command:"%s"' % (cmd,))
+        gcmd.respond_warning('Unknown command:"%s"' % (cmd,))
     def _cmd_mux(self, command, gcmd):
         key, values = self.mux_commands[command]
         if None in values:
