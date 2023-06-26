@@ -234,6 +234,7 @@ class VirtualSD:
         gcode_mutex = self.gcode.get_mutex()
         partial_input = ""
         lines = []
+        data = ''
         error_message = None
         while not self.must_pause_work:
             if not lines:
@@ -275,14 +276,14 @@ class VirtualSD:
                     self.print_stats.set_layer(current_layer=layer_number)
                 self.gcode.run_script(line)
             except self.gcode.error as e:
-                error_message = str(e)
+                error_message = str('Error:%s,\nLine:%s\nData caused the error: %s.' % (e, line, str(data)))
                 try:
                     self.gcode.run_script(self.on_error_gcode.render())
                 except:
                     logging.exception("virtual_sdcard on_error")
                 break
             except:
-                logging.exception("virtual_sdcard dispatch")
+                logging.exception("virtual_sdcard dispatch. %s" % str(data))
                 break
             self.cmd_from_sd = False
             self.file_position = self.next_file_position
@@ -302,6 +303,7 @@ class VirtualSD:
         if error_message is not None:
             self.get_layer_count = True
             self.print_stats.note_error(error_message)
+            logging.error(error_message)
         elif self.current_file is not None:
             self.print_stats.note_pause()
         else:
