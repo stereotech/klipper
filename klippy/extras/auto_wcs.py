@@ -119,7 +119,7 @@ class AutoWcs:
         cr = c**0.5
         radius = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
         gcmd.respond_info('radius_tooling= %s,(only backlash_y) centr_tool(%s;%s)' % (
-                self.tooling_radius, centr_x, centr_y))
+                radius, centr_x, centr_y))
         return radius
 
     def get_radius_1(self, gcmd):
@@ -138,7 +138,7 @@ class AutoWcs:
         cr = c**0.5
         radius = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
         gcmd.respond_info('radius_tooling_1= %s,(backlash_y and X) centr_tool(%s;%s)' % (
-            self.tooling_radius_1, px, py))
+            radius, px, py))
         return radius
 
     def get_radius_2(self, gcmd):
@@ -157,20 +157,18 @@ class AutoWcs:
         cr = c**0.5
         radius = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
         gcmd.respond_info('radius_tooling_2= %s,(backlash_y_2 and X) centr_tool(%s;%s)' % (
-            self.tooling_radius_2, px, py))
+            radius, px, py))
         return radius
 
     cmd_CALC_WCS_TOOL_help = "command for calculate wcs coordinate for SPIRALL-FULL."
     def cmd_CALC_WCS_TOOL(self, gcmd):
         wcs =  gcmd.get_int('WCS')
         ind_axis = gcmd.get_int('AXIS')
-        # calc_diff = gcmd.get_int('CALC_DIFF', 0)
-        # if not calc_diff:
         new_axis = (self.point_coords[0][ind_axis] + self.point_coords[1][ind_axis]) / 2.
         gcode_move = self.printer.lookup_object('gcode_move')
         old_axis = gcode_move.wcs_offsets[wcs][ind_axis]
         diff_axis = new_axis - old_axis
-        # self.wcs[wcs][ind_axis] = new_axis
+        self.wcs[wcs - 1][ind_axis] = new_axis
         gcmd.respond_info("""calculated wcs_%d_%d=%f,
             difference between tool and template=%f.""" % (wcs, ind_axis, new_axis, diff_axis))
         return new_axis
