@@ -1,4 +1,5 @@
 import math
+import logging
 
 
 RAD_TO_DEG = 57.295779513
@@ -102,6 +103,10 @@ class AutoWcs:
         self.probe_backlash_x = abs(self.point_coords[3][0] - (x1 + 55))
         self.probe_backlash_y = abs(self.point_coords[5][1] - y2)
         self.probe_backlash_y_2 = abs(self.point_coords[1][1] - (y1 - 5))
+        logging.info("""Probe backlash is set:\nprobe_backlash_x=%f,
+            probe_backlash_y=%f, probe_backlash_y_2=%f""" % (self.probe_backlash_x,
+                                                             self.probe_backlash_y,
+                                                             self.probe_backlash_y_2))
 
     def get_radius(self, gcmd):
         # calculate radius only whis probe_backlash_y
@@ -259,13 +264,8 @@ class AutoWcs:
     def get_status(self, eventtime=None):
         return {
             "wcs": self.wcs,
-            "probe_backlash_x": self.probe_backlash_x,
             "probe_backlash_y": self.probe_backlash_y,
-            "probe_backlash_y_2": self.probe_backlash_y_2,
-            'tooling_radius': self.tooling_radius,
-            'tooling_radius_1': self.tooling_radius_1,
-            'tooling_radius_2': self.tooling_radius_2,
-            'self.point_coords': self.point_coords
+            'tooling_radius': self.tooling_radius
         }
 
 
