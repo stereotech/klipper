@@ -20,28 +20,8 @@ class AAxisOffsetCalculation:
         self.gcode.register_command(
             'SAVE_A_AXIS_POINT', self.cmd_SAVE_A_AXIS_POINT,
             desc=self.cmd_SAVE_A_AXIS_POINT_help)
-        self.gcode.register_command(
-            'INFO_CHECK_AXIS_A', self.cmd_INFO_CHECK_AXIS_A,
-            desc=self.cmd_INFO_CHECK_AXIS_A_help)
 
-    def cmd_INFO_CHECK_AXIS_A(self, gcmd):
-        offset = abs(self.point_coords[0][2] - self.point_coords[1][2])
-        gcmd.respond_info("difference the measuring axis A: %f." % offset)
-
-        offset = self._calc_a_axis_offset(
-            self.point_coords[0], self.point_coords[1])
-        homing_origin_a = self.gcode_move.get_status()['homing_origin'].a
-        if homing_origin_a + offset > 0.0:
-            offset = 0.0
-        offset = offset * -1
-        gcmd.respond_info("""calculate offset for the axis A: %f.\nFor apply this
-            params use command 'SET_GCODE_OFFSET A_ADJUST=%f'""" % (offset, offset))
-        # offset_gcmd = self.gcode.create_gcode_command(
-        #     'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A_ADJUST': offset})
-        # self.gcode_move.cmd_SET_GCODE_OFFSET(offset_gcmd)
-
-    cmd_INFO_CHECK_AXIS_A_help = "Send info about difference the measuring."
-
+    cmd_SAVE_A_AXIS_POINT_help = "Save point for A axis offset"
     def cmd_SAVE_A_AXIS_POINT(self, gcmd):
         point_idx = gcmd.get_int('POINT', 0)
         coords = gcmd.get('COORDS', None)
@@ -58,13 +38,12 @@ class AAxisOffsetCalculation:
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord
 
-    cmd_SAVE_A_AXIS_POINT_help = "Save point for A axis offset"
-
     def _calc_a_axis_offset(self, point_0, point_1):
         offset = RAD_TO_DEG * math.asin((point_1[2] - point_0[2]) / math.hypot(
             point_1[1] - point_0[1], point_1[2] - point_0[2]))
         return offset
 
+    cmd_CALC_A_AXIS_OFFSET_help = "Calculate A axis offset"
     def cmd_CALC_A_AXIS_OFFSET(self, gcmd):
         offset = self._calc_a_axis_offset(
             self.point_coords[0], self.point_coords[1])
@@ -74,8 +53,7 @@ class AAxisOffsetCalculation:
         offset_gcmd = self.gcode.create_gcode_command(
             'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A_ADJUST': offset})
         self.gcode_move.cmd_SET_GCODE_OFFSET(offset_gcmd)
-
-    cmd_CALC_A_AXIS_OFFSET_help = "Calculate A axis offset"
+        gcmd.respond_info("calculate offset for the axis A: %f." % offset)
 
 
 def load_config(config):
