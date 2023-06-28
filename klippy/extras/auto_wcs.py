@@ -264,7 +264,9 @@ class AutoWcs:
     def get_status(self, eventtime=None):
         return {
             "wcs": self.wcs,
+            "probe_backlash_x": self.probe_backlash_x,
             "probe_backlash_y": self.probe_backlash_y,
+            "probe_backlash_y_2": self.probe_backlash_y_2,
             'tooling_radius': self.tooling_radius
         }
 
