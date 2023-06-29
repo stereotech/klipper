@@ -135,6 +135,7 @@ class PrinterSkew:
         """
         factors = ['XY', 'XZ', 'YZ']
         factor_name = gcmd.get('FACTOR').upper()
+        msg = gcmd.get('MSG', '')
         if factor_name in factors:
             if factor_name == factors[0]:
                 # xy_factor
@@ -144,6 +145,7 @@ class PrinterSkew:
                 b_point = get_point(self.point_coords[0], self.point_coords[1])
                 c_point = list(b_point)
                 c_point[0] = c_point[0] + 50.
+                diff_points = b_point[0] - a_point[0]
                 bc = length_side(b_point[0], b_point[1], c_point[0], c_point[1])
                 bd = length_side(b_point[0], b_point[1], d_point[0], d_point[1])
                 ac = length_side(a_point[0], a_point[1], c_point[0], c_point[1])
@@ -155,6 +157,7 @@ class PrinterSkew:
                 b_point = get_point(self.point_coords[0], self.point_coords[1])
                 c_point = list(b_point)
                 c_point[0] = c_point[0] + 50
+                diff_points = b_point[0] - a_point[0]
                 bc = length_side(b_point[0], b_point[2], c_point[0], c_point[2])
                 bd = length_side(b_point[0], b_point[2], d_point[0], d_point[2])
                 ac = length_side(a_point[0], a_point[2], c_point[0], c_point[2])
@@ -166,14 +169,15 @@ class PrinterSkew:
                 b_point = get_point(self.point_coords[1], self.point_coords[2])
                 c_point = list(b_point)
                 c_point[1] = c_point[1] - 50
+                diff_points = b_point[1] - a_point[1]
                 bc = length_side(b_point[1], b_point[2], c_point[1], c_point[2])
                 bd = length_side(b_point[1], b_point[2], d_point[1], d_point[2])
                 ac = length_side(a_point[1], a_point[2], c_point[1], c_point[2])
             factor_value = float("%.4f" % calc_skew_factor(ac, bd, bc))
             factor_name = factor_name.lower() + '_factor'
             setattr(self, factor_name, factor_value)
-            out = "Calculated skew compensation %s: %.6f radians, %.2f degrees\n" % (
-                factor_name, factor_value, math.degrees(factor_value))
+            out = "Calculated %s skew compensation %s: %.6f radians, %.2f degrees, difference beetwen points=%f" % (
+                msg, factor_name, factor_value, math.degrees(factor_value), diff_points)
             gcmd.respond_info(out)
         else:
             raise gcmd.error(
@@ -358,7 +362,8 @@ class PrinterSkew:
             'skew_profiles': self.skew_profiles,
             'wcs_list': self.wcs_list,
             'current_skew_profile': self.current_profile,
-            'start_z_point': self.start_z_point
+            'start_z_point': self.start_z_point,
+            'self.point_coords': self.point_coords
         }
 
 def load_config(config):
