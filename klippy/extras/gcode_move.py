@@ -301,12 +301,12 @@ class GCodeMove:
                 if offset is None:
                     continue
                 offset += self.homing_position[pos]
-            if offset > 0.0:
-                msg = """Offset %f for the %s axis will cause movement
-                      outside the coordinate system.""" % (offset, axis)
-                gcmd.respond_info(msg)
-                logging.warning(msg)
-                continue
+            # if offset > 0.0:
+            #     msg = """Offset %f for the %s axis will cause movement
+            #           outside the coordinate system.""" % (offset, axis)
+            #     gcmd.respond_info(msg)
+            #     logging.warning(msg)
+            #     continue
             delta = offset - self.homing_position[pos]
             move_delta[pos] = delta
             self.base_position[pos] += delta
