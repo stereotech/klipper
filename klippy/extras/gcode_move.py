@@ -347,8 +347,11 @@ class GCodeMove:
         self.absolute_extrude = state['absolute_extrude']
         self.base_position = list(state['base_position'])
         self.homing_position = list(state['homing_position'])
-        # leave the speed that was during the pause if 'PAUSE_STATE'
-        if state_name != 'PAUSE_STATE':
+        #  restore speed
+        if state_name == 'PAUSE_STATE' and self.speed < state['speed']:
+            # leave the speed that was during the pause
+            pass
+        else:
             self.speed = state['speed']
             self.speed_factor = state['speed_factor']
         self.extrude_factor = state['extrude_factor']
