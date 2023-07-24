@@ -10,6 +10,7 @@ class HomingOverride:
         self.start_pos = [config.getfloat('set_position_' + a, None)
                           for a in 'xyzac']
         self.axes = config.get('axes', 'XYZAC').upper()
+        self.kinematic = config.get('kinematic', 'corexy_6axis')
         gcode_macro = self.printer.load_object(config, 'gcode_macro')
         self.template = gcode_macro.load_template(config, 'gcode')
         self.in_script = False
@@ -51,8 +52,9 @@ class HomingOverride:
 
     def cmd_G28(self, gcmd):
         if self.in_script:
-            # Was called recursively - invoke the real G28 command
-            self.check_axes_for_homing(gcmd)
+            if self.kinematic != 'cartesian_6axis':
+                # Was called recursively - invoke the real G28 command
+                self.check_axes_for_homing(gcmd)
             self.prev_G28(gcmd)
             return
 
@@ -73,7 +75,8 @@ class HomingOverride:
                     override = True
 
         if not override:
-            self.check_axes_for_homing(gcmd)
+            if self.kinematic != 'cartesian_6axis':
+                self.check_axes_for_homing(gcmd)
             self.prev_G28(gcmd)
             return
 
