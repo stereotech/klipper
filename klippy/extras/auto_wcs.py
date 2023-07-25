@@ -8,7 +8,6 @@ class AutoWcs:
         self.printer = config.get_printer()
         self.center_x = 0.0
         self.center_y = 0.0
-        self.radius = 0.0
         self.point_coords = [
             [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.],
@@ -28,7 +27,7 @@ class AutoWcs:
         self.probe_backlash_x = 0.
         self.probe_backlash_y = 0.
         self.probe_backlash_y_2 = 0.
-        self.tooling_radius = 0.
+        self.tooling_radius = 3.
         self.tooling_radius_2 = 0.
         self.adjust_angle = 10 / RAD_TO_DEG
         self.gcode = self.printer.lookup_object('gcode')
