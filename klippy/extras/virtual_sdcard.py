@@ -276,7 +276,7 @@ class VirtualSD:
                     self.print_stats.set_layer(current_layer=layer_number)
                 self.gcode.run_script(line)
             except self.gcode.error as e:
-                error_message = str('Error:%s,\nLine:%s\nData caused the error: %s.' % (e, line, str(data)))
+                error_message = str('Error: %s,\nLine: %s\nData caused the error: %s.' % (e, line, str(data)))
                 try:
                     self.gcode.run_script(self.on_error_gcode.render())
                 except:
