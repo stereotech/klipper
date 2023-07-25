@@ -10,6 +10,8 @@ class HomingOverride:
         self.start_pos = [config.getfloat('set_position_' + a, None)
                           for a in 'xyzac']
         self.axes = config.get('axes', 'XYZAC').upper()
+        # rotate axis A on 45 degrees
+        self.rotate_a = config.getboolean('rotate_a', False)
         gcode_macro = self.printer.load_object(config, 'gcode_macro')
         self.template = gcode_macro.load_template(config, 'gcode')
         self.in_script = False
@@ -51,18 +53,17 @@ class HomingOverride:
 
     def cmd_G28(self, gcmd):
         if self.in_script:
+            if self.rotate_a:
+                self.check_axes_for_homing(gcmd)
             # Was called recursively - invoke the real G28 command
-            self.check_axes_for_homing(gcmd)
             self.prev_G28(gcmd)
             return
-
         # if no axis is given as parameter we assume the override
         no_axis = True
         for axis in 'XYZAC':
             if gcmd.get(axis, None) is not None:
                 no_axis = False
                 break
-
         if no_axis:
             override = True
         else:
@@ -71,9 +72,9 @@ class HomingOverride:
             for axis in self.axes:
                 if gcmd.get(axis, None) is not None:
                     override = True
-
         if not override:
-            self.check_axes_for_homing(gcmd)
+            if self.rotate_a:
+                self.check_axes_for_homing(gcmd)
             self.prev_G28(gcmd)
             return
 
