@@ -232,6 +232,7 @@ class PrinterSkew:
                 ac = length_side(a_point[1], a_point[2], c_point[1], c_point[2])
             factor_value = float("%.4f" % calc_skew_factor(ac, bd, bc))
             factor_name = factor_name.lower() + '_factor'
+            setattr(self, factor_name, factor_value)
             out = "Calculated  skew compensation %s: %.6f radians, %.2f degrees" % (
                  factor_name, factor_value, math.degrees(factor_value))
             gcmd.respond_info(out)
