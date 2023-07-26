@@ -362,9 +362,9 @@ class PrinterSkew:
         """
         load profile
         """
-        self.current_profile = prof_name
         profile = self.skew_profiles.get(prof_name)
         if profile is not None:
+            self.current_profile = prof_name
             self._update_skew(profile['xy_skew'], profile['xz_skew'], profile['yz_skew'])
 
     def save_profile(self, prof_name):
