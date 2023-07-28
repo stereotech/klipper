@@ -388,9 +388,9 @@ class PrinterSkew:
         """
         change profile factors but don't change config
         """
-        xy_factor = gcmd.get_float('XY', self.xy_factor)
-        xz_factor = gcmd.get_float('XZ', self.xz_factor)
-        yz_factor = gcmd.get_float('YZ', self.yz_factor)
+        xy_factor = gcmd.get_float('XY', self.skew_profiles[prof_name]['xy_skew'])
+        xz_factor = gcmd.get_float('XZ', self.skew_profiles[prof_name]['xz_skew'])
+        yz_factor = gcmd.get_float('YZ', self.skew_profiles[prof_name]['yz_skew'])
         self.skew_profiles[prof_name] = {
             'xy_skew': xy_factor,
             'xz_skew': xz_factor,
