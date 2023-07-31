@@ -94,7 +94,7 @@ class PrinterTemperatureMCU:
                                   minval=min(adc_range), maxval=max(adc_range),
                                   range_check_count=RANGE_CHECK_COUNT)
     def config_unknown(self):
-        raise self.printer.config_error("MCU temperature not supported on %s"
+        raise self.printer.config_error("3062: MCU temperature not supported on %s"
                                         % (self.mcu_type,))
     def config_rp2040(self):
         self.slope = 3.3 / -0.001721

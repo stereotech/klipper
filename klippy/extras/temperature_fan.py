@@ -84,7 +84,7 @@ class TemperatureFan:
         max_speed = gcmd.get_float('MAX_SPEED', self.max_speed)
         if min_speed > max_speed:
             raise self.printer.command_error(
-                "Requested min speed (%.1f) is greater than max speed (%.1f)"
+                "3057: Requested min speed (%.1f) is greater than max speed (%.1f)"
                 % (min_speed, max_speed))
         self.set_min_speed(min_speed)
         self.set_max_speed(max_speed)
@@ -92,21 +92,21 @@ class TemperatureFan:
     def set_temp(self, degrees):
         if degrees and (degrees < self.min_temp or degrees > self.max_temp):
             raise self.printer.command_error(
-                "Requested temperature (%.1f) out of range (%.1f:%.1f)"
+                "3058: Requested temperature (%.1f) out of range (%.1f:%.1f)"
                 % (degrees, self.min_temp, self.max_temp))
         self.target_temp = degrees
 
     def set_min_speed(self, speed):
         if speed and (speed < 0. or speed > 1.):
             raise self.printer.command_error(
-                "Requested min speed (%.1f) out of range (0.0 : 1.0)"
+                "3059: Requested min speed (%.1f) out of range (0.0 : 1.0)"
                 % (speed))
         self.min_speed = speed
 
     def set_max_speed(self, speed):
         if speed and (speed < 0. or speed > 1.):
             raise self.printer.command_error(
-                "Requested max speed (%.1f) out of range (0.0 : 1.0)"
+                "3060: Requested max speed (%.1f) out of range (0.0 : 1.0)"
                 % (speed))
         self.max_speed = speed
 

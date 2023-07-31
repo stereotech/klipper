@@ -205,7 +205,7 @@ class AutoWcs:
                     raise Exception
             except Exception:
                 raise gcmd.error(
-                    "auto_wcs: improperly formatted entry for "
+                    "206: auto_wcs: improperly formatted entry for "
                     "point\n%s" % (gcmd.get_commandline()))
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord
@@ -246,7 +246,7 @@ class AutoWcs:
                     raise Exception
             except Exception:
                 raise gcmd.error(
-                    "auto_wcs: improperly formatted entry for "
+                    "208: auto_wcs: improperly formatted entry for "
                     "point\n%s" % (gcmd.get_commandline()))
             for axis, coord in enumerate(coords):
                 self.wcs[point_idx][axis] = coord

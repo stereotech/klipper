@@ -128,7 +128,7 @@ class PrinterStepperEnable:
         self.motor_debug_enable(stepper_name, stepper_enable)
     def lookup_enable(self, name):
         if name not in self.enable_lines:
-            raise self.printer.config_error("Unknown stepper '%s'" % (name,))
+            raise self.printer.config_error("3056: Unknown stepper '%s'" % (name,))
         return self.enable_lines[name]
     def get_steppers(self):
         return list(self.enable_lines.keys())

@@ -36,11 +36,11 @@ class MCU_analog_mux:
         for pin_params in select_pin_params:
             if pin_params['chip'] != self.mcu:
                 raise self.mcu.get_printer().config_error(
-                    "TMC mux pins must be on the same mcu")
+                    "3063: TMC mux pins must be on the same mcu")
         pins = [pp['pin'] for pp in select_pin_params]
         if pins != self.pins:
             raise self.mcu.get_printer().config_error(
-                "All TMC mux instances must use identical pins")
+                "3064: All TMC mux instances must use identical pins")
         return tuple([not pp['invert'] for pp in select_pin_params])
     def activate(self, instance_id):
         for oid, old, new in zip(self.oids, self.pin_values, instance_id):
@@ -109,13 +109,13 @@ class MCU_TMC_uart_bitbang:
             or tx_pin_params['pin'] != self.tx_pin
             or (select_pins_desc is None) != (self.analog_mux is None)):
             raise self.mcu.get_printer().config_error(
-                "Shared TMC uarts must use the same pins")
+                "3065: Shared TMC uarts must use the same pins")
         instance_id = None
         if self.analog_mux is not None:
             instance_id = self.analog_mux.get_instance_id(select_pins_desc)
         if (instance_id, addr) in self.instances:
             raise self.mcu.get_printer().config_error(
-                "Shared TMC uarts need unique address or select_pins polarity")
+                "3066: Shared TMC uarts need unique address or select_pins polarity")
         self.instances[(instance_id, addr)] = True
         return instance_id
     def _calc_crc8(self, data):
@@ -196,7 +196,7 @@ def lookup_tmc_uart_bitbang(config, max_addr):
     else:
         tx_pin_params = ppins.lookup_pin(tx_pin_desc, share_type="tmc_uart_tx")
     if rx_pin_params['chip'] is not tx_pin_params['chip']:
-        raise ppins.error("TMC uart rx and tx pins must be on the same mcu")
+        raise ppins.error("3067: TMC uart rx and tx pins must be on the same mcu")
     select_pins_desc = config.getlist('select_pins', None)
     addr = config.getint('uart_address', 0, minval=0, maxval=max_addr)
     mcu_uart = rx_pin_params.get('class')
@@ -231,7 +231,7 @@ class MCU_TMC_uart:
             if val is not None:
                 return val
         raise self.printer.command_error(
-            "Unable to read tmc uart '%s' register %s" % (self.name, reg_name))
+            "3068: Unable to read tmc uart '%s' register %s" % (self.name, reg_name))
     def get_register(self, reg_name):
         with self.mutex:
             return self._do_get_register(reg_name)
@@ -250,6 +250,6 @@ class MCU_TMC_uart:
                 if self.ifcnt == (ifcnt + 1) & 0xff:
                     return
         raise self.printer.command_error(
-            "Unable to write tmc uart '%s' register %s" % (self.name, reg_name))
+            "3069: Unable to write tmc uart '%s' register %s" % (self.name, reg_name))
     def get_tmc_frequency(self):
         return self.tmc_frequency

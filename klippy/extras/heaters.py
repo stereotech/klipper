@@ -96,7 +96,7 @@ class Heater:
     def set_temp(self, degrees):
         if degrees and (degrees < self.min_temp or degrees > self.max_temp):
             raise self.printer.command_error(
-                "Requested temperature (%.1f) out of range (%.1f:%.1f)"
+                "3039: Requested temperature (%.1f) out of range (%.1f:%.1f)"
                 % (degrees, self.min_temp, self.max_temp))
         with self.lock:
             self.target_temp = degrees
@@ -250,7 +250,7 @@ class PrinterHeaters:
         try:
             dconfig = pconfig.read_config(filename)
         except Exception:
-            raise config.config_error("Cannot load config '%s'" % (filename,))
+            raise config.config_error("3040: Cannot load config '%s'" % (filename,))
         for c in dconfig.get_prefix_sections(''):
             self.printer.load_object(dconfig, c.get_name())
     def add_sensor_factory(self, sensor_type, sensor_factory):
@@ -258,7 +258,7 @@ class PrinterHeaters:
     def setup_heater(self, config, gcode_id=None):
         heater_name = config.get_name().split()[-1]
         if heater_name in self.heaters:
-            raise config.error("Heater %s already registered" % (heater_name,))
+            raise config.error("3041: Heater %s already registered" % (heater_name,))
         # Setup sensor
         sensor = self.setup_sensor(config)
         # Create heater
@@ -271,7 +271,7 @@ class PrinterHeaters:
     def lookup_heater(self, heater_name):
         if heater_name not in self.heaters:
             raise self.printer.config_error(
-                "Unknown heater '%s'" % (heater_name,))
+                "3042: Unknown heater '%s'" % (heater_name,))
         return self.heaters[heater_name]
     def setup_sensor(self, config):
         if not self.have_load_sensors:
@@ -279,7 +279,7 @@ class PrinterHeaters:
         sensor_type = config.get('sensor_type')
         if sensor_type not in self.sensor_factories:
             raise self.printer.config_error(
-                "Unknown temperature sensor '%s'" % (sensor_type,))
+                "3044: Unknown temperature sensor '%s'" % (sensor_type,))
         if sensor_type == 'NTC 100K beta 3950':
             config.deprecate('sensor_type', 'NTC 100K beta 3950')
         return self.sensor_factories[sensor_type](config)
@@ -291,7 +291,7 @@ class PrinterHeaters:
                 return
         if gcode_id in self.gcode_id_to_sensor:
             raise self.printer.config_error(
-                "G-Code sensor id %s already registered" % (gcode_id,))
+                "3043: G-Code sensor id %s already registered" % (gcode_id,))
         self.gcode_id_to_sensor[gcode_id] = psensor
     def get_status(self, eventtime):
         return {'available_heaters': self.available_heaters,
@@ -344,12 +344,12 @@ class PrinterHeaters:
     def cmd_TEMPERATURE_WAIT(self, gcmd):
         sensor_name = gcmd.get('SENSOR')
         if sensor_name not in self.available_sensors:
-            raise gcmd.error("Unknown sensor '%s'" % (sensor_name,))
+            raise gcmd.error("3046: Unknown sensor '%s'" % (sensor_name,))
         min_temp = gcmd.get_float('MINIMUM', float('-inf'))
         max_temp = gcmd.get_float('MAXIMUM', float('inf'), above=min_temp)
         if min_temp == float('-inf') and max_temp == float('inf'):
             raise gcmd.error(
-                "Error on 'TEMPERATURE_WAIT': missing MINIMUM or MAXIMUM.")
+                "3045: Error on 'TEMPERATURE_WAIT': missing MINIMUM or MAXIMUM.")
         if self.printer.get_start_args().get('debugoutput') is not None:
             return
         if sensor_name in self.heaters:
