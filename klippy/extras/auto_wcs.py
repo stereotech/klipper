@@ -51,6 +51,9 @@ class AutoWcs:
         self.gcode.register_command(
             'CALC_WCS_TOOL', self.cmd_CALC_WCS_TOOL,
             desc=self.cmd_CALC_WCS_TOOL_help)
+        self.gcode.register_command(
+            'CHECK_ACCURACY_SET_MODULE_FIVE_D', self.cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D,
+            desc=self.cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D_help)
 
     def _calc_wcs_old_sensor(self, thickness, adj, gcmd):
         thickness = thickness / 2.0
@@ -177,6 +180,13 @@ class AutoWcs:
         gcmd.respond_info("""calculated wcs_%d_%d=%f,
             difference between tool and template=%f.""" % (wcs, ind_axis, new_axis, diff_axis))
         return new_axis
+
+    cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D_help = "command for checked accuracy set the module 5d."
+    def cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D(self, gcmd):
+        diferent_z = self.point_coords[0][2] - self.point_coords[1][2]
+        diferent_y = self.point_coords[2][1] - self.point_coords[3][1]
+        gcmd.respond_info("difference between Z: %f\ndifference between Y: %f"
+            % (diferent_z, diferent_y))
 
     cmd_GET_RADIUS_TOOLING_help = "command for get the tooling radius from measuring points."
     def cmd_GET_RADIUS_TOOLING(self, gcmd):
