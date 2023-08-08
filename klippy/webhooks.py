@@ -44,12 +44,12 @@ class WebRequest:
         self.client_conn = client_conn
         base_request = json.loads(request, object_hook=json_loads_byteify)
         if type(base_request) != dict:
-            raise ValueError("Not a top-level dictionary")
+            raise ValueError("701: Not a top-level dictionary")
         self.id = base_request.get('id', None)
         self.method = base_request.get('method')
         self.params = base_request.get('params', {})
         if type(self.method) != str or type(self.params) != dict:
-            raise ValueError("Invalid request type")
+            raise ValueError("702: Invalid request type")
         self.response = None
         self.is_error = False
 
@@ -59,10 +59,10 @@ class WebRequest:
     def get(self, item, default=Sentinel, types=None):
         value = self.params.get(item, default)
         if value is Sentinel:
-            raise WebRequestError("Missing Argument [%s]" % (item,))
+            raise WebRequestError("703: Missing Argument [%s]" % (item,))
         if (types is not None and type(value) not in types
             and item in self.params):
-            raise WebRequestError("Invalid Argument Type [%s]" % (item,))
+            raise WebRequestError("704: Invalid Argument Type [%s]" % (item,))
         return value
 
     def get_str(self, item, default=Sentinel):
@@ -86,7 +86,7 @@ class WebRequest:
 
     def send(self, data):
         if self.response is not None:
-            raise WebRequestError("Multiple calls to send not allowed")
+            raise WebRequestError("705: Multiple calls to send not allowed")
         self.response = data
 
     def finish(self):
@@ -155,7 +155,7 @@ class ServerSocket:
         except OSError:
             if os.path.exists(file_path):
                 logging.exception(
-                    "webhooks: Unable to delete socket file '%s'"
+                    "706: webhooks: Unable to delete socket file '%s'"
                     % (file_path))
                 raise
 
@@ -308,7 +308,7 @@ class WebHooks:
 
     def register_endpoint(self, path, callback):
         if path in self._endpoints:
-            raise WebRequestError("Path already registered to an endpoint")
+            raise WebRequestError("707: Path already registered to an endpoint")
         self._endpoints[path] = callback
 
     def register_mux_endpoint(self, path, key, value, callback):
@@ -319,11 +319,11 @@ class WebHooks:
         prev_key, prev_values = prev
         if prev_key != key:
             raise self.printer.config_error(
-                "mux endpoint %s %s %s may have only one key (%s)"
+                "708: mux endpoint %s %s %s may have only one key (%s)"
                 % (path, key, value, prev_key))
         if value in prev_values:
             raise self.printer.config_error(
-                "mux endpoint %s %s %s already registered (%s)"
+                "709: mux endpoint %s %s %s already registered (%s)"
                 % (path, key, value, prev_values))
         prev_values[value] = callback
 
@@ -334,7 +334,7 @@ class WebHooks:
         else:
             key_param = web_request.get(key)
         if key_param not in values:
-            raise web_request.error("The value '%s' is not valid for %s"
+            raise web_request.error("7010: The value '%s' is not valid for %s"
                                     % (key_param, key))
         values[key_param](web_request)
 
@@ -373,7 +373,7 @@ class WebHooks:
     def get_callback(self, path):
         cb = self._endpoints.get(path, None)
         if cb is None:
-            msg = "webhooks: No registered callback for path '%s'" % (path)
+            msg = "7011: webhooks: No registered callback for path '%s'" % (path)
             logging.info(msg)
             raise WebRequestError(msg)
         return cb
@@ -388,7 +388,7 @@ class WebHooks:
     def call_remote_method(self, method, **kwargs):
         if method not in self._remote_methods:
             raise self.printer.command_error(
-                "Remote method '%s' not registered" % (method))
+                "7012: Remote method '%s' not registered" % (method))
         conn_map = self._remote_methods[method]
         valid_conns = {}
         for conn, template in conn_map.items():
@@ -400,7 +400,7 @@ class WebHooks:
         if not valid_conns:
             del self._remote_methods[method]
             raise self.printer.command_error(
-                "No active connections for method '%s'" % (method))
+                "7013: No active connections for method '%s'" % (method))
         self._remote_methods[method] = valid_conns
 
 class GCodeHelper:
@@ -512,11 +512,11 @@ class QueryStatusHelper:
         # Validate subscription format
         for k, v in objects.items():
             if type(k) != str or (v is not None and type(v) != list):
-                raise web_request.error("Invalid argument")
+                raise web_request.error("7014: Invalid argument")
             if v is not None:
                 for ri in v:
                     if type(ri) != str:
-                        raise web_request.error("Invalid argument")
+                        raise web_request.error("7015: Invalid argument")
         # Add to pending queries
         cconn = web_request.get_client_connection()
         template = web_request.get_dict('response_template', {})

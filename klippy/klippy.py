@@ -88,13 +88,13 @@ class Printer:
     def add_object(self, name, obj):
         if name in self.objects:
             raise self.config_error(
-                "Printer object '%s' already created" % (name,))
+                "009: Printer object '%s' already created" % (name,))
         self.objects[name] = obj
     def lookup_object(self, name, default=configfile.sentinel):
         if name in self.objects:
             return self.objects[name]
         if default is configfile.sentinel:
-            raise self.config_error("Unknown config object '%s'" % (name,))
+            raise self.config_error("0010: Unknown config object '%s'" % (name,))
         return default
     def lookup_objects(self, module=None):
         if module is None:
@@ -117,7 +117,7 @@ class Printer:
         if not os.path.exists(py_name) and not os.path.exists(py_dirname):
             if default is not configfile.sentinel:
                 return default
-            raise self.config_error("Unable to load module '%s'" % (section,))
+            raise self.config_error("0011: Unable to load module '%s'" % (section,))
         mod = importlib.import_module('extras.' + module_name)
         init_func = 'load_config'
         if len(module_parts) > 1:
@@ -126,7 +126,7 @@ class Printer:
         if init_func is None:
             if default is not configfile.sentinel:
                 return default
-            raise self.config_error("Unable to load module '%s'" % (section,))
+            raise self.config_error("0011: Unable to load module '%s'" % (section,))
         self.objects[section] = init_func(config.getsection(section))
         return self.objects[section]
     def _read_config(self):

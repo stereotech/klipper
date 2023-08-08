@@ -290,7 +290,7 @@ class ToolHead:
         except self.printer.lookup_object('pins').error as e:
             raise
         except:
-            msg = "Error loading kinematics '%s'" % (kin_name,)
+            msg = "0015: Error loading kinematics '%s'" % (kin_name,)
             logging.exception(msg)
             raise config.error(msg)
         # Register commands

@@ -180,17 +180,22 @@ class AutoWcs:
 
     cmd_GET_RADIUS_TOOLING_help = "command for get the tooling radius from measuring points."
     def cmd_GET_RADIUS_TOOLING(self, gcmd):
-        advance =  gcmd.get_int('ADVANCE', 0)
-        if not advance:
+        rough = gcmd.get_int('ROUGH', 0)
+        if not rough:
             self.tooling_radius = self.get_radius(gcmd)
             self.tooling_radius_1 = self.get_radius_1(gcmd)
             self.tooling_radius_2 = self.get_radius_2(gcmd)
         else:
-            # if needed calculate advance radius
+            # if needed calculate rough radius
+            mode = gcmd.get('MODE')
             gcode_move = self.printer.lookup_object('gcode_move')
-            y2 = self.point_coords[0][1] + self.probe_backlash_y
-            self.tooling_radius = gcode_move.wcs_offsets[1][1] - y2
-            gcmd.respond_info('advance radius_tooling= %s' % self.tooling_radius)
+            if mode == 'full':
+                y = self.point_coords[0][1] + self.probe_backlash_y
+                self.tooling_radius = gcode_move.wcs_offsets[3][1] - y
+            elif mode == 'spiral':
+                z = self.point_coords[0][2]
+                self.tooling_radius = z - gcode_move.wcs_offsets[4][2]
+            gcmd.respond_info('rough radius_tooling= %s' % self.tooling_radius)
         return self.tooling_radius
 
     cmd_SAVE_WCS_CALC_POINT_help = "Save point for WCS calculation"
@@ -205,7 +210,7 @@ class AutoWcs:
                     raise Exception
             except Exception:
                 raise gcmd.error(
-                    "auto_wcs: improperly formatted entry for "
+                    "206: auto_wcs: improperly formatted entry for "
                     "point\n%s" % (gcmd.get_commandline()))
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord
@@ -246,7 +251,7 @@ class AutoWcs:
                     raise Exception
             except Exception:
                 raise gcmd.error(
-                    "auto_wcs: improperly formatted entry for "
+                    "208: auto_wcs: improperly formatted entry for "
                     "point\n%s" % (gcmd.get_commandline()))
             for axis, coord in enumerate(coords):
                 self.wcs[point_idx][axis] = coord

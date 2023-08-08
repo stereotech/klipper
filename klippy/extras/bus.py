@@ -19,10 +19,10 @@ def resolve_bus_name(mcu, param, bus):
     if bus is None:
         rev_enums = {v: k for k, v in enums.items()}
         if 0 not in rev_enums:
-            raise ppins.error("Must specify %s on mcu '%s'" % (param, mcu_name))
+            raise ppins.error("3025: Must specify %s on mcu '%s'" % (param, mcu_name))
         bus = rev_enums[0]
     if bus not in enums:
-        raise ppins.error("Unknown %s '%s'" % (param, bus))
+        raise ppins.error("3026: Unknown %s '%s'" % (param, bus))
     # Check for reserved bus pins
     constants = mcu.get_constants()
     reserve_pins = constants.get('BUS_PINS_%s' % (bus,), None)
@@ -125,7 +125,7 @@ def MCU_SPI_from_config(config, mode, pin_option="cs_pin",
                          for name in sw_pin_names]
         for pin_params in sw_pin_params:
             if pin_params['chip'] != mcu:
-                raise ppins.error("%s: spi pins must be on same mcu" % (
+                raise ppins.error("3027: %s: spi pins must be on same mcu" % (
                     config.get_name(),))
         sw_pins = tuple([pin_params['pin'] for pin_params in sw_pin_params])
         bus = None
@@ -223,7 +223,7 @@ class MCU_bus_digital_out:
         ppins = mcu.get_printer().lookup_object('pins')
         pin_params = ppins.lookup_pin(pin_desc)
         if pin_params['chip'] is not mcu:
-            raise ppins.error("Pin %s must be on mcu %s" % (
+            raise ppins.error("3028: Pin %s must be on mcu %s" % (
                 pin_desc, mcu.get_name()))
         mcu.add_config_cmd("config_digital_out oid=%d pin=%s value=%d"
                            " default_value=%d max_duration=%d"

@@ -29,28 +29,28 @@ class ConfigWrapper:
                     acc_id = (self.section.lower(), option.lower())
                     self.access_tracking[acc_id] = default
                 return default
-            raise error("Option '%s' in section '%s' must be specified"
+            raise error("001: Option '%s' in section '%s' must be specified"
                         % (option, self.section))
         try:
             v = parser(self.section, option)
         except self.error as e:
             raise
         except:
-            raise error("Unable to parse option '%s' in section '%s'"
+            raise error("002: Unable to parse option '%s' in section '%s'"
                         % (option, self.section))
         if note_valid:
             self.access_tracking[(self.section.lower(), option.lower())] = v
         if minval is not None and v < minval:
-            raise error("Option '%s' in section '%s' must have minimum of %s"
+            raise error("002: Option '%s' in section '%s' must have minimum of %s"
                         % (option, self.section, minval))
         if maxval is not None and v > maxval:
-            raise error("Option '%s' in section '%s' must have maximum of %s"
+            raise error("002: Option '%s' in section '%s' must have maximum of %s"
                         % (option, self.section, maxval))
         if above is not None and v <= above:
-            raise error("Option '%s' in section '%s' must be above %s"
+            raise error("002: Option '%s' in section '%s' must be above %s"
                         % (option, self.section, above))
         if below is not None and v >= below:
-            raise self.error("Option '%s' in section '%s' must be below %s"
+            raise self.error("002: Option '%s' in section '%s' must be below %s"
                              % (option, self.section, below))
         return v
     def get(self, option, default=sentinel, note_valid=True):
@@ -74,7 +74,7 @@ class ConfigWrapper:
         else:
             c = self.get(option, default, note_valid=note_valid)
         if c not in choices:
-            raise error("Choice '%s' for option '%s' in section '%s'"
+            raise error("003: Choice '%s' for option '%s' in section '%s'"
                         " is not a valid choice" % (c, option, self.section))
         return choices[c]
     def getlists(self, option, default=sentinel, seps=(',',), count=None,
@@ -90,7 +90,7 @@ class ConfigWrapper:
                 return tuple([lparser(p, pos - 1) for p in parts if p])
             res = [parser(p) for p in parts]
             if count is not None and len(res) != count:
-                raise error("Option '%s' in section '%s' must have %d elements"
+                raise error("004: Option '%s' in section '%s' must have %d elements"
                             % (option, self.section, count))
             return tuple(res)
         def fcparser(section, option):
@@ -159,7 +159,7 @@ class PrinterConfig:
             data = f.read()
             f.close()
         except:
-            msg = "Unable to open config file %s" % (filename,)
+            msg = "001: Unable to open config file %s" % (filename,)
             logging.exception(msg)
             raise error(msg)
         return data.replace('\r\n', '\n')
@@ -226,7 +226,7 @@ class PrinterConfig:
         include_filenames = glob.glob(include_glob)
         if not include_filenames and not glob.has_magic(include_glob):
             # Empty set is OK if wildcard but not for direct file reference
-            raise error("Include file '%s' does not exist" % (include_glob,))
+            raise error("005: Include file '%s' does not exist" % (include_glob,))
         include_filenames.sort()
         for include_filename in include_filenames:
             include_data = self._read_config_file(include_filename)
@@ -236,7 +236,7 @@ class PrinterConfig:
     def _parse_config(self, data, filename, fileconfig, visited):
         path = os.path.abspath(filename)
         if path in visited:
-            raise error("Recursive include of config file '%s'" % (filename))
+            raise error("006: Recursive include of config file '%s'" % (filename))
         visited.add(path)
         lines = data.split('\n')
         # Buffer lines between includes and parse as a unit so that overrides
@@ -296,12 +296,12 @@ class PrinterConfig:
         for section_name in fileconfig.sections():
             section = section_name.lower()
             if section not in valid_sections and section not in objects:
-                raise error("Section '%s' is not a valid config section"
+                raise error("007: Section '%s' is not a valid config section"
                             % (section,))
             for option in fileconfig.options(section_name):
                 option = option.lower()
                 if (section, option) not in access_tracking:
-                    raise error("Option '%s' is not valid in section '%s'"
+                    raise error("008: Option '%s' is not valid in section '%s'"
                                 % (option, section))
         # Setup get_status()
         self._build_status(config)
@@ -371,7 +371,7 @@ class PrinterConfig:
         for section in self.autosave.fileconfig.sections():
             for option in self.autosave.fileconfig.options(section):
                 if config.fileconfig.has_option(section, option):
-                    msg = ("SAVE_CONFIG section '%s' option '%s' conflicts "
+                    msg = ("907: SAVE_CONFIG section '%s' option '%s' conflicts "
                            "with included value" % (section, option))
                     raise gcode.error(msg)
     cmd_SAVE_CONFIG_help = "Overwrite config file and restart"
@@ -393,7 +393,7 @@ class PrinterConfig:
             regular_data, old_autosave_data = self._find_autosave_data(data)
             config = self._build_config_wrapper(regular_data, cfgname)
         except error as e:
-            msg = "Unable to parse existing config on SAVE_CONFIG"
+            msg = "908: Unable to parse existing config on SAVE_CONFIG"
             logging.exception(msg)
             raise gcode.error(msg)
         regular_data = self._strip_duplicates(regular_data, self.autosave)
@@ -416,7 +416,7 @@ class PrinterConfig:
             os.rename(cfgname, backup_name)
             os.rename(temp_name, cfgname)
         except:
-            msg = "Unable to write config file during SAVE_CONFIG"
+            msg = "909: Unable to write config file during SAVE_CONFIG"
             logging.exception(msg)
             raise gcode.error(msg)
         # Request a restart

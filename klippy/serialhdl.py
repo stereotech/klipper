@@ -12,7 +12,7 @@ class error(Exception):
     pass
 
 class SerialReader:
-    def __init__(self, reactor, warn_prefix=""):
+    def __init__(self, reactor, warn_prefix="807: "):
         self.reactor = reactor
         self.warn_prefix = warn_prefix
         # Serial port
@@ -323,7 +323,7 @@ class SerialRetryCommand:
                 return params
             if retries <= 0:
                 self.serial.register_response(None, self.name, self.oid)
-                raise error("Unable to obtain '%s' response" % (self.name,))
+                raise error("808: Unable to obtain '%s' response" % (self.name,))
             reactor = self.serial.reactor
             reactor.pause(reactor.monotonic() + retry_delay)
             retries -= 1

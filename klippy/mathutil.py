@@ -83,7 +83,7 @@ def background_coordinate_descent(printer, adj_params, params, error_func):
     # Return results
     is_err, res = parent_conn.recv()
     if is_err:
-        raise Exception("Error in coordinate descent: %s" % (res,))
+        raise Exception("802: Error in coordinate descent: %s" % (res,))
     calc_proc.join()
     parent_conn.close()
     return res

@@ -128,7 +128,7 @@ class GCodeMove:
     def set_move_transform(self, transform, force=False):
         if self.move_transform is not None and not force:
             raise self.printer.config_error(
-                "G-Code move transform already specified")
+                "102: G-Code move transform already specified")
         old_transform = self.move_transform
         if old_transform is None:
             old_transform = self.printer.lookup_object('toolhead', None)
@@ -218,7 +218,7 @@ class GCodeMove:
                 if 'F' in params:
                     gcode_speed = float(params['F'])
                     if gcode_speed <= 0.:
-                        raise gcmd.error("Invalid speed in '%s'"
+                        raise gcmd.error("103: Invalid speed in '%s'"
                                          % (gcmd.get_commandline(),))
                     self.speed = gcode_speed * self.speed_factor
                 if with_rotation and self.radius > 0. and self.radial_speed_compensation_enabled:
@@ -229,7 +229,7 @@ class GCodeMove:
                     if self.rotary_speed < self.square_corner_velocity:
                         self.rotary_speed = self.square_corner_velocity
             except ValueError as e:
-                raise gcmd.error("Unable to parse move '%s'"
+                raise gcmd.error("104: Unable to parse move '%s'"
                                  % (gcmd.get_commandline(),))
             self.move_with_transform(self.last_position, \
                 self.rotary_speed if with_rotation and self.radius > 0. \
@@ -341,7 +341,7 @@ class GCodeMove:
         state_name = gcmd.get('NAME', 'default')
         state = self.saved_states.get(state_name)
         if state is None:
-            raise gcmd.error("Unknown g-code state: %s" % (state_name,))
+            raise gcmd.error("105: Unknown g-code state: %s" % (state_name,))
         # Restore state
         self.absolute_coord = state['absolute_coord']
         self.absolute_extrude = state['absolute_extrude']
@@ -417,7 +417,7 @@ class GCodeMove:
     def cmd_GET_POSITION(self, gcmd):
         toolhead = self.printer.lookup_object('toolhead', None)
         if toolhead is None:
-            raise gcmd.error("Printer not ready")
+            raise gcmd.error("106: Printer not ready")
         kin = toolhead.get_kinematics()
         steppers = kin.get_steppers()
         mcu_pos = " ".join(["%s:%d" % (s.get_name(), s.get_mcu_position())
@@ -695,11 +695,11 @@ class GCodeMove:
             if 'F' in params:
                 gcode_speed = float(params['F'])
                 if gcode_speed <= 0.:
-                    raise gcmd.error("Invalid speed in '%s'"
+                    raise gcmd.error("107: Invalid speed in '%s'"
                                      % (gcmd.get_commandline(),))
                 self.speed = gcode_speed * self.speed_factor
         except ValueError as e:
-            raise gcmd.error("Unable to parse move '%s'"
+            raise gcmd.error("108: Unable to parse move '%s'"
                              % (gcmd.get_commandline(),))
         positions = self._calc_compensation(new_position)
         for position in positions:
