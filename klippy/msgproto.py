@@ -88,7 +88,7 @@ class enumeration_error(error):
     def __init__(self, enum_name, value):
         self.enum_name = enum_name
         self.value = value
-        error.__init__(self, "Unknown value '%s' in enumeration '%s'"
+        error.__init__(self, "806: Unknown value '%s' in enumeration '%s'"
                        % (value, enum_name))
     def get_enum_params(self):
         return self.enum_name, self.value
@@ -149,7 +149,7 @@ def lookup_output_params(msgformat):
                     param_types.append(t)
                     break
             else:
-                raise error("Invalid output format for '%s'" % (msgformat,))
+                raise error("806: Invalid output format for '%s'" % (msgformat,))
         args = args[pos+1:]
     return param_types
 
@@ -227,7 +227,7 @@ class UnknownFormat:
 
 class MessageParser:
     error = error
-    def __init__(self, warn_prefix=""):
+    def __init__(self, warn_prefix="806: "):
         self.warn_prefix = warn_prefix
         self.unknown = UnknownFormat()
         self.enumerations = {}

@@ -50,7 +50,7 @@ class TemplateWrapper:
         try:
             self.template = env.from_string(script)
         except Exception as e:
-            msg = "Error loading template '%s': %s" % (
+            msg = "0016: Error loading template '%s': %s" % (
                  name, traceback.format_exception_only(type(e), e)[-1])
             logging.exception(msg)
             raise printer.config_error(msg)
@@ -60,7 +60,7 @@ class TemplateWrapper:
         try:
             return str(self.template.render(context))
         except Exception as e:
-            msg = "Error evaluating '%s': %s" % (
+            msg = "0017: Error evaluating '%s': %s" % (
                 self.name, traceback.format_exception_only(type(e), e)[-1])
             logging.exception(msg)
             raise self.gcode.error(msg)
@@ -175,7 +175,7 @@ class GCodeMacro:
         prev_cmd = self.gcode.register_command(self.alias, None)
         if prev_cmd is None:
             raise self.printer.config_error(
-                "Existing command '%s' not found in gcode_macro rename"
+                "0020: Existing command '%s' not found in gcode_macro rename"
                 % (self.alias,))
         pdesc = "Renamed builtin of '%s'" % (self.alias,)
         self.gcode.register_command(self.rename_existing, prev_cmd, desc=pdesc)

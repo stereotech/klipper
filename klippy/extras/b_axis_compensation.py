@@ -126,7 +126,7 @@ class BAxisCompensation:
                     raise Exception
             except Exception:
                 raise gcmd.error(
-                    "b_axis_compensation: improperly formatted entry for "
+                    "209: b_axis_compensation: improperly formatted entry for "
                     "point\n%s" % (gcmd.get_commandline()))
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord

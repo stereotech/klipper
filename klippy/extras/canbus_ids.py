@@ -12,13 +12,13 @@ class PrinterCANBus:
         self.ids = {}
     def add_uuid(self, config, canbus_uuid, canbus_iface):
         if canbus_uuid in self.ids:
-            raise config.error("Duplicate canbus_uuid")
+            raise config.error("3031: Duplicate canbus_uuid")
         new_id = len(self.ids) + NODEID_FIRST
         self.ids[canbus_uuid] = new_id
         return new_id
     def get_nodeid(self, canbus_uuid):
         if canbus_uuid not in self.ids:
-            raise self.printer.config_error("Unknown canbus_uuid %s"
+            raise self.printer.config_error("3032: Unknown canbus_uuid %s"
                                             % (canbus_uuid,))
         return self.ids[canbus_uuid]
 

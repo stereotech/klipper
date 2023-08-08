@@ -157,7 +157,9 @@ class TMCErrorCheck:
             count += 1
             if count >= 3:
                 fmt = self.fields.pretty_format(reg_name, val)
-                raise self.printer.command_error("TMC '%s' reports error: %s"
+                logging.error("3070: TMC '%s' reports error: %s"
+                                                 % (self.stepper_name, fmt))
+                raise self.printer.command_error("3070: TMC '%s' reports error: %s"
                                                  % (self.stepper_name, fmt))
             if try_clear and val & err_mask:
                 try_clear = False
@@ -271,14 +273,14 @@ class TMCCommandHelper:
         field_name = gcmd.get('FIELD').lower()
         reg_name = self.fields.lookup_register(field_name, None)
         if reg_name is None:
-            raise gcmd.error("Unknown field name '%s'" % (field_name,))
+            raise gcmd.error("3071: Unknown field name '%s'" % (field_name,))
         value = gcmd.get_int('VALUE', None)
         velocity = gcmd.get_float('VELOCITY', None, minval=0.)
         tmc_frequency = self.mcu_tmc.get_tmc_frequency()
         if tmc_frequency is None and velocity is not None:
-            raise gcmd.error("VELOCITY parameter not supported by this driver")
+            raise gcmd.error("3072: VELOCITY parameter not supported by this driver")
         if (value is None) == (velocity is None):
-            raise gcmd.error("Specify either VALUE or VELOCITY")
+            raise gcmd.error("3073: Specify either VALUE or VELOCITY")
         if velocity is not None:
             step_dist = self.stepper.get_step_dist()
             mres = self.fields.get_field("mres")
@@ -441,7 +443,7 @@ class TMCCommandHelper:
                     reg_name, val = self.read_translate(reg_name, val)
                 gcmd.respond_info(self.fields.pretty_format(reg_name, val))
             else:
-                raise gcmd.error("Unknown register name '%s'" % (reg_name))
+                raise gcmd.error("3074: Unknown register name '%s'" % (reg_name))
         else:
             gcmd.respond_info("========== Write-only registers ==========")
             for reg_name, val in self.fields.registers.items():
@@ -486,11 +488,11 @@ class TMCVirtualPinHelper:
         # Validate pin
         ppins = self.printer.lookup_object('pins')
         if pin_type != 'endstop' or pin_params['pin'] != 'virtual_endstop':
-            raise ppins.error("tmc virtual endstop only useful as endstop")
+            raise ppins.error("3075: tmc virtual endstop only useful as endstop")
         if pin_params['invert'] or pin_params['pullup']:
-            raise ppins.error("Can not pullup/invert tmc virtual pin")
+            raise ppins.error("3076: Can not pullup/invert tmc virtual pin")
         if self.diag_pin is None:
-            raise ppins.error("tmc virtual endstop requires diag pin config")
+            raise ppins.error("3077: tmc virtual endstop requires diag pin config")
         # Setup for sensorless homing
         self.printer.register_event_handler("homing:homing_move_begin",
                                             self.handle_homing_move_begin)
@@ -566,7 +568,7 @@ def TMCMicrostepHelper(config, mcu_tmc):
     stepper_name = " ".join(config.get_name().split()[1:])
     if not config.has_section(stepper_name):
         raise config.error(
-            "Could not find config section '[%s]' required by tmc driver"
+            "3078: Could not find config section '[%s]' required by tmc driver"
             % (stepper_name,))
     stepper_config = ms_config = config.getsection(stepper_name)
     if (stepper_config.get('microsteps', None, note_valid=False) is None
