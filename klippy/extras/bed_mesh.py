@@ -1299,6 +1299,7 @@ class ProfileManager:
             self.gcode.respond_info(
             "Bed Mesh state has been added to profile [%s]\n"
             % (prof_name))
+            self.bedmesh.update_status()
 
     def remove_profile(self, prof_name):
         if prof_name in self.profiles:

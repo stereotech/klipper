@@ -19,6 +19,7 @@ class GCodeCommand:
         self._need_ack = need_ack
         # Method wrappers
         self.respond_info = gcode.respond_info
+        self.respond_warning = gcode.respond_warning
         self.respond_raw = gcode.respond_raw
     def get_command(self):
         return self._command
@@ -199,12 +200,14 @@ class GCodeDispatch:
             try:
                 handler(gcmd)
             except self.error as e:
-                self._respond_error(str(e))
+                self._respond_error('Internal error on command: "%s", error: "%s\n"' % (
+                    origline, str(e)))
                 self.printer.send_event("gcode:command_error")
                 if not need_ack:
                     raise
             except:
-                msg = 'Internal error on command:"%s"' % (cmd,)
+                msg = 'Internal error on command:"%s", origline"%s"' % (
+                    cmd, origline)
                 logging.exception(msg)
                 self.printer.invoke_shutdown(msg)
                 self._respond_error(msg)
@@ -295,7 +298,7 @@ class GCodeDispatch:
                 not gcmd.get_float('S', 1.) or self.is_fileinput)):
             # Don't warn about requests to turn off fan when fan not present
             return
-        gcmd.respond_info('Unknown command:"%s"' % (cmd,))
+        gcmd.respond_warning('Unknown command:"%s"' % (cmd,))
     def _cmd_mux(self, command, gcmd):
         key, values = self.mux_commands[command]
         if None in values:
