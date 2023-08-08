@@ -69,6 +69,9 @@ class PrinterSkew:
         gcode.register_command('CALC_SKEW_COMPENSATION',
                                 self.cmd_CALC_SKEW_COMPENSATION,
                                 desc=self.cmd_CALC_SKEW_COMPENSATION_help)
+        gcode.register_command(
+            'CHECK_ACCURACY_SET_MODULE_FIVE_D', self.cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D,
+            desc=self.cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D_help)
         self.point_coords = [
             [0., 0., 0.],
             [0., 0., 0.],
@@ -117,6 +120,13 @@ class PrinterSkew:
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord
     cmd_SAVE_SKEW_POINT_help = "Save point for align skew"
+
+    cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D_help = "command for checked accuracy set the module 5d."
+    def cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D(self, gcmd):
+        diferent_z = self.point_coords[0][2] - self.point_coords[1][2]
+        diferent_y = self.point_coords[2][1] - self.point_coords[3][1]
+        gcmd.respond_info("difference between Z: %f\ndifference between Y: %f"
+            % (diferent_z, diferent_y))
 
     def cmd_CALC_MEASURED_SKEW(self, gcmd):
         ac = gcmd.get_float("AC", above=0.)
