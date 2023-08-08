@@ -149,7 +149,7 @@ class HomingMove:
             if error is None:
                 error = str(e)
         if error is not None:
-            raise self.printer.command_error(error)
+            raise self.printer.command_error("3047: %s" % error)
         return trigpos
 
     def check_no_movement(self):
@@ -235,7 +235,7 @@ class Homing:
             hmove.homing_move(homepos, hi.second_homing_speed)
             if hmove.check_no_movement() is not None:
                 raise self.printer.command_error(
-                    "Endstop %s still triggered after retract"
+                    "3048: Endstop %s still triggered after retract"
                     % (hmove.check_no_movement(),))
         # Signal home operation complete
         self.toolhead.flush_step_generation()
@@ -272,7 +272,7 @@ class PrinterHoming:
         except self.printer.command_error:
             if self.printer.is_shutdown():
                 raise self.printer.command_error(
-                    "Homing failed due to printer shutdown")
+                    "3049: Homing failed due to printer shutdown")
             raise
 
     def probing_move(self, mcu_probe, pos, speed):
@@ -283,11 +283,11 @@ class PrinterHoming:
         except self.printer.command_error:
             if self.printer.is_shutdown():
                 raise self.printer.command_error(
-                    "Probing failed due to printer shutdown")
+                    "3050: Probing failed due to printer shutdown")
             raise
         if hmove.check_no_movement() is not None:
             raise self.printer.command_error(
-                "Probe triggered prior to movement")
+                "3051: Probe triggered prior to movement")
         return epos
 
     def cmd_G28(self, gcmd):
@@ -307,7 +307,7 @@ class PrinterHoming:
         except self.printer.command_error:
             if self.printer.is_shutdown():
                 raise self.printer.command_error(
-                    "Homing failed due to printer shutdown")
+                    "3052: Homing failed due to printer shutdown")
             self.printer.lookup_object('stepper_enable').motor_off()
             raise
 

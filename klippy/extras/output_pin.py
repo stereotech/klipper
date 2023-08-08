@@ -78,7 +78,7 @@ class PrinterOutputPin:
         cycle_time = gcmd.get_float('CYCLE_TIME', self.default_cycle_time,
                                     above=0., maxval=MAX_SCHEDULE_TIME)
         if not self.is_pwm and value not in [0., 1.]:
-            raise gcmd.error("Invalid pin value")
+            raise gcmd.error("3053: Invalid pin value")
         toolhead = self.printer.lookup_object('toolhead')
         toolhead.register_lookahead_callback(
             lambda print_time: self._set_pin(print_time, value, cycle_time))

@@ -83,8 +83,8 @@ class VirtualSD:
                         if not fname.startswith('.')
                         and os.path.isfile((os.path.join(dname, fname)))]
             except:
-                logging.exception("virtual_sdcard get_file_list")
-                raise self.gcode.error("Unable to get file list")
+                logging.exception("1011: virtual_sdcard get_file_list")
+                raise self.gcode.error("1011: Unable to get file list")
     def get_status(self, eventtime):
         return {
             'file_path': self.file_path(),
@@ -113,7 +113,7 @@ class VirtualSD:
                 self.reactor.pause(self.reactor.monotonic() + .001)
     def do_resume(self):
         if self.work_timer is not None:
-            raise self.gcode.error("SD busy")
+            raise self.gcode.error("1017: SD busy")
         self.must_pause_work = False
         self.work_timer = self.reactor.register_timer(
             self.work_handler, self.reactor.NOW)
@@ -126,7 +126,7 @@ class VirtualSD:
         self.file_position = self.file_size = 0.
     # G-Code commands
     def cmd_error(self, gcmd):
-        raise gcmd.error("SD write not supported")
+        raise gcmd.error("1012: SD write not supported")
     def _reset_file(self):
         if self.current_file is not None:
             self.do_pause()
@@ -140,13 +140,13 @@ class VirtualSD:
     def cmd_SDCARD_RESET_FILE(self, gcmd):
         if self.cmd_from_sd:
             raise gcmd.error(
-                "SDCARD_RESET_FILE cannot be run from the sdcard")
+                "1013: SDCARD_RESET_FILE cannot be run from the sdcard")
         self._reset_file()
     cmd_SDCARD_PRINT_FILE_help = "Loads a SD file and starts the print.  May "\
         "include files in subdirectories."
     def cmd_SDCARD_PRINT_FILE(self, gcmd):
         if self.work_timer is not None:
-            raise gcmd.error("SD busy")
+            raise gcmd.error("1014: SD busy")
         self._reset_file()
         filename = gcmd.get("FILENAME")
         file_position = gcmd.get_int('POSITION', 0)
@@ -167,7 +167,7 @@ class VirtualSD:
     def cmd_M23(self, gcmd):
         # Select SD file
         if self.work_timer is not None:
-            raise gcmd.error("SD busy")
+            raise gcmd.error("1015: SD busy")
         self._reset_file()
         filename = gcmd.get_raw_command_parameters().strip()
         if filename.startswith('/'):
@@ -187,8 +187,8 @@ class VirtualSD:
             fsize = f.tell()
             f.seek(0)
         except:
-            logging.exception("virtual_sdcard file open")
-            raise gcmd.error("Unable to open file")
+            logging.exception("1016: virtual_sdcard file open")
+            raise gcmd.error("1016: Unable to open file")
         gcmd.respond_raw("File opened:%s Size:%d" % (filename, fsize))
         gcmd.respond_raw("File selected")
         self.current_file = f
@@ -204,7 +204,7 @@ class VirtualSD:
     def cmd_M26(self, gcmd):
         # Set SD position
         if self.work_timer is not None:
-            raise gcmd.error("SD busy")
+            raise gcmd.error("1018: SD busy")
         pos = gcmd.get_int('S', minval=0)
         self.file_position = pos
     def cmd_M27(self, gcmd):

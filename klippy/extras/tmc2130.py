@@ -239,10 +239,10 @@ def lookup_tmc_spi_chain(config):
     if tmc_spi is None:
         tmc_spi = cs_pin_params['class'] = MCU_TMC_SPI_chain(config, chain_len)
     if chain_len != tmc_spi.chain_len:
-        raise config.error("TMC SPI chain must have same length")
+        raise config.error("3079: TMC SPI chain must have same length")
     chain_pos = config.getint('chain_position', minval=1, maxval=chain_len)
     if chain_pos in tmc_spi.taken_chain_positions:
-        raise config.error("TMC SPI chain can not have duplicate position")
+        raise config.error("3080: TMC SPI chain can not have duplicate position")
     tmc_spi.taken_chain_positions.append(chain_pos)
     return tmc_spi, chain_pos
 
@@ -271,7 +271,7 @@ class MCU_TMC_SPI:
                 if v == val:
                     return
         raise self.printer.command_error(
-            "Unable to write tmc spi '%s' register %s" % (self.name, reg_name))
+            "3081: Unable to write tmc spi '%s' register %s" % (self.name, reg_name))
     def get_tmc_frequency(self):
         return self.tmc_frequency
 

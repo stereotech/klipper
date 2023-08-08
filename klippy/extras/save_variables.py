@@ -17,7 +17,7 @@ class SaveVariables:
             #     open(self.filename, "w").close()
             self.loadVariables()
         except self.printer.command_error as e:
-            raise config.error(str(e))
+            raise config.error("9011: %s" % str(e))
         gcode = self.printer.lookup_object('gcode')
         gcode.register_command('SAVE_VARIABLE', self.cmd_SAVE_VARIABLE,
                                desc=self.cmd_SAVE_VARIABLE_help)
@@ -30,7 +30,7 @@ class SaveVariables:
                 for name, val in varfile.items('Variables'):
                     allvars[name] = ast.literal_eval(val)
         except:
-            msg = "Unable to parse existing variable file"
+            msg = "9012: Unable to parse existing variable file"
             logging.exception(msg)
             raise self.printer.command_error(msg)
         self.allVariables = allvars
@@ -43,7 +43,7 @@ class SaveVariables:
         try:
             value = ast.literal_eval(value)
         except ValueError as e:
-            raise gcmd.error("Unable to parse '%s' as a literal" % (value,))
+            raise gcmd.error("9013: Unable to parse '%s' as a literal" % (value,))
         newvars = dict(self.allVariables)
         newvars[varname] = value
         # Write file
@@ -56,7 +56,7 @@ class SaveVariables:
             varfile.write(f)
             f.close()
         except:
-            msg = "Unable to save variable"
+            msg = "9014: Unable to save variable"
             logging.exception(msg)
             raise gcmd.error(msg)
         self.loadVariables()
