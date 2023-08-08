@@ -10,7 +10,7 @@ jobs:
     env:
       WIKI_API_KEY: ${{ secrets.WIKI_API_KEY }}
       RELEASE_VERSION: ${{ github.event.release.tag_name }}
-      RELEASE_DESCRIPTION: ${{ github.event.release.body }}
+      RELEASE_DESCRIPTION: ${{ toJson(github.event.release.body) }}
     steps:
     - uses: actions/checkout@v2
 
