@@ -129,9 +129,10 @@ class AutoWcs:
 
     def get_radius_spiral_mode(self, gcmd):
         # calculate radius for SPIARAL mode
-        x1, z1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][2] + self.tooling_radius  # <----- Here_BUG
-        x2, z2 = self.point_coords[0][0], self.point_coords[0][2]
-        x3, z3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][2] + self.tooling_radius  # <----- Here_BUG
+        x1, z1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][2]
+        # x2, z2 = self.point_coords[0][0], self.point_coords[0][2] + (self.tooling_radius - 5)
+        x2, z2 = self.point_coords[0][0], self.point_coords[0][2] - self.probe_backlash_x
+        x3, z3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][2]
         c = (x1-x2)**2 + (z1-z2)**2
         a = (x2-x3)**2 + (z2-z3)**2
         b = (x3-x1)**2 + (z3-z1)**2
