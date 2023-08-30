@@ -42,6 +42,11 @@ class CoreXY6AxisKinematics:
         ranges = [r.get_range() for r in self.rails]
         self.axes_min = toolhead.Coord(*[r[0] for r in ranges], e=0.)
         self.axes_max = toolhead.Coord(*[r[1] for r in ranges], e=0.)
+        # get name all axes
+        self.axes_name = ('X','Y','Z','A','C')
+        # get axes that can move home
+        self.can_home_ax = dict(enumerate(
+            [axis.can_home for axis in self.rails]))
 
     def get_steppers(self):
         return [s for rail in self.rails for s in rail.get_steppers()]
@@ -87,13 +92,16 @@ class CoreXY6AxisKinematics:
 
     def _check_endstops(self, move):
         end_pos = move.end_pos
-        for i in (0, 1, 2, 3):  # except C axis
-            if (move.axes_d[i]
-                    and (end_pos[i] < self.limits[i][0]
-                         or end_pos[i] > self.limits[i][1])):
-                if self.limits[i][0] > self.limits[i][1]:
-                    raise move.move_error("1019: Must home axis first")
-                raise move.move_error("1019: Must home axis first")
+        for axis, can_home in self.can_home_ax.items():
+            if can_home:
+                if (move.axes_d[axis]
+                        and (end_pos[axis] < self.limits[axis][0]
+                            or end_pos[axis] > self.limits[axis][1])):
+                    if self.limits[axis][0] > self.limits[axis][1]:
+                        raise move.move_error("1019: Must home axis first(faile axis %s)" % self.axes_name[axis])
+                    if axis == 4:
+                        return
+                    raise move.move_error("1020: Axis %s move out of the range" % self.axes_name[axis])
 
     def check_move(self, move):
         limits = self.limits
