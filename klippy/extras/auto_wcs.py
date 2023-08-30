@@ -29,8 +29,6 @@ class AutoWcs:
         self.probe_backlash_y = 0.
         self.probe_backlash_y_2 = 0.
         self.tooling_radius = 3.
-        self.tooling_radius_1 = 0.
-        self.tooling_radius_2 = 0.
         self.adjust_angle = 10 / RAD_TO_DEG
         self.gcode = self.printer.lookup_object('gcode')
         self.gcode.register_command(
@@ -147,44 +145,6 @@ class AutoWcs:
                 radius, centr_x, centr_y))
         return radius
 
-    def get_radius_1(self, gcmd):
-        # calculate radius whis probe_backlash_y and probe_backlash_x
-        x1, y1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][1]
-        x2, y2 = self.point_coords[0][0], self.point_coords[0][1] + self.probe_backlash_y
-        x3, y3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][1]
-        c = (x1-x2)**2 + (y1-y2)**2
-        a = (x2-x3)**2 + (y2-y3)**2
-        b = (x3-x1)**2 + (y3-y1)**2
-        s = 2*(a*b + b*c + c*a) - (a*a + b*b + c*c)
-        px = (a*(b+c-a)*x1 + b*(c+a-b)*x2 + c*(a+b-c)*x3) / s
-        py = (a*(b+c-a)*y1 + b*(c+a-b)*y2 + c*(a+b-c)*y3) / s
-        ar = a**0.5
-        br = b**0.5
-        cr = c**0.5
-        radius = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
-        gcmd.respond_info('radius_tooling_1= %s,(backlash_y and X) centr_tool(%s;%s)' % (
-            radius, px, py))
-        return radius
-
-    def get_radius_2(self, gcmd):
-        # calculate radius whis probe_backlash_y_2 and probe_backlash_x
-        x1, y1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][1]
-        x2, y2 = self.point_coords[0][0], self.point_coords[0][1] + self.probe_backlash_y_2
-        x3, y3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][1]
-        c = (x1-x2)**2 + (y1-y2)**2
-        a = (x2-x3)**2 + (y2-y3)**2
-        b = (x3-x1)**2 + (y3-y1)**2
-        s = 2*(a*b + b*c + c*a) - (a*a + b*b + c*c)
-        px = (a*(b+c-a)*x1 + b*(c+a-b)*x2 + c*(a+b-c)*x3) / s
-        py = (a*(b+c-a)*y1 + b*(c+a-b)*y2 + c*(a+b-c)*y3) / s
-        ar = a**0.5
-        br = b**0.5
-        cr = c**0.5
-        radius = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
-        gcmd.respond_info('radius_tooling_2= %s,(backlash_y_2 and X) centr_tool(%s;%s)' % (
-            radius, px, py))
-        return radius
-
     cmd_CALC_WCS_TOOL_help = "command for calculate wcs coordinate for SPIRALL-FULL."
     def cmd_CALC_WCS_TOOL(self, gcmd):
         wcs =  gcmd.get_int('WCS')
@@ -205,8 +165,6 @@ class AutoWcs:
         if not rough:
             if mode == 'full':
                 self.tooling_radius = self.get_radius_full_mode(gcmd)
-                self.tooling_radius_1 = self.get_radius_1(gcmd)
-                self.tooling_radius_2 = self.get_radius_2(gcmd)
             elif mode == 'spiral':
                 self.tooling_radius = self.get_radius_spiral_mode(gcmd)
         else:
