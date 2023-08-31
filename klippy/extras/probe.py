@@ -20,9 +20,18 @@ class PrinterProbe:
         self.mcu_probe = mcu_probe
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
-        self.x_offset = config.getfloat('x_offset', 0.)
-        self.y_offset = config.getfloat('y_offset', 0.)
-        self.z_offset = config.getfloat('z_offset')
+        # load section for get basic distances
+        basic_distances = config.getsection('probe basic_distances')
+        # get the template center points
+        self.center_template = basic_distances.getlists(
+            'center_tempalte', seps=',', parser=float)
+        # get the offset between sensor_probe and nozzle
+        offsets = basic_distances.getlists(
+            'offsets_sensor', seps=',', parser=float)
+        self.x_offset = offsets[0]
+        self.y_offset = offsets[1]
+        self.z_offset = offsets[2]
+
         self.probe_calibrate_z = 0.
         self.multi_probe_pending = False
         self.last_state = False
@@ -214,7 +223,9 @@ class PrinterProbe:
     def get_status(self, eventtime):
         return {'last_query': self.last_state,
                 'last_result': self.last_result,
-                'offsets': self.get_offsets()}
+                'offsets': self.get_offsets(),
+                'center_template': self.center_template,
+                }
     cmd_PROBE_ACCURACY_help = "Probe Z-height accuracy at current XY position"
     def cmd_PROBE_ACCURACY(self, gcmd):
         speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
@@ -321,7 +332,12 @@ class PrinterProbe:
 class ProbeEndstopWrapper:
     def __init__(self, config):
         self.printer = config.get_printer()
-        self.position_endstop = config.getfloat('z_offset')
+        # load section for get basic distances
+        basic_distances = config.getsection('probe basic_distances')
+        # get the offset between sensor_probe and nozzle
+        offsets = basic_distances.getlists(
+            'offsets_sensor', seps=',', parser=float)
+        self.position_endstop =  offsets[2]
         self.stow_on_each_sample = config.getboolean(
             'deactivate_on_each_sample', True)
         gcode_macro = self.printer.load_object(config, 'gcode_macro')
