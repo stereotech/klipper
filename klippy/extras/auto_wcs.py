@@ -29,8 +29,6 @@ class AutoWcs:
         self.probe_backlash_y = 0.
         self.probe_backlash_y_2 = 0.
         self.tooling_radius = 3.
-        self.tooling_radius_1 = 0.
-        self.tooling_radius_2 = 0.
         self.adjust_angle = 10 / RAD_TO_DEG
         self.gcode = self.printer.lookup_object('gcode')
         self.gcode.register_command(
@@ -84,19 +82,18 @@ class AutoWcs:
         z = self.point_coords[0][2] - delta_z
         return x, y, z
 
-    def _calc_wcs_new_sensor(self, thickness, adj, gcmd):
-        thickness = thickness / 2.
+    def _calc_wcs_new_sensor(self):
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2.
         y = (self.point_coords[1][1] + self.point_coords[7][1]) / 2.
         z = self.point_coords[0][2]
         return x, y, z
 
-    def _calc_wcs_2_new_sensor(self, thickness, adj, gcmd):
-        thickness = thickness / 2.
+    def _calc_wcs_2_new_sensor(self):
         len_thickness = 10.
+        thickness = len_thickness / 2.
         x = (self.point_coords[8][0] + self.point_coords[9][0]) / 2.
         y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2. - thickness
-        z = self.point_coords[4][2] - (len_thickness - adj)
+        z = self.point_coords[4][2] - len_thickness
         return x, y, z
 
     def calculate_probe_backlash(self, x1, y1, y2):
@@ -108,8 +105,8 @@ class AutoWcs:
                                                              self.probe_backlash_y,
                                                              self.probe_backlash_y_2))
 
-    def get_radius(self, gcmd):
-        # calculate radius only whis probe_backlash_y
+    def get_radius_full_mode(self, gcmd):
+        # calculate radius only whis probe_backlash_y for FULL mode
         x1, y1 = self.point_coords[1][0] + self.probe_backlash_y, self.point_coords[1][1]
         x2, y2 = self.point_coords[0][0], self.point_coords[0][1] + self.probe_backlash_y
         x3, y3 = self.point_coords[2][0] - self.probe_backlash_y, self.point_coords[2][1]
@@ -127,42 +124,24 @@ class AutoWcs:
                 radius, centr_x, centr_y))
         return radius
 
-    def get_radius_1(self, gcmd):
-        # calculate radius whis probe_backlash_y and probe_backlash_x
-        x1, y1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][1]
-        x2, y2 = self.point_coords[0][0], self.point_coords[0][1] + self.probe_backlash_y
-        x3, y3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][1]
-        c = (x1-x2)**2 + (y1-y2)**2
-        a = (x2-x3)**2 + (y2-y3)**2
-        b = (x3-x1)**2 + (y3-y1)**2
-        s = 2*(a*b + b*c + c*a) - (a*a + b*b + c*c)
-        px = (a*(b+c-a)*x1 + b*(c+a-b)*x2 + c*(a+b-c)*x3) / s
-        py = (a*(b+c-a)*y1 + b*(c+a-b)*y2 + c*(a+b-c)*y3) / s
+    def get_radius_spiral_mode(self, gcmd):
+        # calculate radius for SPIARAL mode
+        x1, z1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][2]
+        # x2, z2 = self.point_coords[0][0], self.point_coords[0][2] + (self.tooling_radius - 5)
+        x2, z2 = self.point_coords[0][0], self.point_coords[0][2] - self.probe_backlash_x
+        x3, z3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][2]
+        c = (x1-x2)**2 + (z1-z2)**2
+        a = (x2-x3)**2 + (z2-z3)**2
+        b = (x3-x1)**2 + (z3-z1)**2
+        s= 2*(a*b + b*c + c*a) - (a*a + b*b + c*c)
+        centr_x = (a*(b+c-a)*x1 + b*(c+a-b)*x2 + c*(a+b-c)*x3) / s
+        centr_y = (a*(b+c-a)*z1 + b*(c+a-b)*z2 + c*(a+b-c)*z3) / s
         ar = a**0.5
         br = b**0.5
         cr = c**0.5
         radius = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
-        gcmd.respond_info('radius_tooling_1= %s,(backlash_y and X) centr_tool(%s;%s)' % (
-            radius, px, py))
-        return radius
-
-    def get_radius_2(self, gcmd):
-        # calculate radius whis probe_backlash_y_2 and probe_backlash_x
-        x1, y1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[1][1]
-        x2, y2 = self.point_coords[0][0], self.point_coords[0][1] + self.probe_backlash_y_2
-        x3, y3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[2][1]
-        c = (x1-x2)**2 + (y1-y2)**2
-        a = (x2-x3)**2 + (y2-y3)**2
-        b = (x3-x1)**2 + (y3-y1)**2
-        s = 2*(a*b + b*c + c*a) - (a*a + b*b + c*c)
-        px = (a*(b+c-a)*x1 + b*(c+a-b)*x2 + c*(a+b-c)*x3) / s
-        py = (a*(b+c-a)*y1 + b*(c+a-b)*y2 + c*(a+b-c)*y3) / s
-        ar = a**0.5
-        br = b**0.5
-        cr = c**0.5
-        radius = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
-        gcmd.respond_info('radius_tooling_2= %s,(backlash_y_2 and X) centr_tool(%s;%s)' % (
-            radius, px, py))
+        gcmd.respond_info('radius_tooling= %s, centr_tool(%s;%s)' % (
+                radius, centr_x, centr_y))
         return radius
 
     cmd_CALC_WCS_TOOL_help = "command for calculate wcs coordinate for SPIRALL-FULL."
@@ -181,13 +160,14 @@ class AutoWcs:
     cmd_GET_RADIUS_TOOLING_help = "command for get the tooling radius from measuring points."
     def cmd_GET_RADIUS_TOOLING(self, gcmd):
         rough = gcmd.get_int('ROUGH', 0)
+        mode = gcmd.get('MODE', 'full')
         if not rough:
-            self.tooling_radius = self.get_radius(gcmd)
-            self.tooling_radius_1 = self.get_radius_1(gcmd)
-            self.tooling_radius_2 = self.get_radius_2(gcmd)
+            if mode == 'full':
+                self.tooling_radius = self.get_radius_full_mode(gcmd)
+            elif mode == 'spiral':
+                self.tooling_radius = self.get_radius_spiral_mode(gcmd)
         else:
             # if needed calculate rough radius
-            mode = gcmd.get('MODE')
             gcode_move = self.printer.lookup_object('gcode_move')
             if mode == 'full':
                 y = self.point_coords[0][1] + self.probe_backlash_y
@@ -218,18 +198,18 @@ class AutoWcs:
     cmd_CALC_WCS_PARAMS_help = "Perform WCS calculation"
     def cmd_CALC_WCS_PARAMS(self, gcmd):
         #todo: get thickness default 10
-        thickness =  gcmd.get_float('THICKNESS', 10.)
-        adjustment_coeff = gcmd.get_float('ADJUSTMENT', .3)
         sensor_version = gcmd.get_int('SENSOR_VERSION', 0)
         if sensor_version:
-            x, y, z = self._calc_wcs_new_sensor(thickness, adjustment_coeff, gcmd)
-            x2, y2, z2 = self._calc_wcs_2_new_sensor(thickness, adjustment_coeff, gcmd)
+            x, y, z = self._calc_wcs_new_sensor()
+            x2, y2, z2 = self._calc_wcs_2_new_sensor()
             self.calculate_probe_backlash(x, y, y2)
             delta_y = y - y2
             delta_z = z - z2
             avg_delta = (delta_y + delta_z) / 2.0
             gcmd.respond_info("D_Y: %.3f, D_Z: %.3f, Avg_D: %.3f" % (delta_y, delta_z, avg_delta))
         else:
+            thickness =  gcmd.get_float('THICKNESS', 10.)
+            adjustment_coeff = gcmd.get_float('ADJUSTMENT', .3)
             x, y, z = self._calc_wcs_old_sensor(thickness, adjustment_coeff, gcmd)
             x2, y2, z2 = self._calc_wcs_2_old_sensor(thickness, adjustment_coeff, gcmd)
         out = "Calculated WCS 1 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
