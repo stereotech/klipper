@@ -82,19 +82,18 @@ class AutoWcs:
         z = self.point_coords[0][2] - delta_z
         return x, y, z
 
-    def _calc_wcs_new_sensor(self, thickness, adj, gcmd):
-        thickness = thickness / 2.
+    def _calc_wcs_new_sensor(self):
         x = (self.point_coords[2][0] + self.point_coords[3][0]) / 2.
         y = (self.point_coords[1][1] + self.point_coords[7][1]) / 2.
         z = self.point_coords[0][2]
         return x, y, z
 
-    def _calc_wcs_2_new_sensor(self, thickness, adj, gcmd):
-        thickness = thickness / 2.
+    def _calc_wcs_2_new_sensor(self):
         len_thickness = 10.
+        thickness = len_thickness / 2.
         x = (self.point_coords[8][0] + self.point_coords[9][0]) / 2.
         y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2. - thickness
-        z = self.point_coords[4][2] - (len_thickness - adj)
+        z = self.point_coords[4][2] - len_thickness
         return x, y, z
 
     def calculate_probe_backlash(self, x1, y1, y2):
@@ -199,18 +198,18 @@ class AutoWcs:
     cmd_CALC_WCS_PARAMS_help = "Perform WCS calculation"
     def cmd_CALC_WCS_PARAMS(self, gcmd):
         #todo: get thickness default 10
-        thickness =  gcmd.get_float('THICKNESS', 10.)
-        adjustment_coeff = gcmd.get_float('ADJUSTMENT', .3)
         sensor_version = gcmd.get_int('SENSOR_VERSION', 0)
         if sensor_version:
-            x, y, z = self._calc_wcs_new_sensor(thickness, adjustment_coeff, gcmd)
-            x2, y2, z2 = self._calc_wcs_2_new_sensor(thickness, adjustment_coeff, gcmd)
+            x, y, z = self._calc_wcs_new_sensor()
+            x2, y2, z2 = self._calc_wcs_2_new_sensor()
             self.calculate_probe_backlash(x, y, y2)
             delta_y = y - y2
             delta_z = z - z2
             avg_delta = (delta_y + delta_z) / 2.0
             gcmd.respond_info("D_Y: %.3f, D_Z: %.3f, Avg_D: %.3f" % (delta_y, delta_z, avg_delta))
         else:
+            thickness =  gcmd.get_float('THICKNESS', 10.)
+            adjustment_coeff = gcmd.get_float('ADJUSTMENT', .3)
             x, y, z = self._calc_wcs_old_sensor(thickness, adjustment_coeff, gcmd)
             x2, y2, z2 = self._calc_wcs_2_old_sensor(thickness, adjustment_coeff, gcmd)
         out = "Calculated WCS 1 center: X:%.6f, Y:%.6f, Z:%.6f\n" % (
