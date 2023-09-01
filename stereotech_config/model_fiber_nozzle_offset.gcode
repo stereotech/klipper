@@ -3917,8 +3917,7 @@ M104 T0 S150
 M109 T0 S150
 ;M104 S{params.SECOND_E|default(250)}
 ;M109 S{params.SECOND_E|default(250)}
-M104 S250
-M109 S250
+M109 T1 S250
 ;left-> rigth
 G92 E0 ;zero the extruded length again
 G0 F1800 X211.298 Y51.419 Z0.5
