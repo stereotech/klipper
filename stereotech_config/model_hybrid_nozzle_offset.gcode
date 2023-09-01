@@ -96,7 +96,8 @@ T1
 G92 E0
 M105
 M104 T0 S0
-M109 S{params.SECOND_E|default(200)}
+;M109 S{params.SECOND_E|default(200)}
+M109 T1 S200
 G1 Z20
 G1 F200 E15 ;extrude 15 mm of feed stock
 G1 F200 E13.5 ;make retraction
