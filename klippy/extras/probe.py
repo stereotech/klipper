@@ -279,6 +279,18 @@ class PrinterProbe:
             "with the above and restart the printer." % (self.name, z_offset))
         configfile = self.printer.lookup_object('configfile')
         configfile.set(self.name, 'z_offset', "%.3f" % (z_offset,))
+    def check_diff_offset(self, gcmd, axis):
+        # function to check the difference between the old and new offset for the sensor
+        restore_state = gcmd.get_int('FROM_VARS', 0)
+        old_offset = getattr(self, axis.lower() + '_offset')
+        new_offset = gcmd.get_float(axis, old_offset)
+        if restore_state or (new_offset >= old_offset - 5. and new_offset <= old_offset + 5.):
+            return True
+        else:
+            msg = 'New offset for axis %s out of the range, be apply old offsets!' % axis
+            logging.warning(msg)
+            self.gcode.respond_info(msg)
+            return False
     cmd_PROBE_CALIBRATE_help = "Calibrate the probe's z_offset"
     def cmd_PROBE_CALIBRATE(self, gcmd):
         manual_probe.verify_no_manual_probe(self.printer)
@@ -296,26 +308,17 @@ class PrinterProbe:
         curpos[0] += self.x_offset
         curpos[1] += self.y_offset
         self._move(curpos, self.speed)
-
-    def cmd_Z_OFFSET_APPLY_PROBE(self,gcmd):
+    cmd_Z_OFFSET_APPLY_PROBE_help = "Adjust the probe's offset"
+    def cmd_Z_OFFSET_APPLY_PROBE(self, gcmd):
         if gcmd.get_float('Z', 0.0) > 0.0:
             self.z_offset = gcmd.get_float('Z', 0.0)
             self.gcode.respond_info("Z Offset is %.3f" % (self.z_offset))
-        self.x_offset = gcmd.get_float('X', self.x_offset)
-        self.y_offset = gcmd.get_float('Y', self.y_offset)
-        offset = self.gcode_move.get_status()['homing_origin'].z
-        configfile = self.printer.lookup_object('configfile')
-        if offset == 0:
-            self.gcode.respond_info("Nothing to do: Z Offset is 0")
-        else:
-            new_calibrate = self.z_offset - offset
-            self.gcode.respond_info(
-                "%s: z_offset: %.3f\n"
-                "The SAVE_CONFIG command will update the printer config file\n"
-                "with the above and restart the printer."
-                % (self.name, new_calibrate))
-            configfile.set(self.name, 'z_offset', "%.3f" % (new_calibrate,))
-    cmd_Z_OFFSET_APPLY_PROBE_help = "Adjust the probe's z_offset"
+        if self.check_diff_offset(gcmd, 'X'):
+            self.x_offset = gcmd.get_float('X', self.x_offset)
+        if self.check_diff_offset(gcmd, 'Y'):
+            self.y_offset = gcmd.get_float('Y', self.y_offset)
+        self.gcode.respond_info("Apply offset for probe_sensor: x=%s, y=%s, z=%s" % (
+            self.x_offset, self.y_offset, self.z_offset))
 
 # Endstop wrapper that enables probe specific features
 class ProbeEndstopWrapper:

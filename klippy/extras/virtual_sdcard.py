@@ -3,9 +3,22 @@
 # Copyright (C) 2018  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import os, logging, io
+import os, logging, io, re
 
 VALID_GCODE_EXTS = ['gcode', 'g', 'gco']
+
+def edit_file(path, search_string, replace_string):
+    with open (path, 'r') as f:
+        old_data = f.read()
+        reg_str = '%s[a-zA-Z0-9]*' % search_string
+        re_obj = re.compile(reg_str)
+        search_string = re_obj.findall(old_data)[0]
+        if search_string:
+            new_data = old_data.replace(search_string, replace_string)
+        else:
+            raise
+    with open (path, 'w') as f:
+        f.write(new_data)
 
 class VirtualSD:
     def __init__(self, config):
@@ -42,6 +55,9 @@ class VirtualSD:
         self.gcode.register_command(
             "SDCARD_PRINT_FILE", self.cmd_SDCARD_PRINT_FILE,
             desc=self.cmd_SDCARD_PRINT_FILE_help)
+        self.gcode.register_command(
+            "EDIT_FILE", self.cmd_EDIT_FILE,
+            desc=self.cmd_EDIT_FILE_help)
     def handle_shutdown(self):
         if self.work_timer is not None:
             self.must_pause_work = True
@@ -150,7 +166,8 @@ class VirtualSD:
         self._reset_file()
         filename = gcmd.get("FILENAME")
         file_position = gcmd.get_int('POSITION', 0)
-        if filename[0] == '/':
+        relative_path = gcmd.get_int('RELATIVE_PATH', 1)
+        if filename[0] == '/' and relative_path:
             filename = filename[1:]
         self._load_file(gcmd, filename, file_position, check_subdirs=True)
         self.do_resume()
@@ -173,22 +190,42 @@ class VirtualSD:
         if filename.startswith('/'):
             filename = filename[1:]
         self._load_file(gcmd, filename)
-    def _load_file(self, gcmd, filename, file_position=0, check_subdirs=False):
-        files = self.get_file_list(check_subdirs)
-        flist = [f[0] for f in files]
-        files_by_lower = { fname.lower(): fname for fname, fsize in files }
-        fname = filename
+    cmd_EDIT_FILE_help = "The function to replace a string in a file."
+    def cmd_EDIT_FILE(self, gcmd):
+        search_string = gcmd.get("SEARCH")
+        replace_string = gcmd.get("REPLACE")
+        path_file = gcmd.get("PATH")
         try:
-            if fname not in flist:
-                fname = files_by_lower[fname.lower()]
-            fname = os.path.join(self.sdcard_dirname, fname)
-            f = io.open(fname, 'r', newline='')
-            f.seek(0, os.SEEK_END)
-            fsize = f.tell()
-            f.seek(0)
+            edit_file(path_file, search_string, replace_string)
         except:
-            logging.exception("1016: virtual_sdcard file open")
-            raise gcmd.error("1016: Unable to open file")
+            raise gcmd.error("1021: failed edited file for nozzle offset")
+    def _load_file(self, gcmd, filename, file_position=0, check_subdirs=False):
+        relative_path = gcmd.get_int('RELATIVE_PATH', 1)
+        if relative_path:
+            files = self.get_file_list(check_subdirs)
+            flist = [f[0] for f in files]
+            files_by_lower = { fname.lower(): fname for fname, fsize in files }
+            fname = filename
+            try:
+                if fname not in flist:
+                    fname = files_by_lower[fname.lower()]
+                fname = os.path.join(self.sdcard_dirname, fname)
+                f = io.open(fname, 'r', newline='')
+                f.seek(0, os.SEEK_END)
+                fsize = f.tell()
+                f.seek(0)
+            except:
+                logging.exception("1016: virtual_sdcard file open")
+                raise gcmd.error("1016: Unable to open file")
+        else:
+            try:
+                f = io.open(filename, 'r', newline='')
+                f.seek(0, os.SEEK_END)
+                fsize = f.tell()
+                f.seek(0)
+            except:
+                logging.exception("1016: virtual_sdcard file open")
+                raise gcmd.error("1016: Unable to open file")
         gcmd.respond_raw("File opened:%s Size:%d" % (filename, fsize))
         gcmd.respond_raw("File selected")
         self.current_file = f

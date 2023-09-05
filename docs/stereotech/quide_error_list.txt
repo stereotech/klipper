@@ -51,8 +51,9 @@ config:
     1016: Unable to open file
     1017: SD busy
     1018: SD busy
-    1019: Must home axis first(faile axis X) - ось не запаркована
+    1019: Must home axis first - ось не запаркована
     1020: Axis %s move out of the range - выезд за диапазон печати
+    1021: failed edited file for nozzle offset - ошибка в редактировании файла, не получилось задать нужную температуру
 
 калибровка:
     201: axis x=310 out of range (0 - 300)
