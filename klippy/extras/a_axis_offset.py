@@ -62,7 +62,7 @@ class AAxisOffsetCalculation:
 
     cmd_CALC_A_AXIS_OFFSET_TOOL_help = "Calculate A axis offset by tool"
     def cmd_CALC_A_AXIS_OFFSET_TOOL(self, gcmd):
-        # get average value
+        # get average value axis Z
         self.point_coords[0][2] = (self.point_coords[0][2] + self.point_coords[2][2]) / 2.
         self.point_coords[1][2] = (self.point_coords[1][2] + self.point_coords[3][2]) / 2.
         # calculate offset
