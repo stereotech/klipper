@@ -12,6 +12,8 @@ class AAxisOffsetCalculation:
         self.gcode = self.printer.lookup_object('gcode')
         self.point_coords = [
             [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
+            [0., 0., 0., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0.]
         ]
         self.gcode.register_command('CALC_A_AXIS_OFFSET',
@@ -60,14 +62,10 @@ class AAxisOffsetCalculation:
 
     cmd_CALC_A_AXIS_OFFSET_TOOL_help = "Calculate A axis offset by tool"
     def cmd_CALC_A_AXIS_OFFSET_TOOL(self, gcmd):
-        # mean_point_0_y = (self.point_coords[0][1] + self.point_coords[2][1]) / 2.
-        # mean_point_1_y = (self.point_coords[1][1] + self.point_coords[3][1]) / 2.
-        # mean_point_0_z = (self.point_coords[0][2] + self.point_coords[2][2]) / 2.
-        # mean_point_1_z = (self.point_coords[1][2] + self.point_coords[3][2]) / 2.
-        self.point_coords[0][1] = (self.point_coords[0][1] + self.point_coords[2][1]) / 2.
-        self.point_coords[1][1] = (self.point_coords[1][1] + self.point_coords[3][1]) / 2.
+        # get average value
         self.point_coords[0][2] = (self.point_coords[0][2] + self.point_coords[2][2]) / 2.
         self.point_coords[1][2] = (self.point_coords[1][2] + self.point_coords[3][2]) / 2.
+        # calculate offset
         offset = self._calc_a_axis_offset(
             self.point_coords[0], self.point_coords[1])
         homing_origin_a = self.gcode_move.get_status()['homing_origin'].a
