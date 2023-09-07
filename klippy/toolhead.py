@@ -470,7 +470,8 @@ class ToolHead:
         move_d = math.sqrt(sum([d * d for d in axes_d[:5]]))
         # if the movement is not only with extrusion and the constraint is on
         if move_d > .000000001 and self.constrain_on:
-            pos = [self.constrain(pos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(5)]
+            pos = [self.constrain(pos[axis], self.axes_min[axis], self.axes_max[axis]) for axis in range(4)]
+            pos.append(newpos[4])
             pos.append(newpos[5])
         move = Move(self, self.commanded_pos, pos, speed)
         if not move.move_d:
