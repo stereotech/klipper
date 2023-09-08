@@ -28,7 +28,29 @@
                 "${workspaceFolder}/HTE530-5-4-22.cfg",
                 "-v",
                 "-a",
-                "/tmp/klipper_uds"
+                "/tmp/klipper_uds",
+                // "-l",
+                // "/tmp/dev_klipper_log.log"
+            ]
+        },
+        {
+            "name": "Run klipper ender",
+            "type": "python",
+            "request": "launch",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceFolder}/klippy/klippy.py",
+            "args": [
+                "${workspaceFolder}/ENDER-23.cfg",
+                "-v",
+                "-a",
+                "/tmp/klipper_uds",
+                // "-l",
+                // "/tmp/dev_klipper_log.log"
             ]
         }
     ]

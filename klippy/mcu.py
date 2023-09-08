@@ -42,7 +42,7 @@ class RetryAsyncCommand:
             query_time = self.reactor.monotonic()
             if query_time > first_query_time + self.TIMEOUT_TIME:
                 self.serial.register_response(None, self.name, self.oid)
-                raise serialhdl.error("Timeout on wait for '%s' response"
+                raise serialhdl.error("301: Timeout on wait for '%s' response"
                                       % (self.name,))
             self.serial.raw_send(cmd, minclock, minclock, cmd_queue)
 
@@ -68,7 +68,7 @@ class CommandQueryWrapper:
         try:
             return xh.get_response(cmds, self._cmd_queue, minclock, reqclock)
         except serialhdl.error as e:
-            raise self._error(str(e))
+            raise self._error("302: %s" % str(e))
     def send(self, data=(), minclock=0, reqclock=0):
         return self._do_send([self._cmd.encode(data)], minclock, reqclock)
     def send_with_preface(self, preface_cmd, preface_data=(), data=(),
@@ -249,7 +249,7 @@ class MCU_endstop:
                 for s in ot.get_steppers():
                     if ot is not trsync and s.get_name().startswith(sname[:9]):
                         cerror = self._mcu.get_printer().config_error
-                        raise cerror("Multi-mcu homing not supported on"
+                        raise cerror("303: Multi-mcu homing not supported on"
                                      " multi-mcu shared axis")
     def get_steppers(self):
         return [s for trsync in self._trsyncs for s in trsync.get_steppers()]
@@ -480,7 +480,7 @@ class MCU_pwm:
         if cycle_ticks != self._last_cycle_ticks:
             if cycle_ticks >= 1<<31:
                 raise self._mcu.get_printer().command_error(
-                    "PWM cycle time too large")
+                    "3012: PWM cycle time too large")
             self._set_cycle_ticks.send([self._oid, cycle_ticks],
                                        minclock=minclock, reqclock=clock)
             self._last_cycle_ticks = cycle_ticks
@@ -656,7 +656,7 @@ class MCU:
                      self._name, reason)
         self._printer.request_exit('firmware_restart')
         self._reactor.pause(self._reactor.monotonic() + 2.000)
-        raise error("Attempt MCU '%s' restart failed" % (self._name,))
+        raise error("3013: Attempt MCU '%s' restart failed" % (self._name,))
     def _connect_file(self, pace=False):
         # In a debugging mode.  Open debug output file and read data dictionary
         start_args = self._printer.get_start_args()
@@ -696,7 +696,7 @@ class MCU:
         self.add_config_cmd("finalize_config crc=%d" % (config_crc,))
         if prev_crc is not None and config_crc != prev_crc:
             self._check_restart("CRC mismatch")
-            raise error("MCU '%s' CRC does not match config" % (self._name,))
+            raise error("3013: MCU '%s' CRC does not match config" % (self._name,))
         # Transmit config messages (if needed)
         self.register_response(self._handle_starting, 'starting')
         try:
@@ -716,7 +716,7 @@ class MCU:
             if enum_name == 'pin':
                 # Raise pin name errors as a config error (not a protocol error)
                 raise self._printer.config_error(
-                    "Pin '%s' is not a valid pin name on mcu '%s'"
+                    "305: Pin '%s' is not a valid pin name on mcu '%s'"
                     % (enum_value, self._name))
             raise
     def _send_get_config(self):
@@ -727,10 +727,10 @@ class MCU:
             return { 'is_config': 0, 'move_count': 500, 'crc': 0 }
         config_params = get_config_cmd.send()
         if self._is_shutdown:
-            raise error("MCU '%s' error during config: %s" % (
+            raise error("3014: MCU '%s' error during config: %s" % (
                 self._name, self._shutdown_msg))
         if config_params['is_shutdown']:
-            raise error("Can not update MCU '%s' config as it is shutdown" % (
+            raise error("3013: Can not update MCU '%s' config as it is shutdown" % (
                 self._name,))
         return config_params
     def _log_info(self):
@@ -753,18 +753,18 @@ class MCU:
             self._send_config(None)
             config_params = self._send_get_config()
             if not config_params['is_config'] and not self.is_fileoutput():
-                raise error("Unable to configure MCU '%s'" % (self._name,))
+                raise error("3015: Unable to configure MCU '%s'" % (self._name,))
         else:
             start_reason = self._printer.get_start_args().get("start_reason")
             if start_reason == 'firmware_restart':
-                raise error("Failed automated reset of MCU '%s'"
+                raise error("3016: Failed automated reset of MCU '%s'"
                             % (self._name,))
             # Already configured - send init commands
             self._send_config(config_params['crc'])
         # Setup steppersync with the move_count returned by get_config
         move_count = config_params['move_count']
         if move_count < self._reserved_move_slots:
-            raise error("Too few moves available on MCU '%s'" % (self._name,))
+            raise error("3017: Too few moves available on MCU '%s'" % (self._name,))
         ffi_main, ffi_lib = chelper.get_ffi()
         self._steppersync = ffi_main.gc(
             ffi_lib.steppersync_alloc(self._serial.get_serialqueue(),
@@ -800,7 +800,7 @@ class MCU:
                     self._serial.connect_pipe(self._serialport)
                 self._clocksync.connect(self._serial)
             except serialhdl.error as e:
-                raise error(str(e))
+                raise error("3018: %s" % str(e))
         logging.info(self._log_info())
         ppins = self._printer.lookup_object('pins')
         pin_resolver = ppins.get_pin_resolver(self._name)
@@ -964,7 +964,7 @@ class MCU:
             return
         ret = self._ffi_lib.steppersync_flush(self._steppersync, clock)
         if ret:
-            raise error("Internal error in MCU '%s' stepcompress"
+            raise error("3020: Internal error in MCU '%s' stepcompress"
                         % (self._name,))
     def check_active(self, print_time, eventtime):
         if self._steppersync is None:

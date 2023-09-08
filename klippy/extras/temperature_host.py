@@ -26,7 +26,7 @@ class Temperature_HOST:
         try:
             self.file_handle = open(self.path, "r")
         except:
-            raise config.error("Unable to open temperature file '%s'"
+            raise config.error("3061: Unable to open temperature file '%s'"
                                % (self.path,))
 
         self.printer.register_event_handler("klippy:connect",

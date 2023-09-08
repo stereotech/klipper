@@ -275,7 +275,7 @@ class PrinterButtons:
         for pin in pins:
             pin_params = ppins.lookup_pin(pin, can_invert=True, can_pullup=True)
             if mcu is not None and pin_params['chip'] != mcu:
-                raise ppins.error("button pins must be on same mcu")
+                raise ppins.error("3029: button pins must be on same mcu")
             mcu = pin_params['chip']
             mcu_name = pin_params['chip_name']
             pin_params_list.append(pin_params)
@@ -294,7 +294,7 @@ class PrinterButtons:
             re = FullStepRotaryEncoder(cw_callback, ccw_callback)
         else:
             raise self.printer.config_error(
-                "%d steps per detent not supported" % steps_per_detent)
+                "3030: %d steps per detent not supported" % steps_per_detent)
         self.register_buttons([pin1, pin2], re.encoder_callback)
     def register_button_push(self, pin, callback):
         def helper(eventtime, state, callback=callback):

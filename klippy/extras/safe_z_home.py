@@ -21,7 +21,7 @@ class SafeZHoming:
         self.gcode.register_command("G28", self.cmd_G28)
 
         if config.has_section("homing_override"):
-            raise config.error("homing_override and safe_z_homing cannot"
+            raise config.error("1010: homing_override and safe_z_homing cannot"
                                +" be used simultaneously")
 
     def cmd_G28(self, gcmd):
@@ -70,7 +70,7 @@ class SafeZHoming:
             kin_status = toolhead.get_kinematics().get_status(curtime)
             if ('x' not in kin_status['homed_axes'] or
                 'y' not in kin_status['homed_axes']):
-                raise gcmd.error("Must home X and Y axes first")
+                raise gcmd.error("109: Must home X and Y axes first")
             # Move to safe XY homing position
             prevpos = toolhead.get_position()
             toolhead.manual_move([self.home_x_pos, self.home_y_pos], self.speed)

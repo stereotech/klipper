@@ -67,7 +67,7 @@ class ExtruderStepper:
             return
         extruder = self.printer.lookup_object(extruder_name, None)
         if extruder is None or not isinstance(extruder, PrinterExtruder):
-            raise self.printer.command_error("'%s' is not a valid extruder."
+            raise self.printer.command_error("601: '%s' is not a valid extruder."
                                              % (extruder_name,))
         self.stepper.set_position([extruder.last_position, 0., 0., 0., 0.])
         self.stepper.set_trapq(extruder.get_trapq())
@@ -91,10 +91,10 @@ class ExtruderStepper:
     def cmd_default_SET_PRESSURE_ADVANCE(self, gcmd):
         extruder = self.printer.lookup_object('toolhead').get_extruder()
         if extruder.extruder_stepper is None:
-            raise gcmd.error("Active extruder does not have a stepper")
+            raise gcmd.error("602: Active extruder does not have a stepper")
         strapq = extruder.extruder_stepper.stepper.get_trapq()
         if strapq is not extruder.get_trapq():
-            raise gcmd.error("Unable to infer active extruder stepper")
+            raise gcmd.error("603: Unable to infer active extruder stepper")
         extruder.extruder_stepper.cmd_SET_PRESSURE_ADVANCE(gcmd)
     def cmd_SET_PRESSURE_ADVANCE(self, gcmd):
         pressure_advance = gcmd.get_float('ADVANCE', self.pressure_advance,
@@ -113,7 +113,7 @@ class ExtruderStepper:
         rotation_dist = gcmd.get_float('DISTANCE', None)
         if rotation_dist is not None:
             if not rotation_dist:
-                raise gcmd.error("Rotation distance can not be zero")
+                raise gcmd.error("604: Rotation distance can not be zero")
             invert_dir, orig_invert_dir = self.stepper.get_dir_inverted()
             next_invert_dir = orig_invert_dir
             if rotation_dist < 0.:
@@ -205,6 +205,8 @@ class PrinterExtruder:
             or config.get('rotation_distance', None) is not None):
             self.extruder_stepper = ExtruderStepper(config)
             self.extruder_stepper.stepper.set_trapq(self.trapq)
+        # check extruder name is fiber
+        self.is_fiber = config.getboolean('fiber', False)
         # Register commands
         gcode = self.printer.lookup_object('gcode')
         if self.name == 'extruder':
@@ -219,6 +221,7 @@ class PrinterExtruder:
     def get_status(self, eventtime):
         sts = self.heater.get_status(eventtime)
         sts['can_extrude'] = self.heater.can_extrude
+        sts['fiber'] = self.is_fiber
         if self.extruder_stepper is not None:
             sts.update(self.extruder_stepper.get_status(eventtime))
         return sts
@@ -237,14 +240,14 @@ class PrinterExtruder:
         axis_r = move.axes_r[5]
         if not self.heater.can_extrude:
             raise self.printer.command_error(
-                "Extrude below minimum temp\n"
+                "605: Extrude below minimum temp\n"
                 "See the 'min_extrude_temp' config option for details")
         if (not move.axes_d[0] and not move.axes_d[1] and not move.axes_d[2]
                 and not move.axes_d[3] and not move.axes_d[4]) or axis_r < 0.:
             # Extrude only move (or retraction move) - limit accel and velocity
             if abs(move.axes_d[5]) > self.max_e_dist:
                 raise self.printer.command_error(
-                    "Extrude only move too long (%.3fmm vs %.3fmm)\n"
+                    "606: Extrude only move too long (%.3fmm vs %.3fmm)\n"
                     "See the 'max_extrude_only_distance' config"
                     " option for details" % (move.axes_d[5], self.max_e_dist))
             inv_extrude_r = 1. / abs(axis_r)
@@ -258,7 +261,7 @@ class PrinterExtruder:
             logging.debug("Overextrude: %s vs %s (area=%.3f dist=%.3f)",
                           axis_r, self.max_extrude_ratio, area, move.move_d)
             raise self.printer.command_error(
-                "Move exceeds maximum extrusion (%.3fmm^2 vs %.3fmm^2)\n"
+                "607: Move exceeds maximum extrusion (%.3fmm^2 vs %.3fmm^2)\n"
                 "See the 'max_extrude_cross_section' config option for details"
                 % (area, self.max_extrude_ratio * self.filament_area))
 
@@ -301,7 +304,7 @@ class PrinterExtruder:
             if extruder is None:
                 if temp <= 0.:
                     return
-                raise gcmd.error("Extruder not configured")
+                raise gcmd.error("608: Extruder not configured")
         else:
             extruder = self.printer.lookup_object('toolhead').get_extruder()
         pheaters = self.printer.lookup_object('heaters')
@@ -332,7 +335,7 @@ class DummyExtruder:
         pass
 
     def check_move(self, move):
-        raise move.move_error("Extrude when no extruder present")
+        raise move.move_error("609: Extrude when no extruder present")
 
     def find_past_position(self, print_time):
         return 0.
@@ -344,10 +347,10 @@ class DummyExtruder:
         return ""
 
     def get_heater(self):
-        raise self.printer.command_error("Extruder not configured")
+        raise self.printer.command_error("6010: Extruder not configured")
 
     def get_trapq(self):
-        raise self.printer.command_error("Extruder not configured")
+        raise self.printer.command_error("6011: Extruder not configured")
 
 
 def add_printer_objects(config):

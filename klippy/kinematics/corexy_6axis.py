@@ -92,8 +92,8 @@ class CoreXY6AxisKinematics:
                     and (end_pos[i] < self.limits[i][0]
                          or end_pos[i] > self.limits[i][1])):
                 if self.limits[i][0] > self.limits[i][1]:
-                    raise move.move_error("Must home axis first")
-                raise move.move_error()
+                    raise move.move_error("1019: Must home axis first")
+                raise move.move_error("1019: Must home axis first")
 
     def check_move(self, move):
         limits = self.limits

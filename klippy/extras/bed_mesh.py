@@ -54,18 +54,18 @@ def parse_config_pair(config, option, default, minval=None, maxval=None):
     pair = config.getintlist(option, (default, default))
     if len(pair) != 2:
         if len(pair) != 1:
-            raise config.error("bed_mesh: malformed '%s' value: %s"
+            raise config.error("2010: bed_mesh: malformed '%s' value: %s"
                                % (option, config.get(option)))
         pair = (pair[0], pair[0])
     if minval is not None:
         if pair[0] < minval or pair[1] < minval:
             raise config.error(
-                "Option '%s' in section bed_mesh must have a minimum of %s"
+                "2011: Option '%s' in section bed_mesh must have a minimum of %s"
                 % (option, str(minval)))
     if maxval is not None:
         if pair[0] > maxval or pair[1] > maxval:
             raise config.error(
-                "Option '%s' in section bed_mesh must have a maximum of %s"
+                "2012: Option '%s' in section bed_mesh must have a maximum of %s"
                 % (option, str(maxval)))
     return pair
 
@@ -76,18 +76,18 @@ def parse_gcmd_pair(gcmd, name, minval=None, maxval=None):
     try:
         pair = [int(v.strip()) for v in gcmd.get(name).split(',')]
     except:
-        raise gcmd.error("Unable to parse parameter '%s'" % (name,))
+        raise gcmd.error("2013: Unable to parse parameter '%s'" % (name,))
     if len(pair) != 2:
         if len(pair) != 1:
-            raise gcmd.error("Unable to parse parameter '%s'" % (name,))
+            raise gcmd.error("2014: Unable to parse parameter '%s'" % (name,))
         pair = (pair[0], pair[0])
     if minval is not None:
         if pair[0] < minval or pair[1] < minval:
-            raise gcmd.error("Parameter '%s' must have a minimum of %d"
+            raise gcmd.error("2015: Parameter '%s' must have a minimum of %d"
                              % (name, minval))
     if maxval is not None:
         if pair[0] > maxval or pair[1] > maxval:
-            raise gcmd.error("Parameter '%s' must have a maximum of %d"
+            raise gcmd.error("2016: Parameter '%s' must have a maximum of %d"
                              % (name, maxval))
     return pair
 
@@ -98,7 +98,7 @@ def parse_gcmd_coord(gcmd, name):
     try:
         v1, v2 = [float(v.strip()) for v in gcmd.get(name).split(',')]
     except:
-        raise gcmd.error("Unable to parse parameter '%s'" % (name,))
+        raise gcmd.error("2017: Unable to parse parameter '%s'" % (name,))
     return v1, v2
 
 
@@ -167,7 +167,7 @@ class BedMesh:
                     self.z_mesh = None
                     self.fade_target = 0.
                     raise self.gcode.error(
-                        "bed_mesh: ERROR, fade_target lies outside of mesh z "
+                        "2018: bed_mesh: ERROR, fade_target lies outside of mesh z "
                         "range\nmin: %.4f, max: %.4f, fade_target: %.4f"
                         % (min_z, max_z, err_target))
             min_z, max_z = mesh.get_z_range()
@@ -175,7 +175,7 @@ class BedMesh:
                 self.z_mesh = None
                 self.fade_target = 0.
                 raise self.gcode.error(
-                    "bed_mesh:  Mesh extends outside of the fade range, "
+                    "2019: bed_mesh:  Mesh extends outside of the fade range, "
                     "please see the fade_start and fade_end options in"
                     "example-extras.cfg. fade distance: %.2f mesh min: %.4f"
                     "mesh max: %.4f" % (self.fade_dist, min_z, max_z))
@@ -240,7 +240,7 @@ class BedMesh:
                     self.next_transform.move(split_move, speed)
                 else:
                     raise self.gcode.error(
-                        "Mesh Leveling: Error splitting move ")
+                        "2020: Mesh Leveling: Error splitting move ")
         self.last_position[:] = newpos
 
     def get_status(self, eventtime=None):
@@ -348,7 +348,7 @@ class BedMeshCalibrate:
         x_dist = math.floor(x_dist * 100) / 100
         y_dist = math.floor(y_dist * 100) / 100
         if x_dist < 1. or y_dist < 1.:
-            raise error("bed_mesh: min/max points too close together")
+            raise error("2021: bed_mesh: min/max points too close together")
 
         if self.radius is not None:
             # round bed, min/max needs to be recalculated
@@ -416,7 +416,7 @@ class BedMeshCalibrate:
                     if dist_from_origin <= self.radius:
                         valid_coords.append(ac)
             if not valid_coords:
-                raise error("bed_mesh: Unable to generate coordinates"
+                raise error("2022: bed_mesh: Unable to generate coordinates"
                             " for faulty region at index: %d" % (i))
             self.substituted_indices[i] = valid_coords
 
@@ -454,7 +454,7 @@ class BedMeshCalibrate:
             # round beds must have an odd number of points along each axis
             if not x_cnt & 1:
                 raise config.error(
-                    "bed_mesh: probe_count must be odd for round beds")
+                    "2023: bed_mesh: probe_count must be odd for round beds")
             # radius may have precision to .1mm
             self.radius = math.floor(self.radius * 10) / 10
             orig_cfg['radius'] = self.radius
@@ -468,7 +468,7 @@ class BedMeshCalibrate:
             min_x, min_y = config.getfloatlist('mesh_min', count=2)
             max_x, max_y = config.getfloatlist('mesh_max', count=2)
             if max_x <= min_x or max_y <= min_y:
-                raise config.error('bed_mesh: invalid min/max points')
+                raise config.error('2024: bed_mesh: invalid min/max points')
         orig_cfg['x_count'] = mesh_cfg['x_count'] = x_cnt
         orig_cfg['y_count'] = mesh_cfg['y_count'] = y_cnt
         orig_cfg['mesh_min'] = self.mesh_min = (min_x, min_y)
@@ -504,7 +504,7 @@ class BedMeshCalibrate:
                 for coord in [prev_c1, prev_c2, prev_c3, prev_c4]:
                     if within(coord, c1, c3):
                         raise config.error(
-                            "bed_mesh: Existing faulty_region_%d %s overlaps "
+                            "2025: bed_mesh: Existing faulty_region_%d %s overlaps "
                             "added faulty_region_%d %s"
                             % (j+1, repr([prev_c1, prev_c3]),
                                i, repr([c1, c3])))
@@ -512,7 +512,7 @@ class BedMeshCalibrate:
                 for coord in [c1, c2, c3, c4]:
                     if within(coord, prev_c1, prev_c3):
                         raise config.error(
-                            "bed_mesh: Added faulty_region_%d %s overlaps "
+                            "2026: bed_mesh: Added faulty_region_%d %s overlaps "
                             "existing faulty_region_%d %s"
                             % (i, repr([c1, c3]),
                                j+1, repr([prev_c1, prev_c3])))
@@ -525,7 +525,7 @@ class BedMeshCalibrate:
         y_pps = params['mesh_y_pps']
         if params['algo'] not in self.ALGOS:
             raise error(
-                "bed_mesh: Unknown algorithm <%s>"
+                "2027: bed_mesh: Unknown algorithm <%s>"
                 % (self.mesh_config['algo']))
         # Check the algorithm against the current configuration
         max_probe_cnt = max(params['x_count'], params['y_count'])
@@ -537,20 +537,20 @@ class BedMeshCalibrate:
             # Lagrange interpolation tends to oscillate when using more
             # than 6 samples
             raise error(
-                "bed_mesh: cannot exceed a probe_count of 6 when using "
+                "2028: bed_mesh: cannot exceed a probe_count of 6 when using "
                 "lagrange interpolation. Configured Probe Count: %d, %d" %
                 (self.mesh_config['x_count'], self.mesh_config['y_count']))
         elif params['algo'] == 'bicubic' and min_probe_cnt < 4:
             if max_probe_cnt > 6:
                 raise error(
-                    "bed_mesh: invalid probe_count option when using bicubic "
+                    "2029: bed_mesh: invalid probe_count option when using bicubic "
                     "interpolation.  Combination of 3 points on one axis with "
                     "more than 6 on another is not permitted. "
                     "Configured Probe Count: %d, %d" %
                     (self.mesh_config['x_count'], self.mesh_config['y_count']))
             else:
                 logging.info(
-                    "bed_mesh: bicubic interpolation with a probe_count of "
+                    "2030: bed_mesh: bicubic interpolation with a probe_count of "
                     "less than 4 points detected.  Forcing lagrange "
                     "interpolation. Configured Probe Count: %d, %d" %
                     (self.mesh_config['x_count'], self.mesh_config['y_count']))
@@ -641,7 +641,7 @@ class BedMeshCalibrate:
     def cmd_BED_MESH_CALIBRATE(self, gcmd):
         self._profile_name = gcmd.get('PROFILE', "default")
         if not self._profile_name.strip():
-            raise gcmd.error("Value for parameter 'PROFILE' must be specified")
+            raise gcmd.error("2031: Value for parameter 'PROFILE' must be specified")
         self.bedmesh.set_mesh(None)
         self.update_config(gcmd)
         self.probe_helper.start_probe(gcmd)
@@ -686,7 +686,7 @@ class BedMeshCalibrate:
             if len(self.points) != len(corrected_pts):
                 self._dump_points(positions, corrected_pts, offsets)
                 raise self.gcode.error(
-                    "bed_mesh: invalid position list size, "
+                    "2024: bed_mesh: invalid position list size, "
                     "generated count: %d, probed count: %d"
                     % (len(self.points), len(corrected_pts)))
             for gen_pt, probed in zip(self.points, corrected_pts):
@@ -695,7 +695,7 @@ class BedMeshCalibrate:
                         not isclose(off_pt[1], probed[1], abs_tol=.1):
                     self._dump_points(positions, corrected_pts, offsets)
                     raise self.gcode.error(
-                        "bed_mesh: point mismatch, orig = (%.2f, %.2f)"
+                        "2024: bed_mesh: point mismatch, orig = (%.2f, %.2f)"
                         ", probed = (%.2f, %.2f)"
                         % (off_pt[0], off_pt[1], probed[0], probed[1]))
             positions = corrected_pts
@@ -726,7 +726,7 @@ class BedMeshCalibrate:
         # make sure the y-axis is the correct length
         if len(probed_matrix) != y_cnt:
             raise self.gcode.error(
-                ("bed_mesh: Invalid y-axis table length\n"
+                ("2024: bed_mesh: Invalid y-axis table length\n"
                  "Probed table length: %d Probed Table:\n%s") %
                 (len(probed_matrix), str(probed_matrix)))
 
@@ -736,7 +736,7 @@ class BedMeshCalibrate:
                 row_size = len(row)
                 if not row_size & 1:
                     # an even number of points in a row shouldn't be possible
-                    msg = "bed_mesh: incorrect number of points sampled on X\n"
+                    msg = "2024: bed_mesh: incorrect number of points sampled on X\n"
                     msg += "Probed Table:\n"
                     msg += str(probed_matrix)
                     raise self.gcode.error(msg)
@@ -752,7 +752,7 @@ class BedMeshCalibrate:
         for row in probed_matrix:
             if len(row) != x_cnt:
                 raise self.gcode.error(
-                    ("bed_mesh: invalid x-axis table length\n"
+                    ("2024: bed_mesh: invalid x-axis table length\n"
                         "Probed table length: %d Probed Table:\n%s") %
                     (len(probed_matrix), str(probed_matrix)))
 
@@ -760,7 +760,7 @@ class BedMeshCalibrate:
         try:
             z_mesh.build_mesh(probed_matrix)
         except BedMeshError as e:
-            raise self.gcode.error(str(e))
+            raise self.gcode.error("2024: %s" % str(e))
         self.bedmesh.set_mesh(z_mesh)
         self.gcode.respond_info("Mesh Bed Leveling Complete")
         self.bedmesh.save_profile(self._profile_name)
@@ -820,7 +820,7 @@ class MoveSplitter:
         t = distance_from_prev / self.total_move_length
         if t > 1. or t < 0.:
             raise self.gcode.error(
-                "bed_mesh: Slice distance is negative "
+                "2024: bed_mesh: Slice distance is negative "
                 "or greater than entire move length")
         for i in range(6):
             if self.axis_move[i]:
@@ -1267,14 +1267,14 @@ class ProfileManager:
         profile = self.profiles.get(prof_name, None)
         if profile is None:
             raise self.gcode.error(
-                "bed_mesh: Unknown profile [%s]" % prof_name)
+                "2024: bed_mesh: Unknown profile [%s]" % prof_name)
         probed_matrix = profile['points']
         mesh_params = profile['mesh_params']
         z_mesh = ZMesh(mesh_params)
         try:
             z_mesh.build_mesh(probed_matrix)
         except BedMeshError as e:
-            raise self.gcode.error(str(e))
+            raise self.gcode.error("2024: %s" % str(e))
         self.current_profile = prof_name
         self.bedmesh.set_mesh(z_mesh)
 
@@ -1282,7 +1282,7 @@ class ProfileManager:
         profile = self.profiles.get(prof_name, None)
         if profile is None:
             raise self.gcode.error(
-                    "bed_mesh: Unknown profile [%s]" % prof_name)
+                    "2024: bed_mesh: Unknown profile [%s]" % prof_name)
         else:
             mesh_params = profile['mesh_params']
             probed_matrix = list(list(line) for line in profile['points'])
