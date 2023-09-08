@@ -51,9 +51,7 @@ config:
     1016: Unable to open file
     1017: SD busy
     1018: SD busy
-    1019: Must home axis first - ось не запаркована
-    1020: Axis %s move out of the range - выезд за диапазон печати
-    1021: failed edited file for nozzle offset - ошибка в редактировании файла, не получилось задать нужную температуру
+    1019: Must home axis first
 
 калибровка:
     201: axis x=310 out of range (0 - 300)
@@ -151,7 +149,7 @@ config:
     3045: Error on 'TEMPERATURE_WAIT': missing MINIMUM or MAXIMUM.
     3046: Unknown sensor '%s'
     3047: error homing_move_end
-    3048: Endstop %s still triggered after retract(Концевой упор <ОСЬ> все еще зажат(включен) после того как ось сделала ретракт перед повторной парковкой)
+    3048: Endstop %s still triggered after retract
     3049: Homing failed due to printer shutdown
     3050: Probing failed due to printer shutdown
     3051: Probe triggered prior to movement
