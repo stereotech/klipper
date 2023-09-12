@@ -23,8 +23,10 @@ class PrinterProbe:
         # load section for get basic distances
         basic_distances = config.getsection('probe basic_distances')
         # get the template center points
-        self.center_template = basic_distances.getlists(
-            'center_tempalte', seps=',', parser=float)
+        self.wcs_probe_1 = basic_distances.getlists(
+            'wcs_probe_1', seps=',', parser=float)
+        self.wcs_probe_2 = basic_distances.getlists(
+            'wcs_probe_2', seps=',', parser=float)
         # get the offset between sensor_probe and nozzle
         offsets = basic_distances.getlists(
             'offsets_sensor', seps=',', parser=float)
@@ -224,7 +226,8 @@ class PrinterProbe:
         return {'last_query': self.last_state,
                 'last_result': self.last_result,
                 'offsets': self.get_offsets(),
-                'center_template': self.center_template,
+                'wcs_probe_1': self.wcs_probe_1,
+                'wcs_probe_2': self.wcs_probe_2,
                 }
     cmd_PROBE_ACCURACY_help = "Probe Z-height accuracy at current XY position"
     def cmd_PROBE_ACCURACY(self, gcmd):
