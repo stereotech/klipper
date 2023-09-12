@@ -310,13 +310,14 @@ class PrinterProbe:
         self._move(curpos, self.speed)
     cmd_Z_OFFSET_APPLY_PROBE_help = "Adjust the probe's offset"
     def cmd_Z_OFFSET_APPLY_PROBE(self, gcmd):
-        if gcmd.get_float('Z', 0.0) >= 0.0:
-            self.z_offset = gcmd.get_float('Z', 0.0)
-            self.gcode.respond_info("Z Offset is %.3f" % (self.z_offset))
         if self.check_diff_offset(gcmd, 'X'):
             self.x_offset = gcmd.get_float('X', self.x_offset)
         if self.check_diff_offset(gcmd, 'Y'):
             self.y_offset = gcmd.get_float('Y', self.y_offset)
+        try:
+            self.z_offset = gcmd.get_float('Z', self.z_offset, minval=0.0)
+        except Exception as e:
+            gcmd.respond_warning('%s' % e)
         self.gcode.respond_info("Apply offset for probe_sensor: x=%s, y=%s, z=%s" % (
             self.x_offset, self.y_offset, self.z_offset))
 
