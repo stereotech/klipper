@@ -200,7 +200,7 @@ class GCodeDispatch:
             try:
                 handler(gcmd)
             except self.error as e:
-                self._respond_error('901: Internal error on command: "%s", error: "%s\n"' % (
+                self._respond_error('901: Internal error on command: "%s", error: "%s"' % (
                     origline, str(e)))
                 self.printer.send_event("gcode:command_error")
                 if not need_ack:
