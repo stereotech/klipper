@@ -98,7 +98,7 @@ class CoreXY6AxisKinematics:
                         and (end_pos[axis] < self.limits[axis][0]
                             or end_pos[axis] > self.limits[axis][1])):
                     if self.limits[axis][0] > self.limits[axis][1]:
-                        raise move.move_error("1019: Must home axis first(faile axis %s)" % self.axes_name[axis])
+                        raise move.move_error("1019: Must home axis first (error axis %s)" % self.axes_name[axis])
                     if axis == 4:
                         return
                     raise move.move_error("1020: Axis %s move out of the range" % self.axes_name[axis])
