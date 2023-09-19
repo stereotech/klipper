@@ -20,9 +20,20 @@ class PrinterProbe:
         self.mcu_probe = mcu_probe
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
-        self.x_offset = config.getfloat('x_offset', 0.)
-        self.y_offset = config.getfloat('y_offset', 0.)
-        self.z_offset = config.getfloat('z_offset')
+        # load section for get basic distances
+        basic_distances = config.getsection('probe basic_distances')
+        # get the template center points
+        self.wcs_probe_1 = basic_distances.getlists(
+            'wcs_probe_1', seps=',', parser=float)
+        self.wcs_probe_2 = basic_distances.getlists(
+            'wcs_probe_2', seps=',', parser=float)
+        # get the offset between sensor_probe and nozzle
+        offsets = basic_distances.getlists(
+            'offsets_sensor', seps=',', parser=float)
+        self.x_offset = offsets[0]
+        self.y_offset = offsets[1]
+        self.z_offset = offsets[2]
+
         self.probe_calibrate_z = 0.
         self.multi_probe_pending = False
         self.last_state = False
@@ -131,7 +142,7 @@ class PrinterProbe:
             reason = str(e)
             if "Timeout during endstop homing" in reason:
                 reason += HINT_TIMEOUT
-            raise self.printer.command_error("2036: %s" % reason)
+            raise self.printer.command_error("2036: probe error: '%s'" % reason)
         self.gcode.respond_info("probe at x=%.3f y=%.3f z=%.6f"
                                 % (epos[0], epos[1], epos[2]))
         return epos[:3]
@@ -214,7 +225,10 @@ class PrinterProbe:
     def get_status(self, eventtime):
         return {'last_query': self.last_state,
                 'last_result': self.last_result,
-                'offsets': self.get_offsets()}
+                'offsets': self.get_offsets(),
+                'wcs_probe_1': self.wcs_probe_1,
+                'wcs_probe_2': self.wcs_probe_2,
+                }
     cmd_PROBE_ACCURACY_help = "Probe Z-height accuracy at current XY position"
     def cmd_PROBE_ACCURACY(self, gcmd):
         speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
@@ -310,13 +324,14 @@ class PrinterProbe:
         self._move(curpos, self.speed)
     cmd_Z_OFFSET_APPLY_PROBE_help = "Adjust the probe's offset"
     def cmd_Z_OFFSET_APPLY_PROBE(self, gcmd):
-        if gcmd.get_float('Z', 0.0) >= 0.0:
-            self.z_offset = gcmd.get_float('Z', 0.0)
-            self.gcode.respond_info("Z Offset is %.3f" % (self.z_offset))
         if self.check_diff_offset(gcmd, 'X'):
             self.x_offset = gcmd.get_float('X', self.x_offset)
         if self.check_diff_offset(gcmd, 'Y'):
             self.y_offset = gcmd.get_float('Y', self.y_offset)
+        try:
+            self.z_offset = gcmd.get_float('Z', self.z_offset, minval=0.0)
+        except Exception as e:
+            gcmd.respond_warning('%s' % e)
         self.gcode.respond_info("Apply offset for probe_sensor: x=%s, y=%s, z=%s" % (
             self.x_offset, self.y_offset, self.z_offset))
 
@@ -324,7 +339,12 @@ class PrinterProbe:
 class ProbeEndstopWrapper:
     def __init__(self, config):
         self.printer = config.get_printer()
-        self.position_endstop = config.getfloat('z_offset')
+        # load section for get basic distances
+        basic_distances = config.getsection('probe basic_distances')
+        # get the offset between sensor_probe and nozzle
+        offsets = basic_distances.getlists(
+            'offsets_sensor', seps=',', parser=float)
+        self.position_endstop =  offsets[2]
         self.stow_on_each_sample = config.getboolean(
             'deactivate_on_each_sample', True)
         gcode_macro = self.printer.load_object(config, 'gcode_macro')

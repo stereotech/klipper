@@ -149,7 +149,7 @@ class HomingMove:
             if error is None:
                 error = str(e)
         if error is not None:
-            raise self.printer.command_error("3047: %s" % error)
+            raise self.printer.command_error("3047: error homing_move_end '%s'" % error)
         return trigpos
 
     def check_no_movement(self):

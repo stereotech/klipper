@@ -17,7 +17,7 @@ class SaveVariables:
             #     open(self.filename, "w").close()
             self.loadVariables()
         except self.printer.command_error as e:
-            raise config.error("9011: %s" % str(e))
+            raise config.error("9011: error load variables %s" % str(e))
         gcode = self.printer.lookup_object('gcode')
         gcode.register_command('SAVE_VARIABLE', self.cmd_SAVE_VARIABLE,
                                desc=self.cmd_SAVE_VARIABLE_help)
