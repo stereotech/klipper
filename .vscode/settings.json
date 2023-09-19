@@ -11,5 +11,6 @@
     ],
     "files.associations": {
         "*.tcc": "c"
-    }
+    },
+    "python.pythonPath": "klippy-env/bin/python2"
 }
