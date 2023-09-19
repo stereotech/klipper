@@ -24,7 +24,7 @@ class PrinterProbe:
         basic_distances = config.getsection('probe basic_distances')
         # get the template center points
         self.center_template = basic_distances.getlists(
-            'center_tempalte', seps=',', parser=float)
+            'center_template', seps=',', parser=float)
         # get the offset between sensor_probe and nozzle
         offsets = basic_distances.getlists(
             'offsets_sensor', seps=',', parser=float)
