@@ -131,7 +131,7 @@ class PrinterProbe:
             reason = str(e)
             if "Timeout during endstop homing" in reason:
                 reason += HINT_TIMEOUT
-            raise self.printer.command_error("2036: %s" % reason)
+            raise self.printer.command_error("2036: probe error: '%s'" % reason)
         self.gcode.respond_info("probe at x=%.3f y=%.3f z=%.6f"
                                 % (epos[0], epos[1], epos[2]))
         return epos[:3]

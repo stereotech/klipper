@@ -271,7 +271,7 @@ class MCU_TMC_SPI:
                 if v == val:
                     return
         raise self.printer.command_error(
-            "3081: Unable to write tmc spi '%s' register %s" % (self.name, reg_name))
+            "304: Unable to write tmc spi '%s' register %s" % (self.name, reg_name))
     def get_tmc_frequency(self):
         return self.tmc_frequency
 

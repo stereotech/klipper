@@ -12,7 +12,7 @@ class error(Exception):
     pass
 
 class SerialReader:
-    def __init__(self, reactor, warn_prefix="807: "):
+    def __init__(self, reactor, warn_prefix=""):
         self.reactor = reactor
         self.warn_prefix = warn_prefix
         # Serial port
@@ -55,7 +55,7 @@ class SerialReader:
                     hdl = self.handlers.get(hdl, self.handle_default)
                     hdl(params)
             except:
-                logging.exception("%sException in serial callback",
+                logging.exception("%s8019: Exception in serial callback",
                                   self.warn_prefix)
     def _error(self, msg, *params):
         raise error(self.warn_prefix + (msg % params))
@@ -67,7 +67,7 @@ class SerialReader:
             try:
                 params = self.send_with_response(msg, 'identify_response')
             except error as e:
-                logging.exception("%sWait for identify_response",
+                logging.exception("%s807: Wait for identify_response",
                                   self.warn_prefix)
                 return None
             if params['offset'] == len(identify_data):
@@ -118,7 +118,7 @@ class SerialReader:
         except ValueError:
             uuid = -1
         if uuid < 0 or uuid > 0xffffffffffff:
-            self._error("Invalid CAN uuid")
+            self._error("8017: Invalid CAN uuid")
         uuid = [(uuid >> (40 - i*8)) & 0xff for i in range(6)]
         CANBUS_ID_ADMIN = 0x3f0
         CMD_SET_NODEID = 0x01
@@ -130,14 +130,14 @@ class SerialReader:
         start_time = self.reactor.monotonic()
         while 1:
             if self.reactor.monotonic() > start_time + 90.:
-                self._error("Unable to connect")
+                self._error("8018: Unable to connect")
             try:
                 bus = can.interface.Bus(channel=canbus_iface,
                                         can_filters=filters,
                                         bustype='socketcan')
                 bus.send(set_id_msg)
             except can.CanError as e:
-                logging.warn("%sUnable to open CAN port: %s",
+                logging.warn("%s811: Unable to open CAN port: %s",
                              self.warn_prefix, e)
                 self.reactor.pause(self.reactor.monotonic() + 5.)
                 continue
@@ -152,7 +152,7 @@ class SerialReader:
                 if got_uuid == bytearray(uuid):
                     break
             except:
-                logging.exception("%sError in canbus_uuid check",
+                logging.exception("%s8020: Error in canbus_uuid check",
                                   self.warn_prefix)
             logging.info("%sFailed to match canbus_uuid - retrying..",
                          self.warn_prefix)
@@ -162,11 +162,11 @@ class SerialReader:
         start_time = self.reactor.monotonic()
         while 1:
             if self.reactor.monotonic() > start_time + 90.:
-                self._error("Unable to connect")
+                self._error("8021: Unable to connect")
             try:
                 fd = os.open(filename, os.O_RDWR | os.O_NOCTTY)
             except OSError as e:
-                logging.warn("%sUnable to open port: %s", self.warn_prefix, e)
+                logging.warn("%s812: Unable to open port: %s", self.warn_prefix, e)
                 self.reactor.pause(self.reactor.monotonic() + 5.)
                 continue
             serial_dev = os.fdopen(fd, 'rb+', 0)
@@ -179,7 +179,7 @@ class SerialReader:
         start_time = self.reactor.monotonic()
         while 1:
             if self.reactor.monotonic() > start_time + 90.:
-                self._error("Unable to connect")
+                self._error("8022: Unable to connect")
             try:
                 serial_dev = serial.Serial(baudrate=baud, timeout=0,
                                            exclusive=True)
@@ -187,7 +187,7 @@ class SerialReader:
                 serial_dev.rts = rts
                 serial_dev.open()
             except (OSError, IOError, serial.SerialException) as e:
-                logging.warn("%sUnable to open serial port: %s",
+                logging.warn("%s816: Unable to open serial port: %s",
                              self.warn_prefix, e)
                 self.reactor.pause(self.reactor.monotonic() + 5.)
                 continue
@@ -250,7 +250,7 @@ class SerialReader:
                                       cmd, len(cmd), minclock, reqclock, nid)
         params = completion.wait()
         if params is None:
-            self._error("Serial connection closed")
+            self._error("8023: Serial connection closed")
         return params
     def send(self, msg, minclock=0, reqclock=0):
         cmd = self.msgparser.create_command(msg)
@@ -291,13 +291,13 @@ class SerialReader:
         logging.debug("%sUnknown message %d (len %d) while identifying",
                       self.warn_prefix, params['#msgid'], len(params['#msg']))
     def handle_unknown(self, params):
-        logging.warn("%sUnknown message type %d: %s",
+        logging.warn("%s817: Unknown message type %d: %s",
                      self.warn_prefix, params['#msgid'], repr(params['#msg']))
     def handle_output(self, params):
         logging.info("%s%s: %s", self.warn_prefix,
                      params['#name'], params['#msg'])
     def handle_default(self, params):
-        logging.warn("%sgot %s", self.warn_prefix, params)
+        logging.warn("%s818: got %s", self.warn_prefix, params)
 
 # Class to send a query command and return the received response
 class SerialRetryCommand:

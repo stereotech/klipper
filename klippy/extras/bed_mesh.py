@@ -168,7 +168,7 @@ class BedMesh:
                     self.fade_target = 0.
                     raise self.gcode.error(
                         "2018: bed_mesh: ERROR, fade_target lies outside of mesh z "
-                        "range\nmin: %.4f, max: %.4f, fade_target: %.4f"
+                        "range \nmin: %.4f, max: %.4f, fade_target: %.4f"
                         % (min_z, max_z, err_target))
             min_z, max_z = mesh.get_z_range()
             if self.fade_dist <= max(abs(min_z), abs(max_z)):
