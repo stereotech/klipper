@@ -88,8 +88,7 @@ class AutoWcs:
         z = self.point_coords[0][2]
         return x, y, z
 
-    def _calc_wcs_2_new_sensor(self):
-        len_thickness = 10.
+    def _calc_wcs_2_new_sensor(self, len_thickness):
         thickness = len_thickness / 2.
         x = (self.point_coords[8][0] + self.point_coords[9][0]) / 2.
         y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2. - thickness
@@ -199,16 +198,16 @@ class AutoWcs:
     def cmd_CALC_WCS_PARAMS(self, gcmd):
         #todo: get thickness default 10
         sensor_version = gcmd.get_int('SENSOR_VERSION', 0)
+        thickness =  gcmd.get_float('THICKNESS', 10.)
         if sensor_version:
             x, y, z = self._calc_wcs_new_sensor()
-            x2, y2, z2 = self._calc_wcs_2_new_sensor()
+            x2, y2, z2 = self._calc_wcs_2_new_sensor(thickness)
             self.calculate_probe_backlash(x, y, y2)
             delta_y = y - y2
             delta_z = z - z2
             avg_delta = (delta_y + delta_z) / 2.0
             gcmd.respond_info("D_Y: %.3f, D_Z: %.3f, Avg_D: %.3f" % (delta_y, delta_z, avg_delta))
         else:
-            thickness =  gcmd.get_float('THICKNESS', 10.)
             adjustment_coeff = gcmd.get_float('ADJUSTMENT', .3)
             x, y, z = self._calc_wcs_old_sensor(thickness, adjustment_coeff, gcmd)
             x2, y2, z2 = self._calc_wcs_2_old_sensor(thickness, adjustment_coeff, gcmd)
