@@ -22,7 +22,7 @@ def resolve_bus_name(mcu, param, bus):
             raise ppins.error("3025: Must specify %s on mcu '%s'" % (param, mcu_name))
         bus = rev_enums[0]
     if bus not in enums:
-        raise ppins.error("3026: Unknown %s '%s'" % (param, bus))
+        raise ppins.error("3026: Unknown bus name %s '%s'" % (param, bus))
     # Check for reserved bus pins
     constants = mcu.get_constants()
     reserve_pins = constants.get('BUS_PINS_%s' % (bus,), None)

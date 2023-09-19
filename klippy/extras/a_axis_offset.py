@@ -38,8 +38,8 @@ class AAxisOffsetCalculation:
                     raise Exception
             except Exception:
                 raise gcmd.error(
-                    "207: a_axis_offset: improperly formatted entry for "
-                    "point\n%s" % (gcmd.get_commandline()))
+                    "2046: a_axis_offset: improperly formatted entry for "
+                    "point \n%s" % (gcmd.get_commandline()))
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord
 

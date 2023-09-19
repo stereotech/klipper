@@ -21,7 +21,7 @@ class PIDCalibrate:
         try:
             heater = pheaters.lookup_heater(heater_name)
         except self.printer.config_error as e:
-            raise gcmd.error("3054: %s" % str(e))
+            raise gcmd.error("3054: error cmd PID_CALIBRATE '%s'" % str(e))
         self.printer.lookup_object('toolhead').get_last_move_time()
         calibrate = ControlAutoTune(heater, target)
         old_control = heater.set_control(calibrate)
@@ -34,7 +34,7 @@ class PIDCalibrate:
         if write_file:
             calibrate.write_file('/tmp/heattest.txt')
         if calibrate.check_busy(0., 0., 0.):
-            raise gcmd.error("3054: pid_calibrate interrupted")
+            raise gcmd.error("3055: pid_calibrate interrupted")
         # Log and report results
         Kp, Ki, Kd = calibrate.calc_final_pid()
         logging.info("Autotune: final: Kp=%f Ki=%f Kd=%f", Kp, Ki, Kd)

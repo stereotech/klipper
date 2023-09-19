@@ -198,9 +198,10 @@ class VirtualSD:
         try:
             edit_file(path_file, search_string, replace_string)
         except:
-            raise gcmd.error("1021: failed edited file for nozzle offset")
+            raise gcmd.error("1021: error edit file %s" % path_file)
     def _load_file(self, gcmd, filename, file_position=0, check_subdirs=False):
         relative_path = gcmd.get_int('RELATIVE_PATH', 1)
+        er_msg = "1016: Unable to open file %s" % filename
         if relative_path:
             files = self.get_file_list(check_subdirs)
             flist = [f[0] for f in files]
@@ -215,8 +216,8 @@ class VirtualSD:
                 fsize = f.tell()
                 f.seek(0)
             except:
-                logging.exception("1016: virtual_sdcard file open")
-                raise gcmd.error("1016: Unable to open file")
+                logging.exception(er_msg)
+                raise gcmd.error(er_msg)
         else:
             try:
                 f = io.open(filename, 'r', newline='')
@@ -224,8 +225,8 @@ class VirtualSD:
                 fsize = f.tell()
                 f.seek(0)
             except:
-                logging.exception("1016: virtual_sdcard file open")
-                raise gcmd.error("1016: Unable to open file")
+                logging.exception(er_msg)
+                raise gcmd.error(er_msg)
         gcmd.respond_raw("File opened:%s Size:%d" % (filename, fsize))
         gcmd.respond_raw("File selected")
         self.current_file = f
