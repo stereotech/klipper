@@ -80,7 +80,7 @@ class ManualProbe:
     def z_homing_offset(self, kin_pos):
         if kin_pos is None:
             return
-        z_pos = kin_pos[2]
+        z_pos = round(kin_pos[2], 4)
         self.gcode.respond_info(
             "stepper_z: position_endstop: %.3f\n"
             "The SAVE_CONFIG command will update the printer config file\n"
