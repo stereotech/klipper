@@ -1,0 +1,6 @@
+printer 530:
+            v.5.2.3
+printer 630:
+            v.5.3
+printer 750:
+            v6
