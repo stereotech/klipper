@@ -122,7 +122,7 @@ class PrinterSkew:
             except Exception:
                 raise gcmd.error(
                     "2042: skew_corection: improperly formatted entry for "
-                    "point\n%s" % (gcmd.get_commandline()))
+                    "point \n%s" % (gcmd.get_commandline()))
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord
     cmd_SAVE_SKEW_POINT_help = "Save point for align skew"
@@ -199,7 +199,7 @@ class PrinterSkew:
             gcmd.respond_info(out)
         else:
             raise gcmd.error(
-                    "2043: Error! Factor name %s not in list factors['XY', 'XZ', 'YZ']" % (factor_name))
+                    "2043: Error factor name %s not in list factors['XY', 'XZ', 'YZ']" % (factor_name))
     cmd_CALC_SKEW_COMPENSATION_help = "Calculate skew compensation."
 
     cmd_CALC_SKEW_COMPENSATION_WCS_help = "Calculate skew compensation by wcs."
@@ -348,7 +348,7 @@ class PrinterSkew:
                 except Exception:
                     raise gcmd.error(
                         "2044: skew_correction: improperly formatted entry for "
-                        "plane [%s]\n%s" % (plane, gcmd.get_commandline()))
+                        "plane %s: \n%s" % (plane, gcmd.get_commandline()))
     cmd_SET_SKEW_help = "Set skews(XY=0.1, ...), delete skews(CLEAR=1) \
         or include skew correction(ENABLE=1) its."
 
