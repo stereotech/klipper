@@ -65,9 +65,9 @@ tar xf ${CACHE_DIR}/${TOOLCHAIN_ZIP_V}
 
 echo -e "\n\n=============== Install python3 virtualenv\n\n"
 cd ${MAIN_DIR}
-virtualenv -p python3 --download ${BUILD_DIR}/python-env
-${BUILD_DIR}/python-env/bin/pip install --upgrade pip
-${BUILD_DIR}/python-env/bin/pip install -r ${MAIN_DIR}/scripts/klippy-requirements.txt
+virtualenv -p python3 ${BUILD_DIR}/python-env
+# install requirements and exclude the packages typing==3.1
+${BUILD_DIR}/python-env/bin/pip install $(grep -ivE "typing==3.1" ${MAIN_DIR}/scripts/klippy-requirements.txt)
 
 
 ######################################################################
