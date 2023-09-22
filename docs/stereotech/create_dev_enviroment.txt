@@ -1,0 +1,10 @@
+mkdir klippy_dev
+cd klippy_dev
+git clone https://github.com/stereotech/klipper.git -b develop                                # CLONING A REPOSITORY WITH EXPLICIT BRANCH INDICATION
+cd klipper
+virtualenv --python="/usr/bin/python2" --download "./klippy-env"
+source klippy-env/bin/activate
+pip install -r scripts/klippy-requirements.txt
+folow in new directories on VS code -> click to icons "Open Folder" -> /home/ste/klippy_dev/klipper
+if server not start:
+	install extension: Python VERSION=v2021.12.1559732655
