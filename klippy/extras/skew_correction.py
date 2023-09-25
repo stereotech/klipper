@@ -80,8 +80,6 @@ class PrinterSkew:
             [0., 0., 0.],
             [0., 0., 0.],
             [0., 0., 0.],
-            [0., 0., 0.],
-            [0., 0., 0.],
             [0., 0., 0.]
         ]
         self.wcs_list = [
@@ -129,12 +127,10 @@ class PrinterSkew:
 
     cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D_help = "command for checked accuracy set the module 5d."
     def cmd_CHECK_ACCURACY_SET_MODULE_FIVE_D(self, gcmd):
-        diferent_z_1 = self.point_coords[0][2] - self.point_coords[1][2]
-        diferent_z_2 = self.point_coords[2][2] - self.point_coords[3][2]
-        diferent_y = self.point_coords[4][1] - self.point_coords[5][1]
-        gcmd.respond_info(
-            "difference between Z0: %f\ndifference between Z180: %f\ndifference between Y: %f"
-            % (diferent_z_1, diferent_z_2, diferent_y))
+        diferent_z = self.point_coords[0][2] - self.point_coords[1][2]
+        diferent_y = self.point_coords[2][1] - self.point_coords[3][1]
+        gcmd.respond_info("difference between Z: %f\ndifference between Y: %f"
+            % (diferent_z, diferent_y))
 
     def cmd_CALC_MEASURED_SKEW(self, gcmd):
         ac = gcmd.get_float("AC", above=0.)
