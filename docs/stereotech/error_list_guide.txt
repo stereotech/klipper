@@ -210,7 +210,7 @@ config:
     416: Recover extrusion do extrude attempt %s'
     417: Extruding attempt completed successfully, resuming printing.
     418: Recover extrusion by offset %s'
-    419: algorithm the recover ecstrusion is disable.
+    419: Algorithm the recover extrusion is disable.
 
 диагностика:
     501: 3D module disabled, cannot set temperature for heater 'heater_bed'
