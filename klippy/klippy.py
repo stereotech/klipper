@@ -126,7 +126,7 @@ class Printer:
         if init_func is None:
             if default is not configfile.sentinel:
                 return default
-            raise self.config_error("0011: Unable to load module '%s'" % (section,))
+            raise self.config_error("0025: Unable to load module '%s'" % (section,))
         self.objects[section] = init_func(config.getsection(section))
         return self.objects[section]
     def _read_config(self):

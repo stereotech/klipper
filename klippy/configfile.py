@@ -36,21 +36,21 @@ class ConfigWrapper:
         except self.error as e:
             raise
         except:
-            raise error("002: Unable to parse option '%s' in section '%s'"
+            raise error("0020: Unable to parse option '%s' in section '%s'"
                         % (option, self.section))
         if note_valid:
             self.access_tracking[(self.section.lower(), option.lower())] = v
         if minval is not None and v < minval:
-            raise error("002: Option '%s' in section '%s' must have minimum of %s"
+            raise error("0021: Option '%s' in section '%s' must have minimum of %s"
                         % (option, self.section, minval))
         if maxval is not None and v > maxval:
-            raise error("002: Option '%s' in section '%s' must have maximum of %s"
+            raise error("0022: Option '%s' in section '%s' must have maximum of %s"
                         % (option, self.section, maxval))
         if above is not None and v <= above:
-            raise error("002: Option '%s' in section '%s' must be above %s"
+            raise error("0023: Option '%s' in section '%s' must be above %s"
                         % (option, self.section, above))
         if below is not None and v >= below:
-            raise self.error("002: Option '%s' in section '%s' must be below %s"
+            raise self.error("0024: Option '%s' in section '%s' must be below %s"
                              % (option, self.section, below))
         return v
     def get(self, option, default=sentinel, note_valid=True):
