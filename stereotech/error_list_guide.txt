@@ -7,11 +7,7 @@
 
 config:
     001: Unable to open config file %s
-    002: Unable to parse option '%s' in section '%s'
-    002: Option '%s' in section '%s' must have minimum of %s
-    002: Option '%s' in section '%s' must have maximum of %s
-    002: Option '%s' in section '%s' must be above %s
-    002: Option '%s' in section '%s' must be below %s
+    002: Existing command '%s' not found in gcode_macro rename
     003: Choice '%s' for option '%s' in section '%s' is not a valid choice
     004: Option '%s' in section '%s' must be specified
     005: Include file '%s' does not exist
@@ -21,7 +17,6 @@ config:
     009: Printer object '%s' already created
     0010: Unknown config object '%s'
     0011: Unable to load module '%s'
-    0011: Unable to load module '%s'
     0012: gcode command %s already registered
     0013: mux command %s %s %s may have only one key (%s)
     0014: mux command %s %s %s already registered (%s)
@@ -30,7 +25,12 @@ config:
     0017: Error evaluating '%s': %s
     0018: A primary [display] section must be defined in printer.cfg to use auxilary displays
     0019: Section name [display display] is not valid. Please choose a different postfix.
-    0020: Existing command '%s' not found in gcode_macro rename
+    0020: Unable to parse option '%s' in section '%s'
+    0021: Option '%s' in section '%s' must have minimum of %s
+    0022: Option '%s' in section '%s' must have maximum of %s
+    0023: Option '%s' in section '%s' must be above %s
+    0024: Option '%s' in section '%s' must be below %s
+    0025: Unable to load module '%s'
 
 печать/кинематика/движение:
     101: Error loading kinematics
@@ -76,7 +76,7 @@ config:
     2016: Parameter '%s' must have a maximum of %d
     2017: Unable to parse parameter '%s'
     2018: bed_mesh: ERROR, fade_target lies outside of mesh z range min: %.4f, max: %.4f, fade_target: %.4f
-    2019: bed_mesh:  Mesh extends outside of the fade range, please see the fade_start and fade_end options in example-extras.cfg. fade distance: %.2f mesh min: %.4f mesh max: %.4f"
+    2019: bed_mesh:  Mesh extends outside of the fade range, please see the fade_start and fade_end options in example-extras.cfg. fade distance: %.2f mesh min: %.4f mesh max: %.4f
     2020: Mesh Leveling: Error splitting move
     2021: bed_mesh: min/max points too close together
     2022: bed_mesh: Unable to generate coordinates for faulty region at index: %d
@@ -85,8 +85,8 @@ config:
     2025: bed_mesh: Existing faulty_region_%d %s overlaps added faulty_region_%d %s
     2026: bed_mesh: Added faulty_region_%d %s overlaps existing faulty_region_%d %s
     2027: bed_mesh: Unknown algorithm <%s>
-    2028: bed_mesh: cannot exceed a probe_count of 6 when using lagrange interpolation. Configured Probe Count: %d, %d"
-    2029: bed_mesh: invalid probe_count option when using bicubic interpolation.  Combination of 3 points on one axis with more than 6 on another is not permitted. Configured Probe Count: %d, %d"
+    2028: bed_mesh: cannot exceed a probe_count of 6 when using lagrange interpolation. Configured Probe Count: %d, %d
+    2029: bed_mesh: invalid probe_count option when using bicubic interpolation.  Combination of 3 points on one axis with more than 6 on another is not permitted. Configured Probe Count: %d, %d
     2030: bed_mesh: bicubic interpolation with a probe_count of less than 4 points detected.  Forcing lagrange interpolation. Configured Probe Count: %d, %d
     2031: Value for parameter 'PROFILE' must be specified
     2032: c_axis_align: improperly formatted entry for point %s
@@ -119,9 +119,9 @@ config:
     3010: Internal error in stepcompress
     3011: full_steps_per_rotation invalid in section '%s'
     3012: PWM cycle time too large
-    3013: MCU '%s' CRC does not match config"
+    3013: MCU '%s' CRC does not match config
     3014: MCU '%s' error during config: %s
-    3015: Unable to configure MCU '%s'"
+    3015: Unable to configure MCU '%s'
     3016: Failed automated reset of MCU '%s'
     3017: Too few moves available on MCU '%s'
     3018: problems with mcu indication '%s'
@@ -186,7 +186,6 @@ config:
     3078: Could not find config section '[%s]' required by tmc driver
     3079: TMC SPI chain must have same length
     3080: TMC SPI chain can not have duplicate position
-
     3081: Pin %s reserved for %s - can't reserve for %s
     3082: Alias %s mapped to %s - can't alias to %s
     3083: Invalid pin alias '%s'
@@ -202,6 +201,7 @@ config:
 датчик филамента:
     401: Filament error on Extruder0
     402: Filament error on Extruder1
+
     411: The filament has run out or there is a problem with its supply at the Extruder0.
     412: The filament has run out or there is a problem with its supply at the Extruder1.
     413: Switch to second extruder and resume printing.
@@ -210,11 +210,11 @@ config:
     416: Recover extrusion do extrude attempt %s'
     417: Extruding attempt completed successfully, resuming printing.
     418: Recover extrusion by offset %s'
-    419: algorithm the recover ecstrusion is disable.
+    419: Algorithm the recover extrusion is disable.
 
 диагностика:
     501: 3D module disabled, cannot set temperature for heater 'heater_bed'
-    502: 502: Extruder '%s' not connected
+    502: Extruder '%s' not connected
 
 экструдер:
     601: '%s' is not a valid extruder.
@@ -242,7 +242,7 @@ ethernet/client:
     709: mux endpoint %s %s %s already registered (%s)
     7010: The value '%s' is not valid for %s
     7011: webhooks: No registered callback for path '%s'
-    7012: Remote method '%s' not registered"
+    7012: Remote method '%s' not registered
     7013: No active connections for method '%s'
     7014: Invalid argument
     7015: Invalid argument
@@ -288,7 +288,7 @@ gcode/gcode cmd:
     904: printer not ready %s                            # printer is not ready for run this cmd
     905: The value '%s' is not valid for %s
     906: cmd STATUS %s
-    907: SAVE_CONFIG section '%s' option '%s' conflicts with included value"
+    907: SAVE_CONFIG section '%s' option '%s' conflicts with included value
     908: Unable to parse existing config on SAVE_CONFIG
     909: Unable to write config file during SAVE_CONFIG
     9011: error load variables %s
