@@ -34,7 +34,7 @@ jobs:
 
       - name: Get packages
         run: |
-          ./ci_build/python-env/bin/pip freeze > requirements.txt
+          ./ci_build/python-env/bin/pip freeze --all > requirements.txt
           pip download -r requirements.txt -d packages --python-version 27 --platform manylinux2014 --no-deps
 
       - name: Compile MCU firmware
