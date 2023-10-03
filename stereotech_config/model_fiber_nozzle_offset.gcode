@@ -1,5 +1,4 @@
-
-START
+START PARCKING=0
 G1 F200 E25 ;extrude 15 mm of feed stock
 G1 F200 E23.5 ;make retraction
 G92 E0 ;zero the extruded length again
@@ -3928,6 +3927,8 @@ CUT_FIBER
 G0 X31.298 Y231.419
 PRIME_FIBER
 M140 S0
+G28
+M84
 END
 M73 P100
 M82 ;absolute extrusion mode
