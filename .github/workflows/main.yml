@@ -35,7 +35,7 @@ jobs:
       - name: Get packages
         run: |
           ./ci_build/python-env/bin/pip freeze > requirements.txt
-          pip download -r requirements.txt -d packages  --python-version 27 --platform linux_armv7l --no-deps
+          pip download -r requirements.txt -d packages --python-version 27 --platform manylinux2014 --no-deps
 
       - name: Compile MCU firmware
         run: ./scripts/ci-build-stereotech.sh
@@ -93,14 +93,14 @@ jobs:
       - name: Set release type
         run: echo "RELEASE_TYPE=stable" >> $GITHUB_ENV
         if: github.ref == 'refs/heads/master'
-        
+
       - uses: actions/checkout@v2
 
       - name: Download a Build Artifact
         uses: actions/download-artifact@v2.0.10
         with:
           name: klipper
-          
+
       - name: Getting commits
         run: |
           touch changelog_raw.json
