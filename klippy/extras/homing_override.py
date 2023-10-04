@@ -31,7 +31,7 @@ class HomingOverride:
         self.axes_max = self.kin.axes_max
 
     def check_axes_for_homing(self, gcmd):
-        # Function to move the A-axis 45 degrees before parking the Z-axis
+        # Function to move the A axis 45 degrees before parking the Z-axis
         curtime = self.printer.get_reactor().monotonic()
         if self.kin is not None and self.toolhead is not None:
             kin_status = self.kin.get_status(curtime)
