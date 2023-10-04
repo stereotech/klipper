@@ -46,7 +46,8 @@ class HomingOverride:
 
     def check_position_z(self, status_kin):
         # The function checks the position axis Z before move by axis X or Y
-        if 'a' in status_kin['homed_axes'] or 'c' in status_kin['homed_axes']:
+        # check 5d module is instaled
+        if 'z' in status_kin['homed_axes']:
             # the axes Z in home state
             pos_z = status_kin['position'][2]
             danger_zone = status_kin['axis_maximum'][2] / 6.
@@ -54,27 +55,27 @@ class HomingOverride:
                 axis_z = status_kin['axis_maximum'][2] / 2.
                 return [None, None, axis_z, None, None, None]
 
-    def check_module(self, curtime):
+    def check_module(self, status_kin):
         # The function checks module 5d is installed
-        self.button = self.printer.lookup_objects('gcode_button')
-        button = [i[1] for i in self.button if i[0] == 'gcode_button five_axis_module']
-        state = True if button[0].get_status(curtime)['state'] == 'PRESSED' else False
+        state = True if 'a' in status_kin['homed_axes'] or 'c' in \
+            status_kin['homed_axes'] else False
         return state
 
     def check_axes_before_parking(self, gcmd):
         # The function do checks before parking
         curtime = self.printer.get_reactor().monotonic()
-        if self.check_module(curtime) and self.toolhead is not None:
-            # if the module 5d is installed
+        if self.toolhead is not None:
             status_kin = self.toolhead.get_status(curtime)
-            move_pos = []
-            if self.rotate_a and ('Z' in gcmd._params or 'A' in gcmd._params):
-                move_pos = self.check_axis_a(gcmd, status_kin)
-            if 'X' in gcmd._params or 'Y' in gcmd._params:
-                move_pos = self.check_position_z(status_kin)
-            # do move
-            if move_pos:
-                self.toolhead.manual_move(move_pos, 25.0)
+            if self.check_module(status_kin):
+                # if the module 5d is installed
+                move_pos = []
+                if self.rotate_a and ('Z' in gcmd._params or 'A' in gcmd._params):
+                    move_pos = self.check_axis_a(gcmd, status_kin)
+                if 'X' in gcmd._params or 'Y' in gcmd._params:
+                    move_pos = self.check_position_z(status_kin)
+                # do move
+                if move_pos:
+                    self.toolhead.manual_move(move_pos, 25.0)
 
     def cmd_G28(self, gcmd):
         if self.in_script:
