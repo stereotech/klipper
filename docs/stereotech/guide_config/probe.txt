@@ -47,7 +47,9 @@
 #   not run any special G-Code commands on deactivation.
 
 [probe basic_distances]
-#center_tempalte = 161, 243, 120
-#   The coordinate the template center points(in mm).
-offsets_sensor = -42.3, -48.14, 0.0
-    The distance (in mm) between the probe and the nozzle for x,y,z axes.
+#wcs_probe_1 = 159, 246.5, 120
+#    The coordinate wcs1 the template center points(in mm).
+#wcs_probe_2 = 159, 235, 120
+#    The coordinate wcs2 the template center points(in mm).
+#offsets_sensor = -42.3, -48.14, 0.0
+#    The distance (in mm) between the sensor and the nozzle for x,y,z axes.
