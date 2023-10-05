@@ -198,6 +198,7 @@ class GCodeDispatch:
             # Invoke handler for command
             handler = self.gcode_handlers.get(cmd, self.cmd_default)
             try:
+                logging.info('--------------------%s' % origline)
                 handler(gcmd)
             except self.error as e:
                 self._respond_error("901: Internal error on command: '%s', error: '%s'" % (
