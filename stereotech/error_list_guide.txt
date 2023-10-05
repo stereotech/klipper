@@ -4,6 +4,8 @@
     C: индификатор ошибки
     Пр:
         2020: 2-область калибровки; 0-error; 20-Mesh Leveling: Error splitting move
+        417: 4-область датчик_филамента; 1-warning; 7-Extruding attempt completed successfully, resuming printing.
+
 
 config:
     001: Unable to open config file %s
@@ -199,11 +201,8 @@ config:
     3091: Duplicate chip name '%s'
 
 датчик филамента:
-    401: Filament error on Extruder0
-    402: Filament error on Extruder1
-
-    411: The filament has run out or there is a problem with its supply at the Extruder0.
-    412: The filament has run out or there is a problem with its supply at the Extruder1.
+    401: Filament error on %s
+    411: The filament has run out or there is a problem with its supply at the %s
     413: Switch to second extruder and resume printing.
     414: All attempt to extrude failed.
     415: Recover extrusion after cooling and heating.
