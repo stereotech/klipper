@@ -332,10 +332,10 @@ class ProbeEndstopWrapper:
     def __init__(self, config):
         self.printer = config.get_printer()
         # load section for get basic distances
-        basic_distances = config.getsection('probe basic_distances')
+        basic_distances = config.getsection('gcode_macro CONSTANTS')
         # get the offset between sensor_probe and nozzle
         offsets = basic_distances.getlists(
-            'offsets_sensor', seps=',', parser=float)
+            'variable_offsets_sensor', seps=',', parser=float)
         self.position_endstop =  offsets[2]
         self.stow_on_each_sample = config.getboolean(
             'deactivate_on_each_sample', True)
