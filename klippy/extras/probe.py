@@ -20,20 +20,14 @@ class PrinterProbe:
         self.mcu_probe = mcu_probe
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
-        # load section for get basic distances
-        basic_distances = config.getsection('probe basic_distances')
-        # get the template center points
-        self.wcs_probe_1 = basic_distances.getlists(
-            'wcs_probe_1', seps=',', parser=float)
-        self.wcs_probe_2 = basic_distances.getlists(
-            'wcs_probe_2', seps=',', parser=float)
+        # load section for get the basic distances
+        basic_distances = config.getsection('gcode_macro CONSTANTS')
         # get the offset between sensor_probe and nozzle
         offsets = basic_distances.getlists(
-            'offsets_sensor', seps=',', parser=float)
+            'variable_offsets_sensor', seps=',', parser=float)
         self.x_offset = offsets[0]
         self.y_offset = offsets[1]
         self.z_offset = offsets[2]
-
         self.probe_calibrate_z = 0.
         self.multi_probe_pending = False
         self.last_state = False
@@ -225,9 +219,7 @@ class PrinterProbe:
     def get_status(self, eventtime):
         return {'last_query': self.last_state,
                 'last_result': self.last_result,
-                'offsets': self.get_offsets(),
-                'wcs_probe_1': self.wcs_probe_1,
-                'wcs_probe_2': self.wcs_probe_2,
+                'offsets': self.get_offsets()
                 }
     cmd_PROBE_ACCURACY_help = "Probe Z-height accuracy at current XY position"
     def cmd_PROBE_ACCURACY(self, gcmd):
