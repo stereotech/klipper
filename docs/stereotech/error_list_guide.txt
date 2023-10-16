@@ -199,6 +199,7 @@ config:
     3089: Shared pin %s must have same polarity
     3090: Unknown chip name '%s'
     3091: Duplicate chip name '%s'
+    3092: Lost communication with MCU '%s'
 
 датчик филамента:
     401: Filament error on %s
