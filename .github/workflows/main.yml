@@ -101,6 +101,24 @@ jobs:
         with:
           name: klipper
 
+      - name: Getting commits
+        run: |
+          touch changelog_raw.json
+          json='${{ toJSON(github.event.commits) }}'
+          echo "$json" >> ./changelog_raw.json
+          cat ./changelog_raw.json
+
+      - name: Getting commit in python
+        continue-on-error: true
+        run: |
+          pip install yandex_tracker_client
+          touch changelog.json
+          python scripts/commits.py -c ./changelog_raw.json >> ./changelog.json
+          cat ./changelog.json
+        env:
+          OAUTH_TOKEN: ${{ secrets.OAUTH_TOKEN }}
+          ORG_ID: ${{ secrets.ORG_ID }}
+
       - name: Upload to AWS
         run: |
           aws s3 --endpoint-url=https://storage.yandexcloud.net cp klipper.tar.bz2 s3://${{ secrets.BUCKET_NAME }}/firmware_v5/${{ env.RELEASE_TYPE }}/ --acl public-read
