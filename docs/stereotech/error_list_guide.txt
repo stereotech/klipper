@@ -1,0 +1,303 @@
+Код ошибки состоит из 3х частей, ABC:
+    A: к какой области относится ошибка, диапазон: 0-6
+    B: статус ошибки error/warning, диапазон: 0-1
+    C: индификатор ошибки
+    Пр:
+        2020: 2-область калибровки; 0-error; 20-Mesh Leveling: Error splitting move
+        417: 4-область датчик_филамента; 1-warning; 7-Extruding attempt completed successfully, resuming printing.
+
+
+config:
+    001: Unable to open config file %s
+    002: Existing command '%s' not found in gcode_macro rename
+    003: Choice '%s' for option '%s' in section '%s' is not a valid choice
+    004: Option '%s' in section '%s' must be specified
+    005: Include file '%s' does not exist
+    006: Recursive include of config file '%s'
+    007: Section '%s' is not a valid config section
+    008: Option '%s' is not valid in section '%s'
+    009: Printer object '%s' already created
+    0010: Unknown config object '%s'
+    0011: Unable to load module '%s'
+    0012: gcode command %s already registered
+    0013: mux command %s %s %s may have only one key (%s)
+    0014: mux command %s %s %s already registered (%s)
+    0015: Error loading kinematics '%s'
+    0016: Error loading template '%s': %s
+    0017: Error evaluating '%s': %s
+    0018: A primary [display] section must be defined in printer.cfg to use auxilary displays
+    0019: Section name [display display] is not valid. Please choose a different postfix.
+    0020: Unable to parse option '%s' in section '%s'
+    0021: Option '%s' in section '%s' must have minimum of %s
+    0022: Option '%s' in section '%s' must have maximum of %s
+    0023: Option '%s' in section '%s' must be above %s
+    0024: Option '%s' in section '%s' must be below %s
+    0025: Unable to load module '%s'
+
+печать/кинематика/движение:
+    101: Error loading kinematics
+    102: G-Code move transform already specified
+    103: Invalid speed in '%s'
+    104: Unable to parse move '%s'
+    105: Unknown g-code state: %s
+    106: Printer not ready
+    107: Invalid speed in '%s'
+    108: Unable to parse move '%s'
+    109: Must home X and Y axes first
+    1010: homing_override and safe_z_homing cannot be used simultaneously
+    1011: virtual_sdcard get_file_list
+    1012: SD write not supported
+    1013: SDCARD_RESET_FILE cannot be run from the sdcard
+    1014: SD busy
+    1015: SD busy
+    1016: Unable to open file %s
+    1017: SD busy
+    1018: SD busy
+    1019: Must home axis first (error axis %s)  - ось не запаркована
+    1020: Axis %s move out of the range         - выезд за диапазон печати
+    1021: error edit file %s                    - ошибка в редактировании файла, не получилось задать нужную температуру
+    1022: Unknown stepper %s
+    1023: Unknown stepper %s
+
+калибровка:
+    201: axis x=%f out of range (%f - %f)
+    202: axis y=%f out of range (%f - %f)
+    203: axis z=%f out of range (%f - %f)
+    204: Error, tool length not enough for calculate wcs_2_y
+    205: Error, radius by tool not enough, more 10 mm.
+    206: Error when moving and measuring relative to the tool
+    207: Error, tool length lees 50 mm.
+    208: Error, tool length not enough, less 35 mm.
+    209: b_axis_compensation: improperly formatted entry for point %s
+    2010: bed_mesh: malformed '%s' value: %s
+    2011: Option '%s' in section bed_mesh must have a minimum of %s
+    2012: Option '%s' in section bed_mesh must have a maximum of %s
+    2013: Unable to parse parameter '%s'
+    2014: Unable to parse parameter '%s'
+    2015: Parameter '%s
+    2016: Parameter '%s' must have a maximum of %d
+    2017: Unable to parse parameter '%s'
+    2018: bed_mesh: ERROR, fade_target lies outside of mesh z range min: %.4f, max: %.4f, fade_target: %.4f
+    2019: bed_mesh:  Mesh extends outside of the fade range, please see the fade_start and fade_end options in example-extras.cfg. fade distance: %.2f mesh min: %.4f mesh max: %.4f
+    2020: Mesh Leveling: Error splitting move
+    2021: bed_mesh: min/max points too close together
+    2022: bed_mesh: Unable to generate coordinates for faulty region at index: %d
+    2023: bed_mesh: probe_count must be odd for round beds
+    2024: bed_mesh: invalid min/max points
+    2025: bed_mesh: Existing faulty_region_%d %s overlaps added faulty_region_%d %s
+    2026: bed_mesh: Added faulty_region_%d %s overlaps existing faulty_region_%d %s
+    2027: bed_mesh: Unknown algorithm <%s>
+    2028: bed_mesh: cannot exceed a probe_count of 6 when using lagrange interpolation. Configured Probe Count: %d, %d
+    2029: bed_mesh: invalid probe_count option when using bicubic interpolation.  Combination of 3 points on one axis with more than 6 on another is not permitted. Configured Probe Count: %d, %d
+    2030: bed_mesh: bicubic interpolation with a probe_count of less than 4 points detected.  Forcing lagrange interpolation. Configured Probe Count: %d, %d
+    2031: Value for parameter 'PROFILE' must be specified
+    2032: c_axis_align: improperly formatted entry for point %s
+    2033: Probe virtual endstop only useful as endstop pin
+    2034: Can not pullup/invert probe virtual endstop
+    2035: Must home before probe
+    2036: probe error: '%s'
+    2037: Probe samples exceed samples_tolerance
+    2038: Toolhead moved during probe activate_gcode script
+    2039: Toolhead moved during probe deactivate_gcode script
+    2040: Need at least %d probe points for %s
+    2041: horizontal_move_z can't be less than probe's z_offset
+    2042: skew_corection: improperly formatted entry for point %s
+    2043: Error factor name %s not in list factors['XY', 'XZ', 'YZ']
+    2044: skew_correction: improperly formatted entry for plane %s: %s
+    2045: auto_wcs: improperly formatted entry for point %s
+    2046: a_axis_offset: improperly formatted entry for point %s
+    2047: auto_wcs: improperly formatted entry for point %s
+
+перефирия(mcu):
+    301: Timeout on wait for '%s' response
+    302: Error send cmd to mcu '%s'
+    303: Multi-mcu homing not supported on multi-mcu shared axis
+    304: Unable to write tmc spi '%s' register %s
+    305: Pin '%s' is not a valid pin name on mcu '%s'
+    306: Stepper dir pin must be on same mcu as step pin
+    307: Internal error in stepcompress
+    308: Internal error in stepcompress
+    309: Internal error in stepcompress
+    3010: Internal error in stepcompress
+    3011: full_steps_per_rotation invalid in section '%s'
+    3012: PWM cycle time too large
+    3013: MCU '%s' CRC does not match config
+    3014: MCU '%s' error during config: %s
+    3015: Unable to configure MCU '%s'
+    3016: Failed automated reset of MCU '%s'
+    3017: Too few moves available on MCU '%s'
+    3018: problems with mcu indication '%s'
+    3020: Internal error in MCU '%s' stepcompress
+    3021: position_endstop in section '%s' must be between position_min and position_max
+    3022: Unable to infer homing_positive_dir in section '%s'
+    3023: Invalid homing_positive_dir / position_endstop in '%s'
+    3024: Pinter rail %s shared endstop pin %s must specify the same pullup/invert settings
+    3025: Must specify %s on mcu '%s'
+    3026: Unknown bus name %s '%s'
+    3027: %s: spi pins must be on same mcu
+    3028: Pin %s must be on mcu %s
+    3029: button pins must be on same mcu
+    3030: %d steps per detent not supported
+    3031: Duplicate canbus_uuid
+    3032: 3032: Unknown canbus_uuid %s
+    3033: One or more of these steppers are unknown: %s (valid steppers are: %s)
+    3034: Stepper %s phase unknown
+    3035: Invalid trigger_phase '%s'
+    3036: Endstop for %s is not accurate enough for stepper phase adjustment
+    3037: Endstop %s incorrect phase (got %d vs %d)
+    3038: Stats not available for stepper %s
+    3039: Requested temperature (%.1f) out of range (%.1f:%.1f)
+    3040: Cannot load config '%s'
+    3041: Heater %s already registered
+    3042: Unknown heater '%s'
+    3043: G-Code sensor id %s already registered
+    3044: Unknown temperature sensor '%s'
+    3045: Error on 'TEMPERATURE_WAIT': missing MINIMUM or MAXIMUM.
+    3046: Unknown sensor '%s'
+    3047: error homing_move_end '%s'
+    3048: Endstop %s still triggered after retract              # Концевой упор <ОСЬ> все еще зажат(включен) после того как ось сделала ретракт перед повторной парковкой)
+    3049: Homing failed due to printer shutdown
+    3050: Probing failed due to printer shutdown
+    3051: Probe triggered prior to movement
+    3052: Homing failed due to printer shutdown
+    3053: Invalid pin value
+    3054: error cmd PID_CALIBRATE '%s'
+    3055: pid_calibrate interrupted
+    3056: Unknown stepper '%s'
+    3057: Requested min speed (%.1f) is greater than max speed (%.1f)
+    3058: Requested temperature (%.1f) out of range (%.1f:%.1f)
+    3059: Requested min speed (%.1f) out of range (0.0 : 1.0)
+    3060: Requested max speed (%.1f) out of range (0.0 : 1.0)
+    3061: Unable to open temperature file '%s'
+    3062: MCU temperature not supported on %s
+    3063: TMC mux pins must be on the same mcu
+    3064: All TMC mux instances must use identical pins
+    3065: Shared TMC uarts must use the same pins
+    3066: Shared TMC uarts need unique address or select_pins polarity
+    3067: TMC uart rx and tx pins must be on the same mcu
+    3068: Unable to read tmc uart '%s' register %s
+    3069: Unable to write tmc uart '%s' register %s
+    3070: TMC '%s' reports error: %s
+    3071: Unknown field name '%s'
+    3072: VELOCITY parameter not supported by this driver
+    3073: Specify either VALUE or VELOCITY
+    3074: Unknown register name '%s'
+    3075: tmc virtual endstop only useful as endstop
+    3076: Can not pullup/invert tmc virtual pin
+    3077: tmc virtual endstop requires diag pin config
+    3078: Could not find config section '[%s]' required by tmc driver
+    3079: TMC SPI chain must have same length
+    3080: TMC SPI chain can not have duplicate position
+    3081: Pin %s reserved for %s - can't reserve for %s
+    3082: Alias %s mapped to %s - can't alias to %s
+    3083: Invalid pin alias '%s'
+    3084: pin %s is an alias for %s
+    3085: pin %s is reserved for %s
+    3086: Unknown pin chip name '%s'
+    3087: Invalid pin description '%s'. Format is: %s[chip_name:] pin_name
+    3088: pin %s used multiple times in config
+    3089: Shared pin %s must have same polarity
+    3090: Unknown chip name '%s'
+    3091: Duplicate chip name '%s'
+
+датчик филамента:
+    401: Filament error on %s
+    411: The filament has run out or there is a problem with its supply at the %s
+    413: Switch to second extruder and resume printing.
+    414: All attempt to extrude failed.
+    415: Recover extrusion after cooling and heating.
+    416: Recover extrusion do extrude attempt %s'
+    417: Extruding attempt completed successfully, resuming printing.
+    418: Recover extrusion by offset %s'
+    419: Algorithm the recover extrusion is disable.
+
+диагностика:
+    501: 3D module disabled, cannot set temperature for heater 'heater_bed'
+    502: Extruder '%s' not connected
+
+экструдер:
+    601: '%s' is not a valid extruder.
+    602: Active extruder does not have a stepper
+    603: Unable to infer active extruder stepper
+    604: Rotation distance can not be zero
+    605: Extrude below minimum temp. See the 'min_extrude_temp' config option for details
+    606: Extrude only move too long (%.3fmm vs %.3fmm). See the 'max_extrude_only_distance' config option for details
+    607: Move exceeds maximum extrusion (%.3fmm^2 vs %.3fmm^2). See the 'max_extrude_cross_section' config option for details
+    608: Extruder not configured
+    609: Extrude when no extruder present
+    6010: Extruder not configured
+    6011: Extruder (trapq) not configured
+    611: Extruder not hot enough.
+
+ethernet/client:
+    701: Not a top-level dictionary
+    702: Invalid request type
+    703: Missing Argument [%s]
+    704: Invalid Argument Type [%s]
+    705: Multiple calls to send not allowed
+    706: webhooks: Unable to delete socket file '%s'
+    707: Path already registered to an endpoint
+    708: mux endpoint %s %s %s may have only one key (%s)
+    709: mux endpoint %s %s %s already registered (%s)
+    7010: The value '%s' is not valid for %s
+    7011: webhooks: No registered callback for path '%s'
+    7012: Remote method '%s' not registered
+    7013: No active connections for method '%s'
+    7014: Invalid argument
+    7015: Invalid argument
+
+остальное:
+    801: Unknown command: %s
+    802: Error in coordinate descent: %s
+    803: Unknown value '%s' in enumeration '%s'
+    804: Invalid output format for '%s'
+    805: Extra data at end of message
+    806: Unable to parse firmware constant %s: %s
+    807: Wait for identify_response
+    808: Unable to obtain '%s' response
+    809: Command format mismatch: %s vs %s
+    8010: Unknown command: %s
+    8011: Unknown command: %s
+    8012: Unable to extract params from: %s
+    8013: Unable to encode: %s
+    8014: Multi-byte msgtag not supported
+    8015: Error during identify: %s
+    8016: Firmware constant '%s' not found
+    8017: Invalid CAN uuid
+    8018: Unable to connect
+    8019: Exception in serial callback
+    8020: Error in canbus_uuid check
+    8021: Unable to connect
+    8022: Unable to connect
+    8023: Serial connection closed
+
+    811: Unable to open CAN port: %s
+    812: Unable to open port: %s
+    813: Printer not homed
+    814: Printer not homed
+    815: Printer not homed.
+    816: Unable to open serial port:  %s
+    817: Unknown message type %d: %s
+    818: got %s
+
+gcode/gcode cmd:
+    901: Internal error on command: '%s', error: '%s'
+    902: Malformed command '%s'
+    903: Internal error on command: '%s', origline '%s'
+    904: printer not ready %s                            # printer is not ready for run this cmd
+    905: The value '%s' is not valid for %s
+    906: cmd STATUS %s
+    907: SAVE_CONFIG section '%s' option '%s' conflicts with included value
+    908: Unable to parse existing config on SAVE_CONFIG
+    909: Unable to write config file during SAVE_CONFIG
+    9011: error load variables %s
+    9012: Unable to parse existing variable file
+    9013: Unable to parse '%s' as a literal
+    9014: Unable to save variable
+    9015: Error on '%s': unable to parse %s
+    9016: Error on '%s': %s must have minimum of %s
+    9017: Error on '%s': %s must have maximum of %s
+    9018: Error on '%s': %s must be above %s
+    9019: Error on '%s': %s must be below %s
+
+    911: Unknown command: '%s'

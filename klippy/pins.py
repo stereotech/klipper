@@ -23,15 +23,15 @@ class PinResolver:
         self.active_pins = {}
     def reserve_pin(self, pin, reserve_name):
         if pin in self.reserved and self.reserved[pin] != reserve_name:
-            raise error("304: Pin %s reserved for %s - can't reserve for %s" % (
+            raise error("3081: Pin %s reserved for %s - can't reserve for %s" % (
                 pin, self.reserved[pin], reserve_name))
         self.reserved[pin] = reserve_name
     def alias_pin(self, alias, pin):
         if alias in self.aliases and self.aliases[alias] != pin:
-            raise error("304: Alias %s mapped to %s - can't alias to %s" % (
+            raise error("3082: Alias %s mapped to %s - can't alias to %s" % (
                 alias, self.aliases[alias], pin))
         if [c for c in '^~!:' if c in pin] or ''.join(pin.split()) != pin:
-            raise error("304: Invalid pin alias '%s'\n" % (pin,))
+            raise error("3083: Invalid pin alias '%s'" % (pin,))
         if pin in self.aliases:
             pin = self.aliases[pin]
         self.aliases[alias] = pin
@@ -44,10 +44,10 @@ class PinResolver:
             pin_id = self.aliases.get(name, name)
             if (name != self.active_pins.setdefault(pin_id, name)
                 and self.validate_aliases):
-                raise error("304: pin %s is an alias for %s" % (
+                raise error("3084: pin %s is an alias for %s" % (
                     name, self.active_pins[pin_id]))
             if pin_id in self.reserved:
-                raise error("304: pin %s is reserved for %s" % (
+                raise error("3085: pin %s is reserved for %s" % (
                     name, self.reserved[pin_id]))
             return m.group('prefix') + str(pin_id)
         return re_pin.sub(pin_fixup, cmd)
@@ -80,14 +80,14 @@ class PrinterPins:
         else:
             chip_name, pin = [s.strip() for s in desc.split(':', 1)]
         if chip_name not in self.chips:
-            raise error("304: Unknown pin chip name '%s'" % (chip_name,))
+            raise error("3086: Unknown pin chip name '%s'" % (chip_name,))
         if [c for c in '^~!:' if c in pin] or ''.join(pin.split()) != pin:
             format = ""
             if can_pullup:
                 format += "[^~] "
             if can_invert:
                 format += "[!] "
-            raise error("304: Invalid pin description '%s'\n"
+            raise error("3087: Invalid pin description '%s'. \n"
                         "Format is: %s[chip_name:] pin_name" % (
                             pin_desc, format))
         pin_params = {'chip': self.chips[chip_name], 'chip_name': chip_name,
@@ -103,10 +103,10 @@ class PrinterPins:
             if share_name in self.allow_multi_use_pins:
                 pass
             elif share_type is None or share_type != share_params['share_type']:
-                raise error("304: pin %s used multiple times in config" % (pin,))
+                raise error("3088: pin %s used multiple times in config" % (pin,))
             elif (pin_params['invert'] != share_params['invert']
                   or pin_params['pullup'] != share_params['pullup']):
-                raise error("304: Shared pin %s must have same polarity" % (pin,))
+                raise error("3089: Shared pin %s must have same polarity" % (pin,))
             return share_params
         pin_params['share_type'] = share_type
         self.active_pins[share_name] = pin_params
@@ -121,12 +121,12 @@ class PrinterPins:
         del self.active_pins[share_name]
     def get_pin_resolver(self, chip_name):
         if chip_name not in self.pin_resolvers:
-            raise error("304: Unknown chip name '%s'" % (chip_name,))
+            raise error("3090: Unknown chip name '%s'" % (chip_name,))
         return self.pin_resolvers[chip_name]
     def register_chip(self, chip_name, chip):
         chip_name = chip_name.strip()
         if chip_name in self.chips:
-            raise error("304: Duplicate chip name '%s'" % (chip_name,))
+            raise error("3091: Duplicate chip name '%s'" % (chip_name,))
         self.chips[chip_name] = chip
         self.pin_resolvers[chip_name] = PinResolver()
     def allow_multi_use_pin(self, pin_desc):

@@ -175,7 +175,7 @@ class GCodeMacro:
         prev_cmd = self.gcode.register_command(self.alias, None)
         if prev_cmd is None:
             raise self.printer.config_error(
-                "0020: Existing command '%s' not found in gcode_macro rename"
+                "002: Existing command '%s' not found in gcode_macro rename"
                 % (self.alias,))
         pdesc = "Renamed builtin of '%s'" % (self.alias,)
         self.gcode.register_command(self.rename_existing, prev_cmd, desc=pdesc)

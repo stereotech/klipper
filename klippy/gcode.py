@@ -64,19 +64,19 @@ class GCodeCommand:
         try:
             value = parser(value)
         except:
-            raise self.error("903: Error on '%s': unable to parse %s"
+            raise self.error("9015: Error on '%s': unable to parse %s"
                              % (self._commandline, value))
         if minval is not None and value < minval:
-            raise self.error("903: Error on '%s': %s must have minimum of %s"
+            raise self.error("9016: Error on '%s': %s must have minimum of %s"
                              % (self._commandline, name, minval))
         if maxval is not None and value > maxval:
-            raise self.error("903: Error on '%s': %s must have maximum of %s"
+            raise self.error("9017: Error on '%s': %s must have maximum of %s"
                              % (self._commandline, name, maxval))
         if above is not None and value <= above:
-            raise self.error("903: Error on '%s': %s must be above %s"
+            raise self.error("9018: Error on '%s': %s must be above %s"
                              % (self._commandline, name, above))
         if below is not None and value >= below:
-            raise self.error("903: Error on '%s': %s must be below %s"
+            raise self.error("9019: Error on '%s': %s must be below %s"
                              % (self._commandline, name, below))
         return value
     def get_int(self, name, default=sentinel, minval=None, maxval=None):
@@ -200,13 +200,13 @@ class GCodeDispatch:
             try:
                 handler(gcmd)
             except self.error as e:
-                self._respond_error('901: Internal error on command: "%s", error: "%s\n"' % (
+                self._respond_error("901: Internal error on command: '%s', error: '%s'" % (
                     origline, str(e)))
                 self.printer.send_event("gcode:command_error")
                 if not need_ack:
                     raise
             except:
-                msg = '9015: Internal error on command:"%s", origline"%s"' % (
+                msg = "903: Internal error on command: '%s', origline '%s'" % (
                     cmd, origline)
                 logging.exception(msg)
                 self.printer.invoke_shutdown(msg)
@@ -278,7 +278,7 @@ class GCodeDispatch:
             # Don't warn about sd card init when not ready
             return
         if not self.is_printer_ready:
-            raise gcmd.error("904: %s" % self.printer.get_state_message()[0])
+            raise gcmd.error("904: printer not ready %s" % self.printer.get_state_message()[0])
             return
         if not cmd:
             cmdline = gcmd.get_commandline()
@@ -298,7 +298,7 @@ class GCodeDispatch:
                 not gcmd.get_float('S', 1.) or self.is_fileinput)):
             # Don't warn about requests to turn off fan when fan not present
             return
-        gcmd.respond_warning('911: Unknown command:"%s"' % (cmd,))
+        gcmd.respond_warning("911: Unknown command: '%s'" % (cmd,))
     def _cmd_mux(self, command, gcmd):
         key, values = self.mux_commands[command]
         if None in values:
@@ -347,7 +347,7 @@ class GCodeDispatch:
         if self.is_printer_ready:
             self._respond_state("Ready")
             return
-        msg = "906: %s" % self.printer.get_state_message()[0]
+        msg = "906: cmd STATUS %s" % self.printer.get_state_message()[0]
         msg = msg.rstrip() + "\nKlipper state: Not ready"
         raise gcmd.error(msg)
     cmd_HELP_help = "Report the list of available extended G-Code commands"

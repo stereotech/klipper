@@ -1,10 +1,16 @@
-# This file describes the Python virtualenv package requirements for
-# the Klipper host software (Klippy).  These package requirements are
-# typically installed via the command:
-#   pip install -r klippy-requirements.txt
+# WARNING!
+#   for added new recuirements use the command  "klippy-env/bin/pip freeze --all > scripts/klippy-requirements.txt"
+#   and remove row the pkg-resources==0.0.0
+aenum==3.1.15
 cffi==1.14.6
-pyserial==3.4
 greenlet==2.0.2
 Jinja2==2.11.3
+MarkupSafe==1.1.1
+pip==20.3.4
+pycparser==2.21
+pyserial==3.4
 python-can==3.3.4
-markupsafe==1.1.1
+setuptools==44.1.1
+typing==3.10.0
+wheel==0.37.1
+wrapt==1.15.0

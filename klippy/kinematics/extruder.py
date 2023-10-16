@@ -14,6 +14,7 @@ class ExtruderStepper:
         self.printer = config.get_printer()
         self.name = config.get_name().split()[-1]
         self.pressure_advance = self.pressure_advance_smooth_time = 0.
+        offset_x, offset_y, offset_z = config.getfloatlist('offsets', (0., 0., 0.), count=3)
         self.config_pa = config.getfloat('pressure_advance', 0., minval=0.)
         self.config_smooth_time = config.getfloat(
                 'pressure_advance_smooth_time', 0.040, above=0., maxval=.200)
@@ -240,14 +241,14 @@ class PrinterExtruder:
         axis_r = move.axes_r[5]
         if not self.heater.can_extrude:
             raise self.printer.command_error(
-                "605: Extrude below minimum temp\n"
+                "605: Extrude below minimum temp.\n"
                 "See the 'min_extrude_temp' config option for details")
         if (not move.axes_d[0] and not move.axes_d[1] and not move.axes_d[2]
                 and not move.axes_d[3] and not move.axes_d[4]) or axis_r < 0.:
             # Extrude only move (or retraction move) - limit accel and velocity
             if abs(move.axes_d[5]) > self.max_e_dist:
                 raise self.printer.command_error(
-                    "606: Extrude only move too long (%.3fmm vs %.3fmm)\n"
+                    "606: Extrude only move too long (%.3fmm vs %.3fmm). \n"
                     "See the 'max_extrude_only_distance' config"
                     " option for details" % (move.axes_d[5], self.max_e_dist))
             inv_extrude_r = 1. / abs(axis_r)
@@ -261,7 +262,7 @@ class PrinterExtruder:
             logging.debug("Overextrude: %s vs %s (area=%.3f dist=%.3f)",
                           axis_r, self.max_extrude_ratio, area, move.move_d)
             raise self.printer.command_error(
-                "607: Move exceeds maximum extrusion (%.3fmm^2 vs %.3fmm^2)\n"
+                "607: Move exceeds maximum extrusion (%.3fmm^2 vs %.3fmm^2). \n"
                 "See the 'max_extrude_cross_section' config option for details"
                 % (area, self.max_extrude_ratio * self.filament_area))
 
@@ -350,7 +351,7 @@ class DummyExtruder:
         raise self.printer.command_error("6010: Extruder not configured")
 
     def get_trapq(self):
-        raise self.printer.command_error("6011: Extruder not configured")
+        raise self.printer.command_error("6011: Extruder (trapq) not configured")
 
 
 def add_printer_objects(config):

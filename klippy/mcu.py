@@ -68,7 +68,7 @@ class CommandQueryWrapper:
         try:
             return xh.get_response(cmds, self._cmd_queue, minclock, reqclock)
         except serialhdl.error as e:
-            raise self._error("302: %s" % str(e))
+            raise self._error("302: Error send cmd to mcu '%s'" % str(e))
     def send(self, data=(), minclock=0, reqclock=0):
         return self._do_send([self._cmd.encode(data)], minclock, reqclock)
     def send_with_preface(self, preface_cmd, preface_data=(), data=(),
@@ -800,7 +800,7 @@ class MCU:
                     self._serial.connect_pipe(self._serialport)
                 self._clocksync.connect(self._serial)
             except serialhdl.error as e:
-                raise error("3018: %s" % str(e))
+                raise error("3018: problems with mcu indication '%s'" % str(e))
         logging.info(self._log_info())
         ppins = self._printer.lookup_object('pins')
         pin_resolver = ppins.get_pin_resolver(self._name)
