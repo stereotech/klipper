@@ -46,9 +46,6 @@ class AutoWcs:
         self.gcode.register_command(
             'SET_PROBE_BACKLASH', self.cmd_SET_PROBE_BACKLASH,
             desc=self.cmd_SET_PROBE_BACKLASH_help)
-        self.gcode.register_command(
-            'CALC_WCS_TOOL', self.cmd_CALC_WCS_TOOL,
-            desc=self.cmd_CALC_WCS_TOOL_help)
 
     def _calc_wcs_old_sensor(self, thickness, adj, gcmd):
         thickness = thickness / 2.0
@@ -79,7 +76,7 @@ class AutoWcs:
         delta_z = self.point_coords[0][2] - (self.point_coords[4][2] - (55 - adj))
         avg_delta = (delta_y + delta_z) / 2.0
         gcmd.respond_info("D_Y: %.3f, D_Z: %.3f, Avg_D: %.3f" % (delta_y, delta_z, avg_delta))
-        z = self.point_coords[0][2] - delta_z
+        z = self.point_coords[4][2] - 10.
         return x, y, z
 
     def _calc_wcs_new_sensor(self):
@@ -92,7 +89,7 @@ class AutoWcs:
         thickness = len_thickness / 2.
         x = (self.point_coords[8][0] + self.point_coords[9][0]) / 2.
         y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2. - thickness
-        z = self.point_coords[4][2] - len_thickness
+        z = self.point_coords[4][2] - 10.
         return x, y, z
 
     def calculate_probe_backlash(self, x1, y1, y2):
@@ -123,19 +120,6 @@ class AutoWcs:
         gcmd.respond_info('radius_tooling= %s, centr_tool(%s;%s)' % (
                 radius, centr_x, centr_y))
         return radius
-
-    cmd_CALC_WCS_TOOL_help = "command for calculate wcs coordinate for SPIRALL-FULL."
-    def cmd_CALC_WCS_TOOL(self, gcmd):
-        wcs =  gcmd.get_int('WCS')
-        ind_axis = gcmd.get_int('AXIS')
-        new_axis = (self.point_coords[0][ind_axis] + self.point_coords[1][ind_axis]) / 2.
-        gcode_move = self.printer.lookup_object('gcode_move')
-        old_axis = gcode_move.wcs_offsets[wcs][ind_axis]
-        diff_axis = new_axis - old_axis
-        self.wcs[wcs - 1][ind_axis] = new_axis
-        gcmd.respond_info("""calculated wcs_%d_%d=%f,
-            difference between tool and template=%f.""" % (wcs, ind_axis, new_axis, diff_axis))
-        return new_axis
 
     cmd_CALC_TOOL_RADIUS_help = "command for get the tooling radius from measuring points."
     def cmd_CALC_TOOL_RADIUS(self, gcmd):
