@@ -1,0 +1,9 @@
+[gcode_macro CONSTANTS]
+#description: Holds printer constants
+#variable_extruder_load_length: 130
+#    the length of the teflon tube from the extruder to the nozzle
+#variable_extruder1_load_length: 1600
+#    the length of the teflon tube from the extruder1 to the nozzle
+#variable_path_to_model_nozzle_offset: '/home/ste/klipper/config/common/model_hybrid_nozzle_offset.gcode'
+#    the path to the model file for determining the offset between the nozzles
+#gcode:

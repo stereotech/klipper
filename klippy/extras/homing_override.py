@@ -46,7 +46,7 @@ class HomingOverride:
 
     def check_position_z(self, status_kin):
         # The function checks the position axis Z before move by axis X or Y
-        # check 5d module is instaled
+        # check 5d module is installed
         if 'z' in status_kin['homed_axes']:
             # the axes Z in home state
             pos_z = status_kin['position'][2]
