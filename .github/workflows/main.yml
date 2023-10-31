@@ -34,7 +34,7 @@ jobs:
 
       - name: Get packages
         run: |
-          ./ci_build/python-env/bin/pip freeze > requirements.txt
+          ./ci_build/python-env/bin/pip freeze --all > requirements.txt
           pip download -r requirements.txt -d packages --python-version 27 --platform manylinux2014 --no-deps
 
       - name: Compile MCU firmware
@@ -100,24 +100,6 @@ jobs:
         uses: actions/download-artifact@v2.0.10
         with:
           name: klipper
-
-      - name: Getting commits
-        run: |
-          touch changelog_raw.json
-          json='${{ toJSON(github.event.commits) }}'
-          echo "$json" >> ./changelog_raw.json
-          cat ./changelog_raw.json
-
-      - name: Getting commit in python
-        continue-on-error: true
-        run: |
-          pip install yandex_tracker_client
-          touch changelog.json
-          python scripts/commits.py -c ./changelog_raw.json >> ./changelog.json
-          cat ./changelog.json
-        env:
-          OAUTH_TOKEN: ${{ secrets.OAUTH_TOKEN }}
-          ORG_ID: ${{ secrets.ORG_ID }}
 
       - name: Upload to AWS
         run: |

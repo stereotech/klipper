@@ -977,7 +977,7 @@ class MCU:
         self._is_timeout = True
         logging.info("Timeout with MCU '%s' (eventtime=%f)",
                      self._name, eventtime)
-        self._printer.invoke_shutdown("Lost communication with MCU '%s'" % (
+        self._printer.invoke_shutdown("3092: Lost communication with MCU '%s'" % (
             self._name,))
     def get_status(self, eventtime=None):
         return dict(self._get_status_info)
