@@ -1,4 +1,4 @@
-START
+START PARKING=0
 G1 F200 E25 ;extrude 15 mm of feed stock
 G1 F200 E23.5 ;make retraction
 G92 E0 ;zero the extruded length again
@@ -181,7 +181,8 @@ G1 F600.00 Y93.00 E13.969
 G0 F1200 X130.70 Y73.00
 G1 F600.00 Y93.00 E14.967
 M140 S0
-END
+G28
+END MOVE_DOWN_Z=0 PARKING=0 MOVE_CHANGE_EXTRUDER=0
 M73 P100
 M82 ;absolute extrusion mode
 M104 S0
