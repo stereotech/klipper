@@ -52,6 +52,26 @@
                 // "-l",
                 // "/tmp/dev_klipper_log.log"
             ]
+        },
+        {
+            "name": "Run klipper 750",
+            "type": "python",
+            "request": "launch",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceFolder}/klippy/klippy.py",
+            "args": [
+                "${workspaceFolder}/HTE750-0-0-23.cfg",
+                "-v",
+                "-a",
+                "/tmp/klipper_uds",
+                // "-l",
+                // "/tmp/dev_klipper_log.log"
+            ]
         }
     ]
 }
