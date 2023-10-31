@@ -1,5 +1,4 @@
-
-START
+START PARKING=0
 G1 F200 E25 ;extrude 15 mm of feed stock
 G1 F200 E23.5 ;make retraction
 G92 E0 ;zero the extruded length again
@@ -3918,7 +3917,7 @@ M109 T0 S150
 ;M104 S{params.SECOND_E|default(250)}
 ;M109 S{params.SECOND_E|default(250)}
 M109 T1 S250
-;left-> rigth
+;left-> right
 G92 E0 ;zero the extruded length again
 G0 F1800 X211.298 Y51.419 Z0.5
 G0 F200 X31.298 Y51.419 E180
@@ -3928,9 +3927,9 @@ CUT_FIBER
 G0 X31.298 Y231.419
 PRIME_FIBER
 M140 S0
-END
+G28
+END MOVE_DOWN_Z=0 PARKING=0 MOVE_CHANGE_EXTRUDER=0
 M73 P100
 M82 ;absolute extrusion mode
 M104 S0
-G28
 ;End of Gcode

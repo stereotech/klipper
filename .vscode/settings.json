@@ -12,5 +12,8 @@
     "files.associations": {
         "*.tcc": "c"
     },
-    "python.pythonPath": "klippy-env/bin/python2"
+    "python.pythonPath": "klippy-env/bin/python2",
+    "cSpell.enableFiletypes": [
+        "ini"
+    ]
 }
