@@ -58,6 +58,9 @@ config:
     1021: error edit file %s                    - ошибка в редактировании файла, не получилось задать нужную температуру
     1022: Unknown stepper %s
     1023: Unknown stepper %s
+    1024: Can't start printing because the printer not is calibrated. Please calibrate printer
+    111: PAUSE command can't be used because the printer is in PAUSE state
+    112: RESUME command can't be used because the printer is not in PAUSE state
 
 калибровка:
     201: axis x=%f out of range (%f - %f)
@@ -199,6 +202,7 @@ config:
     3089: Shared pin %s must have same polarity
     3090: Unknown chip name '%s'
     3091: Duplicate chip name '%s'
+    3092: Lost communication with MCU '%s'
 
 датчик филамента:
     401: Filament error on %s
