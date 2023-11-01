@@ -102,23 +102,22 @@ class AutoWcs:
                                                              self.probe_backlash_y_2))
 
     def get_radius(self, gcmd):
-        approximate_radius = gcmd.get_float('APPROXIMATE',)
-        x1, z1 = self.point_coords[1][0] + self.probe_backlash_x, self.point_coords[0][2] - (approximate_radius - 5)
-        x2, z2 = self.point_coords[0][0], self.point_coords[0][2]
-        x3, z3 = self.point_coords[2][0] - self.probe_backlash_x, self.point_coords[0][2] - (approximate_radius - 5)
-
-        c = (x1-x2)**2 + (z1-z2)**2
-        a = (x2-x3)**2 + (z2-z3)**2
-        b = (x3-x1)**2 + (z3-z1)**2
-        s= 2*(a*b + b*c + c*a) - (a*a + b*b + c*c)
-        centr_x = (a*(b+c-a)*x1 + b*(c+a-b)*x2 + c*(a+b-c)*x3) / s
-        centr_y = (a*(b+c-a)*z1 + b*(c+a-b)*z2 + c*(a+b-c)*z3) / s
+        probe_backlash_z = 0.9
+        # sensor tip radius
+        tip_radius = 0.3
+        x1, z1 =  self.point_coords[1][0] +  self.probe_backlash_x, \
+            (self.point_coords[1][2] + (tip_radius + probe_backlash_z))
+        x2, z2 =  self.point_coords[0][0],  self.point_coords[0][2]
+        x3, z3 =  self.point_coords[2][0] -  self.probe_backlash_x, \
+            (self.point_coords[2][2] + (tip_radius + probe_backlash_z))
+        c = (x1 - x2)**2 + (z1 - z2)**2
+        a = (x2 - x3)**2 + (z2 - z3)**2
+        b = (x3 - x1)**2 + (z3 - z1)**2
         ar = a**0.5
         br = b**0.5
         cr = c**0.5
-        radius = ar*br*cr / ((ar+br+cr)*(-ar+br+cr)*(ar-br+cr)*(ar+br-cr))**0.5
-        gcmd.respond_info('radius_tooling= %s, centr_tool(%s;%s)' % (
-                radius, centr_x, centr_y))
+        radius = ar*br*cr / ((ar + br + cr)*(-ar + br + cr) * (ar - br + cr) * (ar + br - cr))**0.5
+        gcmd.respond_info('radius_tooling= %s' % radius)
         return radius
 
     cmd_CALC_TOOL_RADIUS_help = "command for get the tooling radius from measuring points."
