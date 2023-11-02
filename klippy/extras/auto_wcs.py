@@ -89,11 +89,15 @@ class AutoWcs:
         thickness = len_thickness / 2.
         x = (self.point_coords[8][0] + self.point_coords[9][0]) / 2.
         y = (self.point_coords[5][1] + self.point_coords[6][1]) / 2. - thickness
-        z = self.point_coords[4][2] - 10.
+        z = self.point_coords[4][2] - 10
         return x, y, z
 
     def calculate_probe_backlash(self, x1, y1, y2):
-        self.probe_backlash_x = abs(self.point_coords[3][0] - (x1 + 55))
+        # distance between points
+        distance = 55
+        if abs(self.point_coords[3][0] - x1) < 10:
+            distance = 5
+        self.probe_backlash_x = abs(self.point_coords[3][0] - (x1 + distance))
         self.probe_backlash_y = abs(self.point_coords[5][1] - y2)
         self.probe_backlash_y_2 = abs(self.point_coords[1][1] - (y1 - 5))
         logging.info("""Probe backlash is set:\nprobe_backlash_x=%f,

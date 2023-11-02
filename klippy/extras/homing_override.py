@@ -28,31 +28,58 @@ class HomingOverride:
     def _handle_ready(self):
         self.toolhead = self.printer.lookup_object('toolhead')
         self.kin = self.toolhead.get_kinematics()
-        self.axes_max = self.kin.axes_max
 
-    def check_axes_for_homing(self, gcmd):
-        # Function to move the A axis 45 degrees before parking the Z-axis
-        curtime = self.printer.get_reactor().monotonic()
-        if self.kin is not None and self.toolhead is not None:
-            kin_status = self.kin.get_status(curtime)
-            if 'za' in kin_status['homed_axes'] and (
-                'Z' in gcmd._params or 'A' in gcmd._params):
-                # so the 5d module is enabled and axes Z, A in home state
+    def check_axis_a(self, gcmd, status_kin):
+        # Function to move the A-axis 45 degrees before parking the Z-axis
+        if self.kin is not None:
+            if 'za' in status_kin['homed_axes']:
+                # the axes Z, A in home state
                 retract_z = self.kin.rails[2].homing_retract_dist
                 retract_a = self.kin.rails[3].homing_retract_dist
-                axis_z = self.axes_max[2] - retract_z
-                axis_a = self.axes_max[3] - retract_a
+                axis_z = status_kin['axis_maximum'][2] - retract_z
+                axis_a = status_kin['axis_maximum'][3] - retract_a
                 if 'Z' in gcmd._params:
-                    axis_a = (self.axes_max[3] / 2)
+                    axis_a = status_kin['axis_maximum'][3] / 2.
                 elif 'A' in gcmd._params:
-                    axis_z = self.axes_max[2] / 2
-                self.toolhead.manual_move(
-                        [None, None, axis_z, axis_a, None, None], 25.0)
+                    axis_z = status_kin['axis_maximum'][2] / 2.
+                return [None, None, axis_z, axis_a, None, None]
+
+    def check_position_z(self, status_kin):
+        # The function checks the position axis Z before move by axis X or Y
+        # check 5d module is installed
+        if 'z' in status_kin['homed_axes']:
+            # the axes Z in home state
+            pos_z = status_kin['position'][2]
+            danger_zone = status_kin['axis_maximum'][2] / 6.
+            if pos_z < danger_zone:
+                axis_z = status_kin['axis_maximum'][2] / 2.
+                return [None, None, axis_z, None, None, None]
+
+    def check_module(self, status_kin):
+        # The function checks module 5d is installed
+        state = True if 'a' in status_kin['homed_axes'] or 'c' in \
+            status_kin['homed_axes'] else False
+        return state
+
+    def check_axes_before_parking(self, gcmd):
+        # The function do checks before parking
+        curtime = self.printer.get_reactor().monotonic()
+        if self.toolhead is not None:
+            status_kin = self.toolhead.get_status(curtime)
+            if self.check_module(status_kin):
+                # if the module 5d is installed
+                move_pos = []
+                if self.rotate_a and ('Z' in gcmd._params or 'A' in gcmd._params):
+                    move_pos = self.check_axis_a(gcmd, status_kin)
+                if 'X' in gcmd._params or 'Y' in gcmd._params:
+                    move_pos = self.check_position_z(status_kin)
+                # do move
+                if move_pos:
+                    self.toolhead.manual_move(move_pos, 25.0)
 
     def cmd_G28(self, gcmd):
         if self.in_script:
-            if self.rotate_a:
-                self.check_axes_for_homing(gcmd)
+            self.check_axes_before_parking(gcmd)
             # Was called recursively - invoke the real G28 command
             self.prev_G28(gcmd)
             return
@@ -71,8 +98,7 @@ class HomingOverride:
                 if gcmd.get(axis, None) is not None:
                     override = True
         if not override:
-            if self.rotate_a:
-                self.check_axes_for_homing(gcmd)
+            self.check_axes_before_parking(gcmd)
             self.prev_G28(gcmd)
             return
 
