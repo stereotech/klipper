@@ -1,11 +1,11 @@
 # Measuring Resonances
 
-Klipper has built-in support for the ADXL345 and MPU-9250 compatible
+Klipper has built-in support for the ADXL345, MPU-9250 and LIS2DW compatible
 accelerometers which can be used to measure resonance frequencies of the printer
 for different axes, and auto-tune [input shapers](Resonance_Compensation.md) to
 compensate for resonances. Note that using accelerometers requires some
-soldering and crimping. The ADXL345 can be connected to the SPI interface of a
-Raspberry Pi or MCU board (it needs to be reasonably fast). The MPU family can
+soldering and crimping. The ADXL345/LIS2DW can be connected to the SPI interface
+of a Raspberry Pi or MCU board (it needs to be reasonably fast). The MPU family can
 be connected to the I2C interface of a Raspberry Pi directly, or to an I2C
 interface of an MCU board that supports 400kbit/s *fast mode* in Klipper.
 
@@ -13,7 +13,7 @@ When sourcing accelerometers, be aware that there are a variety of different PCB
 board designs and different clones of them. If it is going to be connected to a
 5V printer MCU ensure it has a voltage regulator and level shifters.
 
-For ADXL345s, make sure that the board supports SPI mode (a small number of
+For ADXL345s/LIS2DWs, make sure that the board supports SPI mode (a small number of
 boards appear to be hard-configured for I2C by pulling SDO to GND).
 
 For MPU-9250/MPU-9255/MPU-6515/MPU-6050/MPU-6500s there are also a variety of
@@ -36,16 +36,16 @@ An ethernet cable with shielded twisted pairs (cat5e or better) is recommended
 for signal integrity over a long distance. If you still experience signal
 integrity issues (SPI/I2C errors):
 
-  * Double check the wiring with a digital multimeter for:
-    * Correct connections when turned off (continuity)
-    * Correct power and ground voltages
-  * I2C only:
-    * Check the SCL and SDA lines' resistances to 3.3V are in the range of 900
-      ohms to 1.8K
-    * For full technical details consult [chapter 7 of the I2C-bus specification
-      and user manual UM10204](https://www.pololu.com/file/0J435/UM10204.pdf)
-      for *fast-mode*
-  * Shorten the cable
+- Double check the wiring with a digital multimeter for:
+  - Correct connections when turned off (continuity)
+  - Correct power and ground voltages
+- I2C only:
+  - Check the SCL and SDA lines' resistances to 3.3V are in the range of 900
+    ohms to 1.8K
+  - For full technical details consult [chapter 7 of the I2C-bus specification
+    and user manual UM10204](https://www.pololu.com/file/0J435/UM10204.pdf)
+    for *fast-mode*
+- Shorten the cable
 
 Connect ethernet cable shielding only to the MCU board/Pi ground.
 
@@ -157,7 +157,7 @@ Recommended connection scheme for I2C (i2c0a) on the RP2040:
 
 | MPU-9250 pin | RP2040 pin | RP2040 pin name |
 |:--:|:--:|:--:|
-| VCC | 39 | 3v3 |
+| VCC | 36 | 3v3 |
 | GND | 38 | Ground |
 | SDA | 01 | GP0 (I2C0 SDA) |
 | SCL | 02 | GP1 (I2C0 SCL) |
@@ -219,11 +219,12 @@ of time, up to 10-20 minutes. Be patient and wait for the completion of
 the installation. On some occasions, if the board has too little RAM
 the installation may fail and you will need to enable swap.
 
-Afterwards, check and follow the instructions in the
-[RPi Microcontroller document](RPi_microcontroller.md) to setup the
-"linux mcu" on the Raspberry Pi.
-
 #### Configure ADXL345 With RPi
+
+First, check and follow the instructions in the
+[RPi Microcontroller document](RPi_microcontroller.md) to setup the
+"linux mcu" on the Raspberry Pi. This will configure a second Klipper
+instance that runs on your Pi.
 
 Make sure the Linux SPI driver is enabled by running `sudo
 raspi-config` and enabling SPI under the "Interfacing options" menu.
@@ -304,6 +305,26 @@ you'll also want to modify your `printer.cfg` file to include this:
 
 Restart Klipper via the `RESTART` command.
 
+#### Configure LIS2DW series
+
+```
+[mcu lis]
+# Change <mySerial> to whatever you found above. For example,
+# usb-Klipper_rp2040_E661640843545B2E-if00
+serial: /dev/serial/by-id/usb-Klipper_rp2040_<mySerial>
+
+[lis2dw]
+cs_pin: lis:gpio1
+spi_bus: spi0a
+axes_map: x,z,y
+
+[resonance_tester]
+accel_chip: lis2dw
+probe_points:
+    # Somewhere slightly above the middle of your print bed
+    147,154, 20
+```
+
 #### Configure MPU-6000/9000 series With RPi
 
 Make sure the Linux I2C driver is enabled and the baud rate is
@@ -343,7 +364,7 @@ probe_points:
     100, 100, 20  # an example
 
 [static_digital_output pico_3V3pwm] # Improve power stability
-pin: pico:gpio23
+pins: pico:gpio23
 ```
 
 #### Configure MPU-9520 Compatibles with AVR
