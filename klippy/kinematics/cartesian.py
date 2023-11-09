@@ -7,6 +7,7 @@ import logging
 import stepper
 from . import idex_modes
 
+
 class CartKinematics:
     def __init__(self, toolhead, config):
         self.printer = config.get_printer()
@@ -18,8 +19,10 @@ class CartKinematics:
         for rail, axis in zip(self.rails, 'xyz'):
             rail.setup_itersolve('cartesian_stepper_alloc', axis.encode())
         ranges = [r.get_range() for r in self.rails]
-        self.axes_min = toolhead.Coord(*[r[0] for r in ranges], e=0.)
-        self.axes_max = toolhead.Coord(*[r[1] for r in ranges], e=0.)
+        self.axes_min = toolhead.Coord(
+            *[r[0] for r in ranges], a=0, c=0., e=0.)
+        self.axes_max = toolhead.Coord(
+            *[r[1] for r in ranges], a=0, c=0., e=0.)
         self.dc_module = None
         if config.has_section('dual_carriage'):
             dc_config = config.getsection('dual_carriage')
@@ -30,13 +33,13 @@ class CartKinematics:
             self.rails[3].setup_itersolve('cartesian_stepper_alloc',
                                           dc_axis.encode())
             dc_rail_0 = idex_modes.DualCarriagesRail(
-                    self.rails[self.dual_carriage_axis],
-                    axis=self.dual_carriage_axis, active=True)
+                self.rails[self.dual_carriage_axis],
+                axis=self.dual_carriage_axis, active=True)
             dc_rail_1 = idex_modes.DualCarriagesRail(
-                    self.rails[3], axis=self.dual_carriage_axis, active=False)
+                self.rails[3], axis=self.dual_carriage_axis, active=False)
             self.dc_module = idex_modes.DualCarriages(
-                    dc_config, dc_rail_0, dc_rail_1,
-                    axis=self.dual_carriage_axis)
+                dc_config, dc_rail_0, dc_rail_1,
+                axis=self.dual_carriage_axis)
         for s in self.get_steppers():
             s.set_trapq(toolhead.get_trapq())
             toolhead.register_step_generator(s.generate_steps)
@@ -49,26 +52,33 @@ class CartKinematics:
         self.max_z_accel = config.getfloat('max_z_accel', max_accel,
                                            above=0., maxval=max_accel)
         self.limits = [(1.0, -1.0)] * 3
+
     def get_steppers(self):
         return [s for rail in self.rails for s in rail.get_steppers()]
+
     def calc_position(self, stepper_positions):
         return [stepper_positions[rail.get_name()] for rail in self.rails]
+
     def update_limits(self, i, range):
         l, h = self.limits[i]
         # Only update limits if this axis was already homed,
         # otherwise leave in un-homed state.
         if l <= h:
             self.limits[i] = range
+
     def override_rail(self, i, rail):
         self.rails[i] = rail
+
     def set_position(self, newpos, homing_axes):
         for i, rail in enumerate(self.rails):
             rail.set_position(newpos)
             if i in homing_axes:
                 self.limits[i] = rail.get_range()
+
     def note_z_not_homed(self):
         # Helper for Safe Z Home
         self.limits[2] = (1.0, -1.0)
+
     def home_axis(self, homing_state, axis, rail):
         # Determine movement
         position_min, position_max = rail.get_range()
@@ -82,6 +92,7 @@ class CartKinematics:
             forcepos[axis] += 1.5 * (position_max - hi.position_endstop)
         # Perform homing
         homing_state.home_rails([rail], forcepos, homepos)
+
     def home(self, homing_state):
         # Each axis is homed independently and in order
         for axis in homing_state.get_axes():
@@ -89,8 +100,10 @@ class CartKinematics:
                 self.dc_module.home(homing_state)
             else:
                 self.home_axis(homing_state, axis, self.rails[axis])
+
     def _motor_off(self, print_time):
         self.limits = [(1.0, -1.0)] * 3
+
     def _check_endstops(self, move):
         end_pos = move.end_pos
         for i in (0, 1, 2):
@@ -100,11 +113,12 @@ class CartKinematics:
                 if self.limits[i][0] > self.limits[i][1]:
                     raise move.move_error("Must home axis first")
                 raise move.move_error()
+
     def check_move(self, move):
         limits = self.limits
         xpos, ypos = move.end_pos[:2]
         if (xpos < limits[0][0] or xpos > limits[0][1]
-            or ypos < limits[1][0] or ypos > limits[1][1]):
+                or ypos < limits[1][0] or ypos > limits[1][1]):
             self._check_endstops(move)
         if not move.axes_d[2]:
             # Normal XY move - use defaults
@@ -114,6 +128,7 @@ class CartKinematics:
         z_ratio = move.move_d / abs(move.axes_d[2])
         move.limit_speed(
             self.max_z_velocity * z_ratio, self.max_z_accel * z_ratio)
+
     def get_status(self, eventtime):
         axes = [a for a, (l, h) in zip("xyz", self.limits) if l <= h]
         return {
@@ -121,6 +136,7 @@ class CartKinematics:
             'axis_minimum': self.axes_min,
             'axis_maximum': self.axes_max,
         }
+
 
 def load_kinematics(toolhead, config):
     return CartKinematics(toolhead, config)
