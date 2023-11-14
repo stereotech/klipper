@@ -20,14 +20,9 @@ class PrinterProbe:
         self.mcu_probe = mcu_probe
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
-        # load section for get the basic distances
-        basic_distances = config.getsection('gcode_macro CONSTANTS')
-        # get the offset between sensor_probe and nozzle
-        offsets = basic_distances.getlists(
-            'variable_offsets_sensor', seps=',', parser=float)
-        self.x_offset = offsets[0]
-        self.y_offset = offsets[1]
-        self.z_offset = offsets[2]
+        self.x_offset = config.getfloat('x_offset', 0.)
+        self.y_offset = config.getfloat('y_offset', 0.)
+        self.z_offset = config.getfloat('z_offset', 0.)
         self.probe_calibrate_z = 0.
         self.multi_probe_pending = False
         self.last_state = False
@@ -331,12 +326,7 @@ class PrinterProbe:
 class ProbeEndstopWrapper:
     def __init__(self, config):
         self.printer = config.get_printer()
-        # load section for get basic distances
-        basic_distances = config.getsection('gcode_macro CONSTANTS')
-        # get the offset between sensor_probe and nozzle
-        offsets = basic_distances.getlists(
-            'variable_offsets_sensor', seps=',', parser=float)
-        self.position_endstop =  offsets[2]
+        self.position_endstop = config.getfloat('z_offset')
         self.stow_on_each_sample = config.getboolean(
             'deactivate_on_each_sample', True)
         gcode_macro = self.printer.load_object(config, 'gcode_macro')
