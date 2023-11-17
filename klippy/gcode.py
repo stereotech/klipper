@@ -234,14 +234,11 @@ class GCodeDispatch:
         self.respond_raw("// " + "\n// ".join(lines))
     def respond_warning(self, msg):
         logging.warning(msg)
-        lines = msg.strip().split('\n')
-        self.respond_info("\n".join(lines), log=False)
+        self.respond_info(msg, log=False)
     def _respond_error(self, msg):
         logging.warning(msg)
-        lines = msg.strip().split('\n')
-        if len(lines) > 1:
-            self.respond_info("\n".join(lines), log=False)
-        self.respond_raw('!! %s' % (lines[0].strip(),))
+        lines = [l.strip() for l in msg.strip().split('\n')]
+        self.respond_raw("!! " + "\n!! ".join(lines))
         if self.is_fileinput:
             self.printer.request_exit('error_exit')
     def _respond_state(self, state):
