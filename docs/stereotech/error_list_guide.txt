@@ -231,6 +231,8 @@ config:
     609: Extrude when no extruder present
     6010: Extruder not configured
     6011: Extruder (trapq) not configured
+    6012: Heater %s not heating at expected rate
+
     611: Extruder not hot enough.
 
 ethernet/client:
