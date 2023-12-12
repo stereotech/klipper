@@ -84,7 +84,7 @@ class HeaterCheck:
         self.last_target = target
         return eventtime + 1.
     def heater_fault(self):
-        msg = "Heater %s not heating at expected rate" % (self.heater_name,)
+        msg = "6012: Heater %s not heating at expected rate" % (self.heater_name,)
         logging.error(msg)
         self.printer.invoke_shutdown(msg + HINT_THERMAL)
         return self.printer.get_reactor().NEVER
