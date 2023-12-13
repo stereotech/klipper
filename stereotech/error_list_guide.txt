@@ -110,6 +110,8 @@ config:
     2045: auto_wcs: improperly formatted entry for point %s
     2046: a_axis_offset: improperly formatted entry for point %s
     2047: auto_wcs: improperly formatted entry for point %s
+    2048: The parameter value is out of range, param=%smm max=%smm, min=0.0mm. Check params.
+    2049: Large difference between two values (x1-x2 or y1-y2), maximum difference=%smm. Check the parameters.
 
 перефирия(mcu):
     301: Timeout on wait for '%s' response
@@ -231,6 +233,8 @@ config:
     609: Extrude when no extruder present
     6010: Extruder not configured
     6011: Extruder (trapq) not configured
+    6012: Heater %s not heating at expected rate
+
     611: Extruder not hot enough.
 
 ethernet/client:
