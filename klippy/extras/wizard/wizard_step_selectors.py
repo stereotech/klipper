@@ -1,30 +1,43 @@
 from wizard_step import WizardStep
 
 
-class WizardStepButton(WizardStep):
+class WizardStepSelectors(WizardStep):
     def __init__(self, config):
         # super(WizardStepButton, self).__init__(config)
         WizardStep.__init__(self, config)
-        gcode_macro = self.printer.load_object(config, 'gcode_macro')
-        self.template = gcode_macro.load_template(config, 'button_%s_gcode' % self.name)
-        self.gcode.register_mux_command("WIZARD_STEP_BUTTON", 'BUTTON',
-                                        self.name, self.cmd_WIZARD_STEP_BUTTON,
-                                        desc=self.cmd_WIZARD_STEP_BUTTON_help)
+        self.items = config.getlists('items', [])
+        self.selected = ''
 
-    cmd_WIZARD_STEP_BUTTON_help = "Run gcode in the 'button_%s_gcode' section"
-    def cmd_WIZARD_STEP_BUTTON(self, gcmd):
+        gcode_macro = self.printer.load_object(config, 'gcode_macro')
+        self.template = gcode_macro.load_template(config, 'select_gcode')
+        self.gcode.register_mux_command("WIZARD_STEP_SELECT", 'STEP',
+                                        self.name, self.cmd_WIZARD_STEP_SELECT,
+                                        desc=self.cmd_WIZARD_STEP_SELECT_help)
+
+    def get_status(self, eventtime):
+        state = {'selected': self.selected}
+        return state
+
+    cmd_WIZARD_STEP_SELECT_help = "Run gcode in the 'select_gcode' section"
+    def cmd_WIZARD_STEP_SELECT(self, gcmd):
         if self.in_script:
             raise gcmd.error("Macro %s called recursively" % (self.name,))
+        selected = gcmd.get('ITEM')
+        if selected not in self.items:
+             raise gcmd.error("the selected item %s not in the items %s" % (selected, self.items))
+        self.selected = selected
         # update status to the wizard
         wizard_name = gcmd.get('WIZARD').upper()
         wizard_obj = self.printer.lookup_object('wizard %s' % wizard_name)
         wizard_obj.update_status(current_step=self.name)
         # kwparams = {}
+        # create context
         kwparams = dict(wizard_obj.variables)
         kwparams.update(self.template_action.create_template_context())
         kwparams['params'] = gcmd.get_command_parameters()
         kwparams['rawparams'] = gcmd.get_raw_command_parameters()
         kwparams['wizard'] = wizard_name
+        kwparams['selected'] = self.selected
         self.in_script = True
         try:
             self.template.run_gcode_from_command(kwparams)
@@ -33,5 +46,5 @@ class WizardStepButton(WizardStep):
             self.in_script = False
 
 def load_config_prefix(config):
-    return WizardStepButton(config)
+    return WizardStepSelectors(config)
 

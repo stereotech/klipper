@@ -42,19 +42,17 @@ class WizardStep:
 
     cmd_EXECUTE_WIZARD_STEP_help = "Run gcode in the 'action_gcode' section"
     def cmd_EXECUTE_WIZARD_STEP(self, gcmd):
-        gcmd.respond_info('-----EXECUTE_WIZARD_STEP')
         self.cmd(gcmd=gcmd, gcode='action_gcode')
 
     cmd_CANCEL_WIZARD_STEP_help = "Run gcode in the 'cancel_gcode' section"
     def cmd_CANCEL_WIZARD_STEP(self, gcmd):
-        gcmd.respond_info('-----EXECUTE_WIZARD_STEP')
         self.cmd(gcmd=gcmd, gcode='cancel_gcode')
 
     def cmd(self, gcmd, gcode):
         if self.in_script:
             raise gcmd.error("Macro %s called recursively" % (self.name,))
         # update status to the wizard
-        wizard_name = gcmd.get('WIZARD')
+        wizard_name = gcmd.get('WIZARD').upper()
         wizard_obj = self.printer.lookup_object('wizard %s' % wizard_name)
         wizard_obj.update_status(current_step=self.name)
         # kwparams = {}

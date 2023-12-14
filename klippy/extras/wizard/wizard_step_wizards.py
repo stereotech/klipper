@@ -6,7 +6,6 @@ class WizardStepWizards(WizardStep):
         # super(WizardStepButton, self).__init__(config)
         WizardStep.__init__(self, config)
         self.wizards = config.getlists('wizards', [])
-        a = ''
 
 def load_config_prefix(config):
     return WizardStepWizards(config)

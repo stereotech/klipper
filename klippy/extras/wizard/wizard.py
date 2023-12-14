@@ -45,7 +45,7 @@ class Wizard:
                         option, config.get_name(), e))
         self.image = config.get('image', 'image_path')
         self.type = config.getlists('type', [])
-        self.steps = config.getlists('steps', 'image_path')
+        self.steps = config.getlists('steps', [])
         self.current_step = self.steps[0]
         self.enabled = False
         self.error = ''
