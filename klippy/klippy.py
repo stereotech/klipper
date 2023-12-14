@@ -110,6 +110,8 @@ class Printer:
             return self.objects[section]
         module_parts = section.split()
         module_name = module_parts[0]
+        if 'wizard' in section:
+            module_name = 'wizard'
         py_name = os.path.join(os.path.dirname(__file__),
                                'extras', module_name + '.py')
         py_dirname = os.path.join(os.path.dirname(__file__),

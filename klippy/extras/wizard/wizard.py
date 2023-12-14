@@ -50,6 +50,10 @@ class Wizard:
         self.enabled = False
         self.error = ''
 
+    def update_status(self, current_step):
+        logging.info('-----------------update status %s' % current_step)
+        self.current_step = current_step
+
     def get_status(self, eventtime):
         state = {'current_step': self.current_step,
                  'enabled': self.enabled,
