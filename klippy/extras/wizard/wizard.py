@@ -29,7 +29,7 @@ class Wizard:
         self.gcode.register_mux_command("RESET_WIZARD", "WIZARD",
                                         self.name, self.cmd_RESET_WIZARD,
                                         desc=self.cmd_RESET_WIZARD_help)
-        self.in_script = False
+        # self.in_script = False
         self.variables = {}
         self._variables_bk = {}
         prefix = 'variable_'
@@ -56,7 +56,8 @@ class Wizard:
                  'error': self.error,
                  'variables': self.variables,
                  # for debug
-                 'self.steps': self.steps}
+                 'self.steps': self.steps,
+                 'self.type': self.type}
         return state
 
     cmd_SET_WIZARD_VARIABLE_help = "Set the value of a wizard variable  to wizard"
@@ -87,7 +88,7 @@ class Wizard:
             raise gcmd.error("Unknown step: '%s'" % step)
         self.current_step = step
 
-    cmd_RESET_WIZARD_help = "Set the enable to WIZARD"
+    cmd_RESET_WIZARD_help = "Reset state the wizard"
     def cmd_RESET_WIZARD(self, gcmd):
         self.error = ''
         self.enabled = False
