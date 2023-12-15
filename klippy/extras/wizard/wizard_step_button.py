@@ -5,8 +5,9 @@ class WizardStepButton(WizardStep):
     def __init__(self, config):
         # super(WizardStepButton, self).__init__(config)
         WizardStep.__init__(self, config)
-        gcode_macro = self.printer.load_object(config, 'gcode_macro')
-        self.template = gcode_macro.load_template(config, 'button_%s_gcode' % self.name)
+        # create template
+        self.template_button = self.gcode_macro.load_template(config, 'button_%s_gcode' % self.name)
+        # register commands
         self.gcode.register_mux_command("WIZARD_STEP_BUTTON", 'BUTTON',
                                         self.name, self.cmd_WIZARD_STEP_BUTTON,
                                         desc=self.cmd_WIZARD_STEP_BUTTON_help)
@@ -27,9 +28,8 @@ class WizardStepButton(WizardStep):
         kwparams['wizard'] = wizard_name
         self.in_script = True
         try:
-            self.template.run_gcode_from_command(kwparams)
+            self.template_button.run_gcode_from_command(kwparams)
         finally:
-            # self.template_cancel.run_gcode_from_command(kwparams)
             self.in_script = False
 
 def load_config_prefix(config):

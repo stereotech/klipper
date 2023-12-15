@@ -8,18 +8,18 @@ class WizardStep:
             raise config.error(
                     "Name of section '%s' contains illegal whitespace"
                     % (config.get_name()))
-        full_name = config.get_name().split()
-        self.name = full_name[1].upper()
+        section_name = config.get_name().split()
+        self.name = section_name[1].upper()
         self.in_script = False
         # load objects
         self.printer = printer = config.get_printer()
-        gcode_macro = printer.load_object(config, 'gcode_macro')
+        self.gcode_macro = printer.load_object(config, 'gcode_macro')
         self.gcode = printer.lookup_object('gcode')
         # create template
-        self.template_action = gcode_macro.load_template(config, 'action_gcode')
-        self.template_cancel = gcode_macro.load_template(config, 'cancel_gcode')
+        self.template_action = self.gcode_macro.load_template(config, 'action_gcode')
+        self.template_cancel = self.gcode_macro.load_template(config, 'cancel_gcode')
         # get params from config
-        self.cmd_desc = config.get("description", "G-Code macro")
+        self.cmd_desc = config.get("description", "G-Code wizard")
         self.image = config.get('image', 'image_path')
         self.landscape = config.getboolean('landscape', False)
         self.description = config.get('description', '')

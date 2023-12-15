@@ -3,16 +3,16 @@ from wizard_step import WizardStep
 
 class WizardStepSelectors(WizardStep):
     def __init__(self, config):
-        # super(WizardStepButton, self).__init__(config)
         WizardStep.__init__(self, config)
+        # get options
         self.items = config.getlists('items', [])
-        self.selected = ''
-
-        gcode_macro = self.printer.load_object(config, 'gcode_macro')
-        self.template = gcode_macro.load_template(config, 'select_gcode')
+        # create template
+        self.template = self.gcode_macro.load_template(config, 'select_gcode')
+        # register commands
         self.gcode.register_mux_command("WIZARD_STEP_SELECT", 'STEP',
                                         self.name, self.cmd_WIZARD_STEP_SELECT,
                                         desc=self.cmd_WIZARD_STEP_SELECT_help)
+        self.selected = ''
 
     cmd_WIZARD_STEP_SELECT_help = "Run gcode in the 'select_gcode' section"
     def cmd_WIZARD_STEP_SELECT(self, gcmd):
@@ -38,7 +38,6 @@ class WizardStepSelectors(WizardStep):
         try:
             self.template.run_gcode_from_command(kwparams)
         finally:
-            # self.template_cancel.run_gcode_from_command(kwparams)
             self.in_script = False
 
     def get_status(self, eventtime):

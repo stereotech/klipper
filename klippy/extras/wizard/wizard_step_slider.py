@@ -13,7 +13,7 @@ class WizardStepSlider(WizardStep):
                                         self.name, self.cmd_WIZARD_STEP_SLIDER,
                                         desc=self.cmd_WIZARD_STEP_SLIDER_help)
 
-    cmd_WIZARD_STEP_SLIDER_help = "set update value to the slider data"
+    cmd_WIZARD_STEP_SLIDER_help = "update value to the slider data"
     def cmd_WIZARD_STEP_SLIDER(self, gcmd):
         variable = gcmd.get('VARIABLE').lower()
         value = gcmd.get_int('VALUE')
