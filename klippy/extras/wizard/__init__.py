@@ -3,9 +3,14 @@
 # Copyright (C) 2018  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-from . import wizard, wizard_step, wizard_step_button, wizard_step_wizards, wizard_step_selectors
+from . import wizard,\
+              wizard_step,\
+              wizard_step_button,\
+              wizard_step_wizards,\
+              wizard_step_selectors, \
+              wizard_step_slider
 
-# def load_config(config):
+# def load_confi    g(config):
 #     return wizard.load_config(config)
 
 def load_config_prefix(config):
@@ -20,6 +25,8 @@ def load_config_prefix(config):
         return wizard_step_wizards.load_config_prefix(config)
     elif 'wizard_step_selectors ' in name:
         return wizard_step_selectors.load_config_prefix(config)
+    elif 'wizard_step_slider ' in name:
+        return wizard_step_slider.load_config_prefix(config)
     else:
         raise config.error(
             "do not parse section: %s" % name)

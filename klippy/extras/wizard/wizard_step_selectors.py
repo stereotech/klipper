@@ -14,10 +14,6 @@ class WizardStepSelectors(WizardStep):
                                         self.name, self.cmd_WIZARD_STEP_SELECT,
                                         desc=self.cmd_WIZARD_STEP_SELECT_help)
 
-    def get_status(self, eventtime):
-        state = {'selected': self.selected}
-        return state
-
     cmd_WIZARD_STEP_SELECT_help = "Run gcode in the 'select_gcode' section"
     def cmd_WIZARD_STEP_SELECT(self, gcmd):
         if self.in_script:
@@ -44,6 +40,10 @@ class WizardStepSelectors(WizardStep):
         finally:
             # self.template_cancel.run_gcode_from_command(kwparams)
             self.in_script = False
+
+    def get_status(self, eventtime):
+        state = {'selected': self.selected}
+        return state
 
 def load_config_prefix(config):
     return WizardStepSelectors(config)
