@@ -112,6 +112,16 @@ config:
     2047: auto_wcs: improperly formatted entry for point %s
     2048: The parameter value is out of range, param=%smm max=%smm, min=0.0mm. Check params.
     2049: Large difference between two values (x1-x2 or y1-y2), maximum difference=%smm. Check the parameters.
+    2050: No module named %s, error: %s
+    2051: Unknown wizard variable '%s'
+    2052: Unable to parse '%s' as a literal: %s
+    2053: Unknown step: '%s'
+    2054: Macro %s called recursively
+    2055: Failure set value:%s to variable:%s in the slider %s
+    2056: The selected item %s not in the items %s
+    2057: error setting the value:%s to move the axis, the value is out of range
+    2058: error moved the axis:%s, the axis not availability
+    2059: Macro %s called recursively
 
 перефирия(mcu):
     301: Timeout on wait for '%s' response
