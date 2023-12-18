@@ -1,12 +1,13 @@
-import ast, json
+import ast
+import json
 
 
 class Wizard:
     def __init__(self, config):
         if len(config.get_name().split()) > 2:
             raise config.error(
-                    "Name of section '%s' contains illegal whitespace"
-                    % (config.get_name()))
+                "Name of section '%s' contains illegal whitespace"
+                % (config.get_name()))
         self.name = config.get_name().split()[1]
         self.enabled = False
         self.error = ''
@@ -55,11 +56,13 @@ class Wizard:
                 'type': self.type}
 
     cmd_SET_WIZARD_VARIABLE_help = "Set the value of a wizard variable  to wizard"
+
     def cmd_SET_WIZARD_VARIABLE(self, gcmd):
         variable = gcmd.get('VARIABLE')
         value = gcmd.get('VALUE')
         if variable not in self.variables:
-            raise gcmd.error("2051: Unknown wizard variable '%s'" % (variable,))
+            raise gcmd.error(
+                "2051: Unknown wizard variable '%s'" % (variable,))
         try:
             literal = ast.literal_eval(value)
             json.dumps(literal, separators=(',', ':'))
@@ -71,11 +74,13 @@ class Wizard:
         self.variables = v
 
     cmd_SET_WIZARD_ENABLE_help = "Set the enable to WIZARD"
+
     def cmd_SET_WIZARD_ENABLE(self, gcmd):
         self.enabled = True if gcmd.get_int('ENABLE', self.enabled) else False
         self.error = gcmd.get('ERROR', self.error)
 
     cmd_SET_WIZARD_STEP_help = "Set the step to WIZARD"
+
     def cmd_SET_WIZARD_STEP(self, gcmd):
         step = gcmd.get('STEP')
         if step not in self.steps:
@@ -83,6 +88,7 @@ class Wizard:
         self.current_step = step
 
     cmd_RESET_WIZARD_help = "Reset state the wizard"
+
     def cmd_RESET_WIZARD(self, gcmd):
         self.error = ''
         self.enabled = False

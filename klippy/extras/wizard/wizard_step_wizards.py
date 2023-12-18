@@ -6,5 +6,6 @@ class WizardStepWizards(WizardStep):
         WizardStep.__init__(self, config)
         self.wizards = config.getlists('wizards', [])
 
+
 def load_config_prefix(config):
     return WizardStepWizards(config)

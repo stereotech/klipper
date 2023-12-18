@@ -15,15 +15,18 @@ class WizardStepSlider(WizardStep):
                                         desc=self.cmd_WIZARD_STEP_SLIDER_help)
 
     cmd_WIZARD_STEP_SLIDER_help = "update value to the slider data"
+
     def cmd_WIZARD_STEP_SLIDER(self, gcmd):
         variable = gcmd.get('VARIABLE').lower()
         value = gcmd.get_int('VALUE')
         if variable not in self.slider_data:
-            raise gcmd.error("2055: Failure set value:%s to variable:%s in the slider %s" % (value, variable, self.name))
+            raise gcmd.error("2055: Failure set value:%s to variable:%s in the slider %s" % (
+                value, variable, self.name))
         self.slider_data.update({variable: value})
 
     def get_status(self, eventtime):
         return self.slider_data
+
 
 def load_config_prefix(config):
     return WizardStepSlider(config)

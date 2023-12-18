@@ -19,6 +19,7 @@ class WizardStepJog(WizardStep):
                                         desc=self.cmd_WIZARD_STEP_SET_STEP_help)
 
     cmd_WIZARD_STEP_SET_STEP_help = "Set step for moving the axis"
+
     def cmd_WIZARD_STEP_SET_STEP(self, gcmd):
         value = gcmd.get_float('VALUE')
         if value not in self.steps:
@@ -27,6 +28,7 @@ class WizardStepJog(WizardStep):
         self.default_step = value
 
     cmd_WIZARD_STEP_JOG_help = "Perform axis movement"
+
     def cmd_WIZARD_STEP_JOG(self, gcmd):
         axis = gcmd.get('AXIS').lower()
         # get direction move, 1-positive, 0-negative moving
@@ -35,7 +37,8 @@ class WizardStepJog(WizardStep):
             raise gcmd.error(
                 "2058: error moved the axis:%s, the axis not availability" % (axis,))
         if self.in_script:
-            raise gcmd.error("2059: Macro %s called recursively" % (self.name,))
+            raise gcmd.error(
+                "2059: Macro %s called recursively" % (self.name,))
         # update status to the wizard
         wizard_name = gcmd.get('WIZARD').upper()
         wizard_obj = self.printer.lookup_object('wizard %s' % wizard_name)
@@ -55,6 +58,7 @@ class WizardStepJog(WizardStep):
 
     def get_status(self, eventtime):
         return {'step': self.default_step}
+
 
 def load_config_prefix(config):
     return WizardStepJog(config)

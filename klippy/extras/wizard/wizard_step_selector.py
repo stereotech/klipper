@@ -15,12 +15,15 @@ class WizardStepSelector(WizardStep):
                                         desc=self.cmd_WIZARD_STEP_SELECT_help)
 
     cmd_WIZARD_STEP_SELECT_help = "Run gcode in the 'select_gcode' section"
+
     def cmd_WIZARD_STEP_SELECT(self, gcmd):
         if self.in_script:
-            raise gcmd.error("2054: Macro %s called recursively" % (self.name,))
+            raise gcmd.error(
+                "2054: Macro %s called recursively" % (self.name,))
         selected = gcmd.get('ITEM')
         if selected not in self.items:
-             raise gcmd.error("2056: The selected item %s not in the items %s" % (selected, self.items))
+            raise gcmd.error(
+                "2056: The selected item %s not in the items %s" % (selected, self.items))
         self.selected = selected
         wizard_name = gcmd.get('WIZARD').upper()
         wizard_obj = self.printer.lookup_object('wizard %s' % wizard_name)
@@ -38,8 +41,8 @@ class WizardStepSelector(WizardStep):
 
     def get_status(self, eventtime):
         return {'selected': self.selected
-        }
+                }
+
 
 def load_config_prefix(config):
     return WizardStepSelector(config)
-
