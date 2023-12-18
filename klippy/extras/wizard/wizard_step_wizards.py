@@ -8,4 +8,3 @@ class WizardStepWizards(WizardStep):
 
 def load_config_prefix(config):
     return WizardStepWizards(config)
-

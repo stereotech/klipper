@@ -3,12 +3,13 @@ from wizard_step import WizardStep
 
 class WizardStepSlider(WizardStep):
     def __init__(self, config):
-        # super(WizardStepButton, self).__init__(config)
         WizardStep.__init__(self, config)
+        # get options from config
         self.slider_data = {}
         options = config.get_prefix_options('slider')
         for option in options:
             self.slider_data.update({option: config.getint(option)})
+        # register gcode commands
         self.gcode.register_mux_command("WIZARD_STEP_SLIDER", 'SLIDER',
                                         self.name, self.cmd_WIZARD_STEP_SLIDER,
                                         desc=self.cmd_WIZARD_STEP_SLIDER_help)
@@ -18,7 +19,7 @@ class WizardStepSlider(WizardStep):
         variable = gcmd.get('VARIABLE').lower()
         value = gcmd.get_int('VALUE')
         if variable not in self.slider_data:
-            raise gcmd.error("failure set value:%s to variable:%s in the slider %s" % (value, variable, self.name))
+            raise gcmd.error("2055: Failure set value:%s to variable:%s in the slider %s" % (value, variable, self.name))
         self.slider_data.update({variable: value})
 
     def get_status(self, eventtime):
@@ -26,4 +27,3 @@ class WizardStepSlider(WizardStep):
 
 def load_config_prefix(config):
     return WizardStepSlider(config)
-

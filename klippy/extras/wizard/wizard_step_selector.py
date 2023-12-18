@@ -1,9 +1,10 @@
 from wizard_step import WizardStep
 
 
-class WizardStepSelectors(WizardStep):
+class WizardStepSelector(WizardStep):
     def __init__(self, config):
         WizardStep.__init__(self, config)
+        self.selected = ''
         # get options
         self.items = config.getlists('items', [])
         # create template
@@ -12,27 +13,22 @@ class WizardStepSelectors(WizardStep):
         self.gcode.register_mux_command("WIZARD_STEP_SELECT", 'STEP',
                                         self.name, self.cmd_WIZARD_STEP_SELECT,
                                         desc=self.cmd_WIZARD_STEP_SELECT_help)
-        self.selected = ''
 
     cmd_WIZARD_STEP_SELECT_help = "Run gcode in the 'select_gcode' section"
     def cmd_WIZARD_STEP_SELECT(self, gcmd):
         if self.in_script:
-            raise gcmd.error("Macro %s called recursively" % (self.name,))
+            raise gcmd.error("2054: Macro %s called recursively" % (self.name,))
         selected = gcmd.get('ITEM')
         if selected not in self.items:
-             raise gcmd.error("the selected item %s not in the items %s" % (selected, self.items))
+             raise gcmd.error("2056: The selected item %s not in the items %s" % (selected, self.items))
         self.selected = selected
-        # update status to the wizard
         wizard_name = gcmd.get('WIZARD').upper()
         wizard_obj = self.printer.lookup_object('wizard %s' % wizard_name)
-        wizard_obj.update_status(current_step=self.name)
-        # kwparams = {}
-        # create context
-        kwparams = dict(wizard_obj.variables)
-        kwparams.update(self.template_action.create_template_context())
+        kwparams = self.template_action.create_template_context()
+        kwparams['wizard'] = wizard_obj.get_status()
+        kwparams['wizard'].update({'wizard_step_name': self.name})
         kwparams['params'] = gcmd.get_command_parameters()
         kwparams['rawparams'] = gcmd.get_raw_command_parameters()
-        kwparams['wizard'] = wizard_name
         kwparams['selected'] = self.selected
         self.in_script = True
         try:
@@ -41,9 +37,9 @@ class WizardStepSelectors(WizardStep):
             self.in_script = False
 
     def get_status(self, eventtime):
-        state = {'selected': self.selected}
-        return state
+        return {'selected': self.selected
+        }
 
 def load_config_prefix(config):
-    return WizardStepSelectors(config)
+    return WizardStepSelector(config)
 

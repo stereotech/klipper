@@ -3,7 +3,6 @@ from wizard_step import WizardStep
 
 class WizardStepButton(WizardStep):
     def __init__(self, config):
-        # super(WizardStepButton, self).__init__(config)
         WizardStep.__init__(self, config)
         # create template
         self.template_button = self.gcode_macro.load_template(config, 'button_%s_gcode' % self.name)
@@ -15,17 +14,15 @@ class WizardStepButton(WizardStep):
     cmd_WIZARD_STEP_BUTTON_help = "Run gcode in the 'button_%s_gcode' section"
     def cmd_WIZARD_STEP_BUTTON(self, gcmd):
         if self.in_script:
-            raise gcmd.error("Macro %s called recursively" % (self.name,))
+            raise gcmd.error("2054: Macro %s called recursively" % (self.name,))
         # update status to the wizard
         wizard_name = gcmd.get('WIZARD').upper()
         wizard_obj = self.printer.lookup_object('wizard %s' % wizard_name)
-        wizard_obj.update_status(current_step=self.name)
-        # kwparams = {}
-        kwparams = dict(wizard_obj.variables)
-        kwparams.update(self.template_action.create_template_context())
+        kwparams = self.template_action.create_template_context()
+        kwparams['wizard'] = wizard_obj.get_status()
+        kwparams['wizard'].update({'wizard_step_name': self.name})
         kwparams['params'] = gcmd.get_command_parameters()
         kwparams['rawparams'] = gcmd.get_raw_command_parameters()
-        kwparams['wizard'] = wizard_name
         self.in_script = True
         try:
             self.template_button.run_gcode_from_command(kwparams)
@@ -34,4 +31,3 @@ class WizardStepButton(WizardStep):
 
 def load_config_prefix(config):
     return WizardStepButton(config)
-

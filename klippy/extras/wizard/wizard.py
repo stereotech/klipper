@@ -9,27 +9,8 @@ class Wizard:
                     "Name of section '%s' contains illegal whitespace"
                     % (config.get_name()))
         self.name = config.get_name().split()[1]
-        # self.alias = self.name.upper()
-        self.printer = printer = config.get_printer()
-        # gcode_macro = printer.load_object(config, 'gcode_macro')
-        # self.template = gcode_macro.load_template(config, 'gcode')
-        self.gcode = printer.lookup_object('gcode')
-        self.cmd_desc = config.get("description", "G-Code macro")
-        # self.gcode.register_command(self.alias, self.cmd,
-        #                             desc=self.cmd_desc)
-        self.gcode.register_mux_command("SET_WIZARD_VARIABLE", "WIZARD",
-                                        self.name, self.cmd_SET_WIZARD_VARIABLE,
-                                        desc=self.cmd_SET_WIZARD_VARIABLE_help)
-        self.gcode.register_mux_command("SET_WIZARD_ENABLE", "WIZARD",
-                                        self.name, self.cmd_SET_WIZARD_ENABLE,
-                                        desc=self.cmd_SET_WIZARD_ENABLE_help)
-        self.gcode.register_mux_command("SET_WIZARD_STEP", "WIZARD",
-                                        self.name, self.cmd_SET_WIZARD_STEP,
-                                        desc=self.cmd_SET_WIZARD_STEP_help)
-        self.gcode.register_mux_command("RESET_WIZARD", "WIZARD",
-                                        self.name, self.cmd_RESET_WIZARD,
-                                        desc=self.cmd_RESET_WIZARD_help)
-        # self.in_script = False
+        self.enabled = False
+        self.error = ''
         self.variables = {}
         self._variables_bk = {}
         prefix = 'variable_'
@@ -43,38 +24,48 @@ class Wizard:
                 raise config.error(
                     "Option '%s' in section '%s' is not a valid literal: %s" % (
                         option, config.get_name(), e))
+        # get options from config
         self.image = config.get('image', 'image_path')
         self.type = config.getlists('type', [])
         self.steps = config.getlists('steps', [])
         self.current_step = self.steps[0]
-        self.enabled = False
-        self.error = ''
+        # load objects
+        self.printer = printer = config.get_printer()
+        self.gcode = printer.lookup_object('gcode')
+        # register commands
+        self.gcode.register_mux_command("SET_WIZARD_VARIABLE", "WIZARD",
+                                        self.name, self.cmd_SET_WIZARD_VARIABLE,
+                                        desc=self.cmd_SET_WIZARD_VARIABLE_help)
+        self.gcode.register_mux_command("SET_WIZARD_ENABLE", "WIZARD",
+                                        self.name, self.cmd_SET_WIZARD_ENABLE,
+                                        desc=self.cmd_SET_WIZARD_ENABLE_help)
+        self.gcode.register_mux_command("SET_WIZARD_STEP", "WIZARD",
+                                        self.name, self.cmd_SET_WIZARD_STEP,
+                                        desc=self.cmd_SET_WIZARD_STEP_help)
+        self.gcode.register_mux_command("RESET_WIZARD", "WIZARD",
+                                        self.name, self.cmd_RESET_WIZARD,
+                                        desc=self.cmd_RESET_WIZARD_help)
 
-    def update_status(self, current_step):
-        logging.info('-----------------update status %s' % current_step)
-        self.current_step = current_step
-
-    def get_status(self, eventtime):
-        state = {'current_step': self.current_step,
-                 'enabled': self.enabled,
-                 'error': self.error,
-                 'variables': self.variables,
-                 # for debug
-                 'self.steps': self.steps,
-                 'self.type': self.type}
-        return state
+    def get_status(self, eventtime=None):
+        return {'current_step': self.current_step,
+                'enabled': self.enabled,
+                'error': self.error,
+                'variables': self.variables,
+                'name': self.name,
+                'steps': self.steps,
+                'type': self.type}
 
     cmd_SET_WIZARD_VARIABLE_help = "Set the value of a wizard variable  to wizard"
     def cmd_SET_WIZARD_VARIABLE(self, gcmd):
         variable = gcmd.get('VARIABLE')
         value = gcmd.get('VALUE')
         if variable not in self.variables:
-            raise gcmd.error("Unknown wizard variable '%s'" % (variable,))
+            raise gcmd.error("2051: Unknown wizard variable '%s'" % (variable,))
         try:
             literal = ast.literal_eval(value)
             json.dumps(literal, separators=(',', ':'))
         except (SyntaxError, TypeError, ValueError) as e:
-            raise gcmd.error("Unable to parse '%s' as a literal: %s" %
+            raise gcmd.error("2052: Unable to parse '%s' as a literal: %s" %
                              (value, e))
         v = dict(self.variables)
         v[variable] = literal
@@ -89,7 +80,7 @@ class Wizard:
     def cmd_SET_WIZARD_STEP(self, gcmd):
         step = gcmd.get('STEP')
         if step not in self.steps:
-            raise gcmd.error("Unknown step: '%s'" % step)
+            raise gcmd.error("2053: Unknown step: '%s'" % step)
         self.current_step = step
 
     cmd_RESET_WIZARD_help = "Reset state the wizard"
@@ -99,20 +90,6 @@ class Wizard:
         self.current_step = self.steps[0]
         self.variables = dict(self._variables_bk)
 
-    # def cmd(self, gcmd):
-    #     self.enabled = True
-    #     if self.in_script:
-    #         raise gcmd.error("Macro %s called recursively" % (self.alias,))
-    #     kwparams = dict(self.variables)
-    #     kwparams.update(self.template.create_template_context())
-    #     kwparams['params'] = gcmd.get_command_parameters()
-    #     kwparams['rawparams'] = gcmd.get_raw_command_parameters()
-    #     self.in_script = True
-    #     try:
-    #         self.template.run_gcode_from_command(kwparams)
-    #     finally:
-    #         self.in_script = False
-    #         self.enabled = False
 
 def load_config_prefix(config):
     return Wizard(config)
