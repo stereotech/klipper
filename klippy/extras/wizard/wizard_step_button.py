@@ -6,11 +6,12 @@ class WizardStepButton(WizardStep):
         WizardStep.__init__(self, config)
         # create template for buttons
         self.templates = {}
-        buttons = config.get_prefix_options('button')
-        for button in buttons:
+        options_name = config.get_prefix_options('button_')
+        for option in options_name:
             template_button = self.gcode_macro.load_template(
-                config, button)
-            self.templates.update({button: template_button})
+                config, option)
+            button_name = '_'.join(option.split('_')[1:-1])
+            self.templates.update({button_name: template_button})
         # register commands
         self.gcode.register_mux_command("WIZARD_STEP_BUTTON", 'STEP',
                                         self.name, self.cmd_WIZARD_STEP_BUTTON,
@@ -24,7 +25,7 @@ class WizardStepButton(WizardStep):
                 "2054: Macro %s called recursively" % (self.name,))
         wizard_name = gcmd.get('WIZARD').upper()
         wizard_obj = self.printer.lookup_object('wizard %s' % wizard_name)
-        button = gcmd.get('BUTTON')
+        button = gcmd.get('BUTTON', '').lower()
         template_button = self.templates.get(button, None)
         if template_button is None:
             raise gcmd.error(
