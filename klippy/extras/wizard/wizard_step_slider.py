@@ -18,7 +18,7 @@ class WizardStepSlider(WizardStep):
 
     def cmd_WIZARD_STEP_SLIDER(self, gcmd):
         variable = gcmd.get('VARIABLE').lower()
-        value = gcmd.get_int('VALUE')
+        value = gcmd.get_float('VALUE')
         if variable not in self.slider_data:
             raise gcmd.error("2055: Failure set value:%s to variable:%s in the slider %s" % (
                 value, variable, self.name))

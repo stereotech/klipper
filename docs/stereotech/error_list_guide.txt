@@ -122,6 +122,7 @@ config:
     2057: error setting the value:%s to move the axis, the value is out of range
     2058: error moved the axis:%s, the axis not availability
     2059: Macro %s called recursively
+    2060: The button '%s' does not exist
 
 перефирия(mcu):
     301: Timeout on wait for '%s' response

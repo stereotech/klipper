@@ -4,11 +4,15 @@ from wizard_step import WizardStep
 class WizardStepButton(WizardStep):
     def __init__(self, config):
         WizardStep.__init__(self, config)
-        # create template
-        self.template_button = self.gcode_macro.load_template(
-            config, 'button_%s_gcode' % self.name)
+        # create template for buttons
+        self.templates = {}
+        buttons = config.get_prefix_options('button')
+        for button in buttons:
+            template_button = self.gcode_macro.load_template(
+                config, button)
+            self.templates.update({button: template_button})
         # register commands
-        self.gcode.register_mux_command("WIZARD_STEP_BUTTON", 'BUTTON',
+        self.gcode.register_mux_command("WIZARD_STEP_BUTTON", 'STEP',
                                         self.name, self.cmd_WIZARD_STEP_BUTTON,
                                         desc=self.cmd_WIZARD_STEP_BUTTON_help)
 
@@ -18,17 +22,21 @@ class WizardStepButton(WizardStep):
         if self.in_script:
             raise gcmd.error(
                 "2054: Macro %s called recursively" % (self.name,))
-        # update status to the wizard
         wizard_name = gcmd.get('WIZARD').upper()
         wizard_obj = self.printer.lookup_object('wizard %s' % wizard_name)
-        kwparams = self.template_action.create_template_context()
+        button = gcmd.get('BUTTON')
+        template_button = self.templates.get(button, None)
+        if template_button is None:
+            raise gcmd.error(
+                "2060: The button '%s' does not exist" % (button,))
+        kwparams = template_button.create_template_context()
         kwparams['wizard'] = wizard_obj.get_status()
         kwparams['wizard'].update({'wizard_step_name': self.name})
         kwparams['params'] = gcmd.get_command_parameters()
         kwparams['rawparams'] = gcmd.get_raw_command_parameters()
         self.in_script = True
         try:
-            self.template_button.run_gcode_from_command(kwparams)
+            template_button.run_gcode_from_command(kwparams)
         finally:
             self.in_script = False
 
