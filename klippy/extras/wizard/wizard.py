@@ -64,13 +64,14 @@ class Wizard:
             raise gcmd.error(
                 "2051: Unknown wizard variable '%s'" % (variable,))
         try:
-            literal = ast.literal_eval(value)
-            json.dumps(literal, separators=(',', ':'))
+            pass
+            # literal = ast.literal_eval(value)
+            # json.dumps(literal, separators=(',', ':'))
         except (SyntaxError, TypeError, ValueError) as e:
             raise gcmd.error("2052: Unable to parse '%s' as a literal: %s" %
                              (value, e))
         v = dict(self.variables)
-        v[variable] = literal
+        v[variable] = value
         self.variables = v
 
     cmd_SET_WIZARD_ENABLE_help = "Set the enable to WIZARD"
