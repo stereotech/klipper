@@ -57,7 +57,9 @@ class WizardStepJog(WizardStep):
             self.in_script = False
 
     def get_status(self, eventtime):
-        return {'step': self.default_step}
+        status = WizardStep.get_status(self, eventtime)
+        status.update({'step': self.default_step})
+        return status
 
 
 def load_config_prefix(config):
