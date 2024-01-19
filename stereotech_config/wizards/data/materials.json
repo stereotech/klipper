@@ -1,66 +1,35 @@
 [
     {
-        "key": "stereotech1",
+        "key": "stereotech",
         "children": [
             {
                 "key": "proto",
                 "children": [
                     {
                         "key": "pla",
-                        "value": 210
+                        "value": 205
                     },
                     {
                         "key": "pva",
-                        "value": 211
-                    }
-                ]
-            },
-            {
-                "key": "proto1",
-                "children": [
-                    {
-                        "key": "pla1",
-                        "value": 212
-                    },
-                    {
-                        "key": "pva1",
-                        "value": 213
-                    }
-                ]
-            },
-        ]
-    },
-    {
-        "key": "stereotech2",
-        "children": [
-            {
-                "key": "proto",
-                "children": [
-                    {
-                        "key": "pla11",
-                        "value": 221
-                    },
-                    {
-                        "key": "pva11",
-                        "value": 222
+                        "value": 206
                     }
                 ]
             }
         ]
     },
     {
-        "key": "stereotech3",
+        "key": "stereotech1",
         "children": [
             {
-                "key": "proto",
+                "key": "proto1",
                 "children": [
                     {
-                        "key": "pla111",
-                        "value": 231
+                        "key": "pla1",
+                        "value": 207
                     },
                     {
-                        "key": "pva111",
-                        "value": 232
+                        "key": "pva1",
+                        "value": 208
                     }
                 ]
             },
@@ -68,43 +37,12 @@
                 "key": "proto2",
                 "children": [
                     {
-                        "key": "pla222",
-                        "children": [
-                        {
-                            "key": "pla5555",
-                            "value": 23355
-                        },
-                        {
-                            "key": "pva6666",
-                            "children": [
-                                {
-                                    "key": "pla22200000",
-                                    "value": 233000000000
-                                },
-                                {
-                                    "key": "pva22211111",
-                                    "value": 23411111111111
-                                }
-                            ]
-                        }
-                    ]
+                        "key": "pla2",
+                        "value": 209
                     },
                     {
-                        "key": "pva222",
-                        "value": 234
-                    }
-                ]
-            },
-            {
-                "key": "proto",
-                "children": [
-                    {
-                        "key": "pla333",
-                        "value": 235
-                    },
-                    {
-                        "key": "pva333",
-                        "value": 236
+                        "key": "pva2",
+                        "value": 210
                     }
                 ]
             }

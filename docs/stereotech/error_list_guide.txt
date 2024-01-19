@@ -33,7 +33,8 @@ config:
     0023: Option '%s' in section '%s' must be above %s
     0024: Option '%s' in section '%s' must be below %s
     0025: Unable to load module '%s'
-    0026: file with data not exist
+    0026: do not parse .json file, error %s
+    0027: file with data not exist
 
 печать/кинематика/движение:
     101: Error loading kinematics

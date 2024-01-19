@@ -15,8 +15,11 @@ class WizardStepTree(WizardStep):
         path = config.get('tree_file_path', '')
         filename = os.path.abspath(path)
         if os.path.isfile(filename):
-            with open(filename, 'r') as f:
-                self.tree = json.load(f)
+            try:
+                with open(filename, 'r') as f:
+                    self.tree = json.load(f)
+            except Exception as e:
+                raise config.error("0026: do not parse .json file, error %s" % e)
         else:
             raise config.error("0026: file with data not exist")
         # register commands
@@ -39,7 +42,7 @@ class WizardStepTree(WizardStep):
     def get_value(self, node, key):
         if isinstance(node, list):
             for item in node:
-                value = get_value(item, key)
+                value = self.get_value(item, key)
                 if isinstance(value, int):
                     return value
         elif isinstance(node, dict):
@@ -47,7 +50,7 @@ class WizardStepTree(WizardStep):
                 return node['value']
             if node.get('children', ''):
                 for child in node['children']:
-                    value = get_value(child, key)
+                    value = self.get_value(child, key)
                     if isinstance(value, int):
                         return value
 
