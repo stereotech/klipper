@@ -1,0 +1,51 @@
+[
+    {
+        "key": "stereotech",
+        "children": [
+            {
+                "key": "proto",
+                "children": [
+                    {
+                        "key": "pla",
+                        "value": 205
+                    },
+                    {
+                        "key": "pva",
+                        "value": 206
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "key": "stereotech1",
+        "children": [
+            {
+                "key": "proto1",
+                "children": [
+                    {
+                        "key": "pla1",
+                        "value": 207
+                    },
+                    {
+                        "key": "pva1",
+                        "value": 208
+                    }
+                ]
+            },
+            {
+                "key": "proto2",
+                "children": [
+                    {
+                        "key": "pla2",
+                        "value": 209
+                    },
+                    {
+                        "key": "pva2",
+                        "value": 210
+                    }
+                ]
+            }
+        ]
+    }
+]

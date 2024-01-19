@@ -41,6 +41,10 @@ class WizardStepButton(WizardStep):
         finally:
             self.in_script = False
 
+    def get_status(self, eventtime):
+        status = WizardStep.get_status(self, eventtime)
+        return status
+
 
 def load_config_prefix(config):
     return WizardStepButton(config)
