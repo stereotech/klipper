@@ -27,9 +27,9 @@ class WizardStep:
         self.template_cancel = self.gcode_macro.load_template(
             config, 'cancel_gcode')
         # register gcode commands
-        self.gcode.register_mux_command("WIZARD_STEP_CHANGE_STATE", 'STEP',
-                                        self.name, self.cmd_WIZARD_STEP_CHANGE_STATE,
-                                        desc=self.cmd_WIZARD_STEP_CHANGE_STATE_help)
+        self.gcode.register_mux_command("WIZARD_STEP_LOADING_STATE", 'STEP',
+                                        self.name, self.cmd_WIZARD_STEP_LOADING_STATE,
+                                        desc=self.cmd_WIZARD_STEP_LOADING_STATE_help)
         self.gcode.register_mux_command("EXECUTE_WIZARD_STEP", 'STEP',
                                         self.name, self.cmd_EXECUTE_WIZARD_STEP,
                                         desc=self.cmd_EXECUTE_WIZARD_STEP_help)
@@ -37,10 +37,10 @@ class WizardStep:
                                         self.name, self.cmd_CANCEL_WIZARD_STEP,
                                         desc=self.cmd_CANCEL_WIZARD_STEP_help)
 
-    cmd_WIZARD_STEP_CHANGE_STATE_help = "change state for show the placeholder"
+    cmd_WIZARD_STEP_LOADING_STATE_help = "Change state for show the placeholder"
 
-    def cmd_WIZARD_STEP_CHANGE_STATE(self, gcmd):
-        state = gcmd.get('LOADING', 0)
+    def cmd_WIZARD_STEP_LOADING_STATE(self, gcmd):
+        state = gcmd.get('ENABLE', 0)
         self.loading = True if state else False
 
     cmd_EXECUTE_WIZARD_STEP_help = "Run gcode in the 'action_gcode' option"
