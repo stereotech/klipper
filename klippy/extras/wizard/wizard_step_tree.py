@@ -9,14 +9,19 @@ class WizardStepTree(WizardStep):
         self.tree = []
         self.selected = ''
         self.value = 0
+        config_dir_name = 'config'
         # get options from config
         self.depth = config.getint('depth', 1)
         self.types = config.getlist('types', [])
-        path = config.get('tree_file_path', '')
-        filename = os.path.abspath(path)
-        if os.path.isfile(filename):
+        json_path = config.get('tree_file_path', '')
+        # read json file
+        filename = self.printer.get_start_args()['config_file']
+        if 'printer.cfg' not in filename.split('/')[-1]:
+            config_dir_name = 'stereotech_config'
+        abs_json_path = os.path.join(os.path.abspath('.'), config_dir_name, json_path)
+        if os.path.isfile(abs_json_path):
             try:
-                with open(filename, 'r') as f:
+                with open(abs_json_path, 'r') as f:
                     self.tree = json.load(f)
             except Exception as e:
                 raise config.error("0026: do not parse .json file, error %s" % e)
