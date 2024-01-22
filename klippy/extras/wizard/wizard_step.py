@@ -40,7 +40,7 @@ class WizardStep:
     cmd_WIZARD_STEP_LOADING_STATE_help = "Change state for show the placeholder"
 
     def cmd_WIZARD_STEP_LOADING_STATE(self, gcmd):
-        state = gcmd.get('ENABLE', 0)
+        state = gcmd.get_int('ENABLE', 0)
         self.loading = True if state else False
 
     cmd_EXECUTE_WIZARD_STEP_help = "Run gcode in the 'action_gcode' option"
