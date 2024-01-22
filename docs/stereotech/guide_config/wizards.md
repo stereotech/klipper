@@ -67,8 +67,8 @@ countdown: 0
     time until the end of the wizard
 info: info_string
     info about <wizard_step_name>
-placeholder: path/to/wizard/placeholder
-    path to placeholder image
+placeholder: <name_placeholder_component>
+   placeholder component name
 action_gcode:
     write gcode which will be running if send the cmd [EXECUTE_WIZARD_STEP]
 cancel_gcode:
