@@ -8,7 +8,7 @@ class WizardStepTree(WizardStep):
         WizardStep.__init__(self, config)
         self.tree = []
         self.selected = ''
-        self.value = ''
+        self.value = 0
         # get options from config
         self.depth = config.getint('depth', 1)
         self.types = config.getlist('types', [])
