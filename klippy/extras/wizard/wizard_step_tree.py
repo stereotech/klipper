@@ -51,9 +51,9 @@ class WizardStepTree(WizardStep):
                 if isinstance(value, int):
                     return value
         elif isinstance(node, dict):
-            if node.get('key', '') == key:
+            if 'key' in node:
                 return node['value']
-            if node.get('children', ''):
+            if 'children' in node:
                 for child in node['children']:
                     value = self.get_value(child, key)
                     if isinstance(value, int):
