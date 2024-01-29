@@ -7,6 +7,7 @@ class WizardStep:
         section_name = config.get_name().split()
         self.name = section_name[1].upper()
         self.in_script = False
+        self.loading = False
         # load objects
         self.printer = printer = config.get_printer()
         self.gcode_macro = printer.load_object(config, 'gcode_macro')
@@ -19,18 +20,28 @@ class WizardStep:
         self.warning = config.get('warning', '')
         self.info = config.get('info', '')
         self.countdown = config.getint('countdown', 0)
+        self.placeholder = config.get('placeholder', '')
         # create template
         self.template_action = self.gcode_macro.load_template(
             config, 'action_gcode')
         self.template_cancel = self.gcode_macro.load_template(
             config, 'cancel_gcode')
         # register gcode commands
+        self.gcode.register_mux_command("WIZARD_STEP_LOADING_STATE", 'STEP',
+                                        self.name, self.cmd_WIZARD_STEP_LOADING_STATE,
+                                        desc=self.cmd_WIZARD_STEP_LOADING_STATE_help)
         self.gcode.register_mux_command("EXECUTE_WIZARD_STEP", 'STEP',
                                         self.name, self.cmd_EXECUTE_WIZARD_STEP,
                                         desc=self.cmd_EXECUTE_WIZARD_STEP_help)
         self.gcode.register_mux_command("CANCEL_WIZARD_STEP", 'STEP',
                                         self.name, self.cmd_CANCEL_WIZARD_STEP,
                                         desc=self.cmd_CANCEL_WIZARD_STEP_help)
+
+    cmd_WIZARD_STEP_LOADING_STATE_help = "Change state for show the placeholder"
+
+    def cmd_WIZARD_STEP_LOADING_STATE(self, gcmd):
+        state = gcmd.get_int('ENABLE', 0)
+        self.loading = True if state else False
 
     cmd_EXECUTE_WIZARD_STEP_help = "Run gcode in the 'action_gcode' option"
 
@@ -62,6 +73,10 @@ class WizardStep:
         finally:
             self.in_script = False
 
+    def get_status(self, eventtime):
+        return {
+            'loading': self.loading,
+            'placeholder': self.placeholder}
 
 def load_config_prefix(config):
     return WizardStep(config)

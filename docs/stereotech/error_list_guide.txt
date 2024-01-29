@@ -33,6 +33,8 @@ config:
     0023: Option '%s' in section '%s' must be above %s
     0024: Option '%s' in section '%s' must be below %s
     0025: Unable to load module '%s'
+    0026: do not parse .json file, error %s
+    0027: file with data not exist
 
 печать/кинематика/движение:
     101: Error loading kinematics
@@ -123,6 +125,8 @@ config:
     2058: error moved the axis:%s, the axis not availability
     2059: Macro %s called recursively
     2060: The button '%s' does not exist
+    2061: Failure set value to step, value out of the range[0-%s]
+    2062: the key does not exist - %s, check the key
 
 перефирия(mcu):
     301: Timeout on wait for '%s' response
