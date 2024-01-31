@@ -73,7 +73,7 @@ class Wizard:
             raise gcmd.error("2052: Unable to parse '%s' as a literal: %s" %
                              (value, e))
         v = dict(self.variables)
-        v[variable] = value
+        v[variable] = literal
         self.variables = v
 
     cmd_SET_WIZARD_ENABLE_help = "Set the enable to WIZARD"
