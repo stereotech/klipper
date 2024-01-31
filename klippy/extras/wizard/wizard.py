@@ -29,6 +29,7 @@ class Wizard:
         self.type = config.getlists('type', [])
         self.steps = config.getlists('steps', [])
         self.current_step = self.steps[0]
+        self.next_step = self.steps[1] if len(self.steps) > 2 else self.steps[0]
         # load objects
         self.printer = printer = config.get_printer()
         self.gcode = printer.lookup_object('gcode')
@@ -53,7 +54,8 @@ class Wizard:
                 'variables': self.variables,
                 'name': self.name,
                 'steps': self.steps,
-                'type': self.type}
+                'type': self.type,
+                'next_step': self.next_step}
 
     cmd_SET_WIZARD_VARIABLE_help = "Set the value of a wizard variable  to wizard"
 
@@ -65,8 +67,8 @@ class Wizard:
                 "2051: Unknown wizard variable '%s'" % (variable,))
         try:
             pass
-            # literal = ast.literal_eval(value)
-            # json.dumps(literal, separators=(',', ':'))
+            literal = ast.literal_eval(value)
+            json.dumps(literal, separators=(',', ':'))
         except (SyntaxError, TypeError, ValueError) as e:
             raise gcmd.error("2052: Unable to parse '%s' as a literal: %s" %
                              (value, e))
@@ -87,6 +89,9 @@ class Wizard:
         if step not in self.steps:
             raise gcmd.error("2053: Unknown step: '%s'" % step)
         self.current_step = step
+        if self.current_step != self.steps[-1]:
+            current_step_idx = self.steps.index(self.current_step)
+            self.next_step = self.steps[current_step_idx + 1]
 
     cmd_RESET_WIZARD_help = "Reset state the wizard"
 
@@ -94,6 +99,7 @@ class Wizard:
         self.error = ''
         self.enabled = False
         self.current_step = self.steps[0]
+        self.next_step = self.steps[1] if len(self.steps) > 2 else self.steps[0]
         self.variables = dict(self._variables_bk)
 
 
