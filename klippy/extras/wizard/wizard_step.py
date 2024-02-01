@@ -13,8 +13,8 @@ class WizardStep:
         self.gcode_macro = printer.load_object(config, 'gcode_macro')
         self.gcode = printer.lookup_object('gcode')
         # get options from config
-        self.cmd_desc = config.get("description", "G-Code wizard")
-        self.image = config.get('image', 'image_path')
+        self.cmd_desc = config.get("description", '')
+        self.image = config.get('image', '')
         self.landscape = config.getboolean('landscape', False)
         self.description = config.get('description', '')
         self.warning = config.get('warning', '')

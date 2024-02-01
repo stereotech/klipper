@@ -25,8 +25,8 @@ class Wizard:
                     "Option '%s' in section '%s' is not a valid literal: %s" % (
                         option, config.get_name(), e))
         # get options from config
-        self.image = config.get('image', 'image_path')
-        self.type = config.getlists('type', [])
+        self.image = config.get('image', '')
+        self.type = config.getlists('type', 'any')
         self.steps = config.getlists('steps', [])
         self.current_step = self.steps[0]
         self.next_step = self.steps[1] if len(self.steps) > 2 else self.steps[0]
