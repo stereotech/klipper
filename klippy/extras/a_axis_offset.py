@@ -57,7 +57,7 @@ class AAxisOffsetCalculation:
         ab =  math.hypot(ac, bc)
         asin_a =  math.asin(bc / ab)
         offset = RAD_TO_DEG * asin_a
-        logging.info("calculate offset A=%f." % offset)
+        logging.info("calculate offset for the axis A: %f." % offset)
         return offset
 
     def _apply_offset_a(self):
