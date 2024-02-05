@@ -68,7 +68,7 @@ class AAxisOffsetCalculation:
         offset_gcmd = self.gcode.create_gcode_command(
             'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A_ADJUST': self.calc_offset})
         self.gcode_move.cmd_SET_GCODE_OFFSET(offset_gcmd)
-        logging.info("----------------apply offset for the axis A: %f." % self.calc_offset)
+        logging.info("apply offset for the axis A: %f." % self.calc_offset)
 
     cmd_ALIGN_A_AXIS_help = "Calculate A axis offset"
     def cmd_ALIGN_A_AXIS(self, gcmd):
@@ -80,12 +80,6 @@ class AAxisOffsetCalculation:
                 break
             else:
                 self._apply_offset_a()
-
-    def get_status(self, eventtime=None):
-        return {
-            "point_coords": self.point_coords,
-            "calc_offset": self.calc_offset
-        }
 
 
 def load_config(config):
