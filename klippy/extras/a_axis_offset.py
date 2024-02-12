@@ -27,6 +27,9 @@ class AAxisOffsetCalculation:
         self.gcode.register_command(
             'SAVE_A_AXIS_POINT', self.cmd_SAVE_A_AXIS_POINT,
             desc=self.cmd_SAVE_A_AXIS_POINT_help)
+        self.gcode.register_command(
+            'MOVE_ALIGN_A_AXIS', self.cmd_MOVE_ALIGN_A_AXIS,
+            desc=self.cmd_MOVE_ALIGN_A_AXIS_help)
 
     cmd_SAVE_A_AXIS_POINT_help = "Save point for A axis offset"
     def cmd_SAVE_A_AXIS_POINT(self, gcmd):
@@ -76,10 +79,16 @@ class AAxisOffsetCalculation:
         for i in range(self.max_repeat_probe):
             self.gcode.run_script_from_command("MOVE_ALIGN_A_AXIS MODE=%s" % mode)
             self.calc_offset = self._calc_a_axis_offset(self.point_coords[0], self.point_coords[1])
-            if (self.threshold_value * -1) <= self.calc_offset <= self.threshold_value:
+            if abs(self.calc_offset) <= self.threshold_value:
                 break
             else:
                 self._apply_offset_a()
+
+    cmd_MOVE_ALIGN_A_AXIS_help = "By default, it returns the offset of the axis,\
+        if necessary, perform rename_existing of this command in the macro"
+    def cmd_MOVE_ALIGN_A_AXIS(self, gcmd):
+        homing_origin_a = self.gcode_move.get_status()['homing_origin'].a
+        gcmd.respond_info("offset A-axis= %s" % homing_origin_a)
 
 
 def load_config(config):
