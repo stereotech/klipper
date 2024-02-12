@@ -24,6 +24,9 @@ class CAxisAlignCalculation:
         self.gcode.register_command(
             'SAVE_C_AXIS_POINT', self.cmd_SAVE_C_AXIS_POINT,
             desc=self.cmd_SAVE_C_AXIS_POINT_help)
+        self.gcode.register_command(
+            'MOVE_ALIGN_C_AXIS', self.cmd_MOVE_ALIGN_C_AXIS,
+            desc=self.cmd_MOVE_ALIGN_C_AXIS_help)
 
     cmd_SAVE_C_AXIS_POINT_help = "Save point for C axis align"
 
@@ -50,11 +53,16 @@ class CAxisAlignCalculation:
             self.gcode.run_script_from_command("MOVE_ALIGN_C_AXIS")
             offset = self._calc_c_axis_align(
                 self.point_coords[0], self.point_coords[1])
-            if (self.threshold_value * -1) <= offset <= self.threshold_value:
+            if abs(offset) <= self.threshold_value:
                 logging.info("align the axis C completed")
                 break
             else:
                 self._apply_offset_c(offset)
+
+    cmd_MOVE_ALIGN_C_AXIS_help = "By default, it returns the offset of the\
+        axis, if necessary, perform rename_existing of this command in the macro"
+    def cmd_MOVE_ALIGN_C_AXIS(self, gcmd):
+        gcmd.respond_info("the MOVE_ALIGN_C_AXIS command is not supported")
 
     def _calc_c_axis_align(self, point_0, point_1):
         offset = math.atan((point_1[1] - point_0[1]) / 90) * RAD_TO_DEG / 3
