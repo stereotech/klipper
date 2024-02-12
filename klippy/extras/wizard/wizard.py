@@ -26,7 +26,7 @@ class Wizard:
                         option, config.get_name(), e))
         # get options from config
         self.image = config.get('image', '')
-        self.type = config.getlists('type', 'any')
+        self.type = config.get('type', 'any')
         self.steps = config.getlists('steps', [])
         self.current_step = self.steps[0]
         self.next_step = self.steps[1] if len(self.steps) > 2 else self.steps[0]
