@@ -67,10 +67,8 @@ class WizardStep:
         self.in_script = True
         try:
             if gcode == 'action_gcode':
-                gcmd.respond_info("-------------------action_gcode %s" % (self.name,))
                 self.template_action.run_gcode_from_command(kwparams)
             elif gcode == 'cancel_gcode':
-                gcmd.respond_info("-------------------cancel_gcode %s" % (self.name,))
                 self.template_cancel.run_gcode_from_command(kwparams)
         finally:
             self.in_script = False
