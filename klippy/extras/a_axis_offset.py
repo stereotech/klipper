@@ -22,14 +22,37 @@ class AAxisOffsetCalculation:
             [0., 0., 0., 0., 0., 0.]
         ]
         self.gcode.register_command(
-            'ALIGN_A_AXIS', self.cmd_ALIGN_A_AXIS,
-            desc=self.cmd_ALIGN_A_AXIS_help)
+            'CALCULATE_ALIGN_A_AXIS', self.cmd_CALCULATE_ALIGN_A_AXIS,
+            desc=self.cmd_CALCULATE_ALIGN_A_AXIS_help)
         self.gcode.register_command(
             'SAVE_A_AXIS_POINT', self.cmd_SAVE_A_AXIS_POINT,
             desc=self.cmd_SAVE_A_AXIS_POINT_help)
         self.gcode.register_command(
-            'MOVE_ALIGN_A_AXIS', self.cmd_MOVE_ALIGN_A_AXIS,
-            desc=self.cmd_MOVE_ALIGN_A_AXIS_help)
+            'APPLY_ALIGN_A_AXIS', self.cmd_APPLY_ALIGN_A_AXIS,
+            desc=self.cmd_APPLY_ALIGN_A_AXIS_help)
+
+    def _calc_a_axis_offset(self):
+        """
+                  . b
+               .  .
+             .    .
+         a  . . . . c
+        """
+        bc = self.point_coords[1][2] - self.point_coords[0][2]
+        ac = self.point_coords[1][1] - self.point_coords[0][1]
+        ab =  math.hypot(ac, bc)
+        asin_a =  math.asin(bc / ab)
+        self.calc_offset = RAD_TO_DEG * asin_a
+        logging.info("calculate offset for the axis A: %f." % self.calc_offset)
+
+    def _apply_offset_a(self):
+        homing_origin_a = self.gcode_move.get_status()['homing_origin'].a
+        if (homing_origin_a + self.calc_offset) > 0.0:
+            logging.warning("A-axis offset is positive")
+            self.calc_offset = 0.0
+        offset_gcmd = self.gcode.create_gcode_command(
+            'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A_ADJUST': self.calc_offset})
+        self.gcode_move.cmd_SET_GCODE_OFFSET(offset_gcmd)
 
     cmd_SAVE_A_AXIS_POINT_help = "Save point for A axis offset"
     def cmd_SAVE_A_AXIS_POINT(self, gcmd):
@@ -48,47 +71,20 @@ class AAxisOffsetCalculation:
             for axis, coord in enumerate(coords):
                 self.point_coords[point_idx][axis] = coord
 
-    def _calc_a_axis_offset(self, point_0, point_1):
-        """
-                  . b
-               .  .
-             .    .
-         a  . . . . c
-        """
-        bc = point_1[2] - point_0[2]
-        ac = point_1[1] - point_0[1]
-        ab =  math.hypot(ac, bc)
-        asin_a =  math.asin(bc / ab)
-        offset = RAD_TO_DEG * asin_a
-        logging.info("calculate offset for the axis A: %f." % offset)
-        return offset
+    cmd_CALCULATE_ALIGN_A_AXIS_help = "Calculate A axis offset"
+    def cmd_CALCULATE_ALIGN_A_AXIS(self, gcmd):
+        self._calc_a_axis_offset()
 
-    def _apply_offset_a(self):
-        homing_origin_a = self.gcode_move.get_status()['homing_origin'].a
-        if (homing_origin_a + self.calc_offset) > 0.0:
-            logging.warning("A-axis offset is positive")
-            self.calc_offset = 0.0
-        offset_gcmd = self.gcode.create_gcode_command(
-            'SET_GCODE_OFFSET', 'SET_GCODE_OFFSET', {'A_ADJUST': self.calc_offset})
-        self.gcode_move.cmd_SET_GCODE_OFFSET(offset_gcmd)
-        logging.info("apply offset for the axis A: %f." % self.calc_offset)
+    cmd_APPLY_ALIGN_A_AXIS_help = "Apply calculated offsets for A-axis"
+    def cmd_APPLY_ALIGN_A_AXIS(self, gcmd):
+        self._apply_offset_a()
 
-    cmd_ALIGN_A_AXIS_help = "Calculate A axis offset"
-    def cmd_ALIGN_A_AXIS(self, gcmd):
-        mode = gcmd.get('MODE')
-        for i in range(self.max_repeat_probe):
-            self.gcode.run_script_from_command("MOVE_ALIGN_A_AXIS MODE=%s" % mode)
-            self.calc_offset = self._calc_a_axis_offset(self.point_coords[0], self.point_coords[1])
-            if abs(self.calc_offset) <= self.threshold_value:
-                break
-            else:
-                self._apply_offset_a()
-
-    cmd_MOVE_ALIGN_A_AXIS_help = "By default, it returns the offset of the axis,\
-        if necessary, perform rename_existing of this command in the macro"
-    def cmd_MOVE_ALIGN_A_AXIS(self, gcmd):
-        homing_origin_a = self.gcode_move.get_status()['homing_origin'].a
-        gcmd.respond_info("offset A-axis= %s" % homing_origin_a)
+    def get_status(self, eventtime=None):
+        return {
+            "calc_offset": self.calc_offset,
+            "max_repeat_probe": self.max_repeat_probe,
+            "threshold_value": self.threshold_value
+        }
 
 
 def load_config(config):
