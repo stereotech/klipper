@@ -3,49 +3,128 @@
         "key": "stereotech",
         "children": [
             {
-                "key": "proto",
+                "key": "Proto",
                 "children": [
                     {
-                        "key": "pla",
+                        "key": "PLA",
                         "value": 205
                     },
                     {
-                        "key": "pva",
-                        "value": 206
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "key": "stereotech1",
-        "children": [
-            {
-                "key": "proto1",
-                "children": [
-                    {
-                        "key": "pla1",
-                        "value": 207
-                    },
-                    {
-                        "key": "pva1",
-                        "value": 208
+                        "key": "PVA",
+                        "value": 200
                     }
                 ]
             },
             {
-                "key": "proto2",
+                "key": "Enduse",
                 "children": [
                     {
-                        "key": "pla2",
-                        "value": 209
+                        "key": "ABS",
+                        "value": 250
                     },
                     {
-                        "key": "pva2",
-                        "value": 210
+                        "key": "SBS",
+                        "value": 230
+                    },
+                    {
+                        "key": "PETG",
+                        "value": 230
+                    },
+                    {
+                        "key": "TPU D70",
+                        "value": 217
+                    },
+                    {
+                        "key": "PP",
+                        "value": 225
+                    },
+                    {
+                        "key": "PA6",
+                        "value": 260
+                    },
+                    {
+                        "key": "PC",
+                        "value": 280
+                    }
+                ]
+            },
+            {
+                "key": "Fiberpart",
+                "children": [
+                    {
+                        "key": "ABS G4",
+                        "value": 242
+                    },
+                    {
+                        "key": "ABS G13",
+                        "value": 270
+                    },
+                    {
+                        "key": "TPU C5",
+                        "value": 227
+                    },
+                    {
+                        "key": "TPU G30",
+                        "value": 240
+                    },
+                    {
+                        "key": "ABSPA G8",
+                        "value": 280
+                    },
+                    {
+                        "key": "PA12 G12",
+                        "value": 250
+                    },
+                    {
+                        "key": "PP G30",
+                        "value": 290
+                    },
+                    {
+                        "key": "PC G20",
+                        "value": 290
+                    }
+                ]
+            },
+            {
+                "key": "Sealant",
+                "children": [
+                    {
+                        "key": "TPU A95",
+                        "value": 212
+                    },
+                    {
+                        "key": "TPU A93",
+                        "value": 200
+                    },
+                    {
+                        "key": "TPU A90",
+                        "value": 225
+                    },
+                    {
+                        "key": "SEBS",
+                        "value": 232
+                    }
+                ]
+            },
+            {
+                "key": "Metalcast",
+                "children": [
+                    {
+                        "key": "Metalcast-316",
+                        "value": 240
+                    }
+                ]
+            },
+            {
+                "key": "ContiFiber",
+                "children": [
+                    {
+                        "key": "ContiFiber CPA",
+                        "value": 270
                     }
                 ]
             }
+
         ]
     }
 ]
