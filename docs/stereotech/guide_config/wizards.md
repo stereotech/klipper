@@ -313,7 +313,9 @@ A step to port the button component, with which you can respond to button clicks
 
 button_<button_name>_gcode:
     write gcode which will be running if send the cmd [WIZARD_STEP_BUTTON]
-...
+button_<button_name>_loadingtime:
+    the delay about press button, default 0.0
+
 ```
 
 ## status

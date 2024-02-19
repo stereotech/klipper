@@ -8,10 +8,13 @@ class WizardStepButton(WizardStep):
         self.templates = {}
         options_name = config.get_prefix_options('button_')
         for option in options_name:
-            template_button = self.gcode_macro.load_template(
-                config, option)
-            button_name = '_'.join(option.split('_')[1:-1])
-            self.templates.update({button_name: template_button})
+            if option.endswith('gcode'):
+                template_button = self.gcode_macro.load_template(
+                    config, option)
+                button_name = '_'.join(option.split('_')[1:-1])
+                self.templates.update({button_name: template_button})
+                # get the time delay about press button needed for rendering on the client
+                _ = config.getfloat('button_' + button_name + '_loadingtime', 0)
         # register commands
         self.gcode.register_mux_command("WIZARD_STEP_BUTTON", 'STEP',
                                         self.name, self.cmd_WIZARD_STEP_BUTTON,
