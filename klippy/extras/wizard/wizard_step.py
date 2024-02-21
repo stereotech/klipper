@@ -67,16 +67,27 @@ class WizardStep:
         self.in_script = True
         try:
             if gcode == 'action_gcode':
+                kwparams['wizard']['next_step'] = self.get_next_step(kwparams)
                 self.template_action.run_gcode_from_command(kwparams)
             elif gcode == 'cancel_gcode':
                 self.template_cancel.run_gcode_from_command(kwparams)
         finally:
             self.in_script = False
 
+    def get_next_step(self, kwparams):
+        steps =  kwparams['wizard']['steps']
+        if self.name == steps[-1]:
+            next_step = steps[0]
+        else:
+            current_step_idx = steps.index(self.name)
+            next_step = steps[current_step_idx + 1]
+        return next_step
+
     def get_status(self, eventtime):
         return {
             'loading': self.loading,
             'placeholder': self.placeholder}
+
 
 def load_config_prefix(config):
     return WizardStep(config)
