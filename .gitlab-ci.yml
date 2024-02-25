@@ -61,3 +61,9 @@ deploy_job:
     - echo "$CI_COMMIT_SHA" >> ./klipper.sha
     - aws s3 --endpoint-url=https://storage.yandexcloud.net cp klipper.sha s3://${BUCKET_NAME}/firmware_v5/${RELEASE_TYPE}/ --acl public-read
 
+trigger_job:
+  stage: deploy
+  needs:
+    - deploy_job
+  trigger:
+    project: stereotech/steapp/STE-App-Build
