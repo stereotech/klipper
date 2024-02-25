@@ -5,7 +5,6 @@ default:
 
 stages:          # List of stages for jobs, and their order of execution
   - build
-  - test
   - deploy
 
 
@@ -34,7 +33,7 @@ build-job:       # This job runs in the build stage, which runs first.
     expire_in: 7 days
 
 test-job:
-  stage: test
+  stage: build
   before_script:
     - apt-get update
     - apt-get install -y git curl
