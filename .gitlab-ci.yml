@@ -34,7 +34,10 @@ build-job:       # This job runs in the build stage, which runs first.
     expire_in: 7 days
 
 test-job:
-  stage: build
+  stage: test
+  before_script:
+    - apt-get update
+    - apt-get install -y git curl
   script:
     - ./scripts/ci-install.sh
     - ./scripts/ci-build.sh 2>&1
