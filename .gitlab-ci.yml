@@ -7,7 +7,6 @@ stages:          # List of stages for jobs, and their order of execution
   - build
   - deploy
 
-
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   before_script:
@@ -53,6 +52,11 @@ deploy_job:
     - test-job
   variables:
     RELEASE_TYPE: testing
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        RELEASE_TYPE: "stable"
+    - if: $CI_PIPELINE_SOURCE == "push"  
   before_script:
     - pip install awscli
   script:
@@ -63,6 +67,8 @@ deploy_job:
 
 trigger_job:
   stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"
   needs:
     - deploy_job
   trigger:
