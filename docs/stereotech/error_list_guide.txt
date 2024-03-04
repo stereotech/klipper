@@ -127,6 +127,7 @@ config:
     2060: The button '%s' does not exist
     2061: Failure set value to step, value out of the range[0-%s]
     2062: the key does not exist - %s, check the key
+    2063: Please parking axis before probe
 
 перефирия(mcu):
     301: Timeout on wait for '%s' response
@@ -224,6 +225,7 @@ config:
 датчик филамента:
     401: Filament error on %s
     411: The filament has run out or there is a problem with its supply at the %s
+    412: The filament has run out in the %s
     413: Switch to second extruder and resume printing.
     414: All attempt to extrude failed.
     415: Recover extrusion after cooling and heating.
