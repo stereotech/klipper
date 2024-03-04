@@ -4,9 +4,10 @@ from wizard_step import WizardStep
 class WizardStepSelector(WizardStep):
     def __init__(self, config):
         WizardStep.__init__(self, config)
-        self.selected = ''
         # get options
-        self.items = config.getlists('items', [])
+        self.items = config.getlists('items')
+        # set attributes
+        self.selected = self.items[0]
         # create template
         self.template = self.gcode_macro.load_template(config, 'select_gcode')
         # register commands
